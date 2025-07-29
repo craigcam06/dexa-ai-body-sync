@@ -88,6 +88,12 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
           newFile.rows = result.rowsProcessed || 0;
           newFile.data = result.data;
           
+          // Auto-update dashboard when StrongLifts data is loaded
+          if (dataType === 'stronglifts') {
+            console.log('Auto-updating dashboard with StrongLifts data');
+            onDataUpdate(result.data);
+          }
+          
           toast({
             title: "File processed successfully",
             description: `${file.name} - ${result.rowsProcessed} rows processed`,
