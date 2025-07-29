@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      apple_health_data: {
+        Row: {
+          created_at: string
+          data_type: string
+          end_date: string | null
+          id: string
+          metadata: Json | null
+          source_bundle_id: string | null
+          source_name: string | null
+          start_date: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          data_type: string
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          source_bundle_id?: string | null
+          source_name?: string | null
+          start_date: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          data_type?: string
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          source_bundle_id?: string | null
+          source_name?: string | null
+          start_date?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
