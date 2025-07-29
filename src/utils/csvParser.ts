@@ -43,7 +43,16 @@ export class CSVParser {
       return 'sleep';
     }
     
-    // Workout indicators
+    // StrongLifts indicators (check BEFORE general workout indicators)
+    if (headerStr.includes('exercise') || headerStr.includes('weight') || 
+        headerStr.includes('reps') || headerStr.includes('sets') ||
+        headerStr.includes('volume') || headerStr.includes('1rm') ||
+        (headerStr.includes('squat') && headerStr.includes('bench')) ||
+        headerStr.includes('stronglifts')) {
+      return 'stronglifts';
+    }
+    
+    // Workout indicators (general Whoop workouts)
     if (headerStr.includes('strain') || headerStr.includes('workout') || 
         headerStr.includes('activity') || headerStr.includes('exercise') ||
         headerStr.includes('kilojoule') || headerStr.includes('max heart rate') ||
@@ -56,15 +65,6 @@ export class CSVParser {
         headerStr.includes('ambient') || headerStr.includes('temperature') ||
         headerStr.includes('day strain') || headerStr.includes('calories')) {
       return 'daily';
-    }
-    
-    // StrongLifts indicators
-    if (headerStr.includes('exercise') || headerStr.includes('weight') || 
-        headerStr.includes('reps') || headerStr.includes('sets') ||
-        headerStr.includes('volume') || headerStr.includes('1rm') ||
-        (headerStr.includes('squat') && headerStr.includes('bench')) ||
-        headerStr.includes('stronglifts')) {
-      return 'stronglifts';
     }
     
     // Journal indicators
