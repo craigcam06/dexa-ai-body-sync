@@ -101,11 +101,11 @@ export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): St
     };
   }
 
-  // Filter data to only include 2024 and 2025
+  // Filter data to include recent years (2022-2025)
   const filteredData = strongliftsData.filter(workout => {
     const workoutYear = new Date(workout.date).getFullYear();
     console.log(`Workout: ${workout.exercise}, date: ${workout.date}, parsed year: ${workoutYear}`);
-    return workoutYear === 2024 || workoutYear === 2025;
+    return workoutYear >= 2022 && workoutYear <= 2025;
   });
 
   if (filteredData.length === 0) {
