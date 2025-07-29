@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -15,13 +15,16 @@ import {
   Dumbbell,
   Target,
   MessageSquare,
-  Settings
+  Settings,
+  Flame,
+  Calendar
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
 import { DataAnalytics } from "./DataAnalytics";
+import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
 const mockData = {
@@ -42,6 +45,24 @@ const mockData = {
 export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
   console.log('HealthDashboard current whoopData state:', whoopData);
+
+  // Calculate TDEE and strength metrics when data changes
+  const healthMetrics = useMemo(() => {
+    const tdeeData = calculateTDEE(
+      DEFAULT_USER_PROFILE.weight,
+      DEFAULT_USER_PROFILE.height,
+      DEFAULT_USER_PROFILE.age,
+      DEFAULT_USER_PROFILE.gender,
+      whoopData?.daily,
+      whoopData?.stronglifts
+    );
+
+    const strengthMetrics = whoopData?.stronglifts 
+      ? calculateStrengthMetrics(whoopData.stronglifts)
+      : null;
+
+    return { tdeeData, strengthMetrics };
+  }, [whoopData]);
 
   const handleWhoopDataUpdate = (data: any) => {
     console.log('HealthDashboard received data update:', data);
@@ -79,7 +100,7 @@ export const HealthDashboard = () => {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <MetricCard
           title="Body Fat %"
           value={`${mockData.bodyComposition.bodyFat.current}%`}
@@ -97,6 +118,14 @@ export const HealthDashboard = () => {
           variant="success"
         />
         <MetricCard
+          title="TDEE"
+          value={`${healthMetrics.tdeeData.tdee} cal`}
+          target={healthMetrics.tdeeData.activityLevel}
+          trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
+          icon={Flame}
+          variant="warning"
+        />
+        <MetricCard
           title="Recovery Score"
           value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
           target="Whoop"
@@ -106,14 +135,31 @@ export const HealthDashboard = () => {
         />
         <MetricCard
           title="Weekly Volume"
-          value={whoopData?.stronglifts?.length > 0 ? 
-            `${whoopData.stronglifts.reduce((sum: number, s: any) => sum + (s.volume || 0), 0).toLocaleString()}lbs` : 
-            `${mockData.devices.lumen.metabolicFlex}%`
+          value={healthMetrics.strengthMetrics?.weekly.volume 
+            ? `${healthMetrics.strengthMetrics.weekly.volume.toLocaleString()} lbs`
+            : "No data"
           }
-          target={whoopData?.stronglifts?.length > 0 ? `${whoopData.stronglifts.length} workouts` : "Lumen"}
-          trend={3}
-          icon={whoopData?.stronglifts?.length > 0 ? Dumbbell : Zap}
-          variant="warning"
+          target={healthMetrics.strengthMetrics?.weekly.sets 
+            ? `${healthMetrics.strengthMetrics.weekly.sets} sets`
+            : "Upload CSV data"
+          }
+          trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
+          icon={Dumbbell}
+          variant="primary"
+        />
+        <MetricCard
+          title="30-Day Volume"
+          value={healthMetrics.strengthMetrics?.monthly.volume 
+            ? `${(healthMetrics.strengthMetrics.monthly.volume / 1000).toFixed(1)}k lbs`
+            : "No data"
+          }
+          target={healthMetrics.strengthMetrics?.monthly.sets 
+            ? `${healthMetrics.strengthMetrics.monthly.sets} sets`
+            : "Upload CSV data"
+          }
+          trend={healthMetrics.strengthMetrics?.monthly.workouts || 0}
+          icon={Calendar}
+          variant="success"
         />
       </div>
 
