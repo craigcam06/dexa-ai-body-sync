@@ -117,19 +117,107 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
             Connect your Whoop device to track recovery, sleep, and strain data in real-time.
           </p>
           
-          {error && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Demo mode: Real Whoop integration requires secure backend setup. 
+              Click below to see the integration interface.
+            </AlertDescription>
+          </Alert>
           
           <Button 
-            onClick={connectWhoop} 
+            onClick={() => {
+              // Demo: Show what the connection interface would look like
+              setIsAuthenticated(true);
+              setWhoopData({
+                recovery: {
+                  cycle_id: 1,
+                  sleep_id: 1,
+                  user_id: 1,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  score_state: "scored",
+                  score: {
+                    user_calibrating: false,
+                    recovery_score: 85,
+                    resting_heart_rate: 52,
+                    hrv_rmssd_milli: 45,
+                    spo2_percentage: 97.5,
+                    skin_temp_celsius: 36.2
+                  }
+                },
+                sleep: [
+                  {
+                    id: 1,
+                    user_id: 1,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    start: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+                    end: new Date(Date.now()).toISOString(),
+                    timezone_offset: "-08:00",
+                    nap: false,
+                    score_state: "scored",
+                    score: {
+                      stage_summary: {
+                        total_in_bed_time_milli: 8 * 60 * 60 * 1000,
+                        total_awake_time_milli: 30 * 60 * 1000,
+                        total_no_data_time_milli: 0,
+                        total_light_sleep_time_milli: 3.5 * 60 * 60 * 1000,
+                        total_slow_wave_sleep_time_milli: 2 * 60 * 60 * 1000,
+                        total_rem_sleep_time_milli: 2 * 60 * 60 * 1000,
+                        sleep_cycle_count: 5,
+                        disturbance_count: 2
+                      },
+                      sleep_needed: {
+                        baseline_milli: 8 * 60 * 60 * 1000,
+                        need_from_sleep_debt_milli: 0,
+                        need_from_recent_strain_milli: 30 * 60 * 1000,
+                        need_from_recent_nap_milli: 0
+                      },
+                      respiratory_rate: 14.5,
+                      sleep_performance_percentage: 87,
+                      sleep_consistency_percentage: 92,
+                      sleep_efficiency_percentage: 95
+                    }
+                  }
+                ],
+                workouts: [
+                  {
+                    id: 1,
+                    user_id: 1,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    end: new Date(Date.now() - 23 * 60 * 60 * 1000).toISOString(),
+                    timezone_offset: "-08:00",
+                    sport_id: 1,
+                    score_state: "scored",
+                    score: {
+                      strain: 16.2,
+                      average_heart_rate: 145,
+                      max_heart_rate: 185,
+                      kilojoule: 1250,
+                      percent_recorded: 98,
+                      distance_meter: 5000,
+                      altitude_gain_meter: 150,
+                      altitude_change_meter: 75,
+                      zone_duration: {
+                        zone_zero_milli: 0,
+                        zone_one_milli: 10 * 60 * 1000,
+                        zone_two_milli: 15 * 60 * 1000,
+                        zone_three_milli: 20 * 60 * 1000,
+                        zone_four_milli: 10 * 60 * 1000,
+                        zone_five_milli: 5 * 60 * 1000
+                      }
+                    }
+                  }
+                ]
+              });
+            }}
             disabled={isLoading}
             className="w-full"
           >
-            {isLoading ? 'Connecting...' : 'Connect to Whoop'}
+            {isLoading ? 'Connecting...' : 'Demo Whoop Connection'}
           </Button>
           
           <div className="text-xs text-muted-foreground space-y-1">
