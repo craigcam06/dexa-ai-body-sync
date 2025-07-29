@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, MessageSquare, Send, Sparkles } from 'lucide-react';
 import { ParsedWhoopData } from '@/types/whoopData';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AICoachPanelProps {
   whoopData?: ParsedWhoopData;
@@ -31,7 +32,6 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [apiKey, setApiKey] = useState('');
 
   useEffect(() => {
     if (whoopData) {
@@ -128,7 +128,7 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
   };
 
   const handleSendMessage = async () => {
-    if (!userInput.trim() || !apiKey) return;
+    if (!userInput.trim()) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -160,60 +160,23 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
     }
   };
 
-  const generateAIResponse = async (question: string, data?: ParsedWhoopData): Promise<string> => {
-    // Create context from data
-    let context = "You are a health and fitness coach analyzing biometric data. ";
-    
-    if (data) {
-      if (data.recovery.length > 0) {
-        const latest = data.recovery[data.recovery.length - 1];
-        context += `Latest recovery: ${latest.recovery_score}%, HRV: ${latest.hrv_rmssd_milli}ms, RHR: ${latest.resting_heart_rate}bpm. `;
-      }
-      
-      if (data.sleep.length > 0) {
-        const latest = data.sleep[data.sleep.length - 1];
-        const hours = (latest.total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1);
-        context += `Latest sleep: ${hours}h total, ${latest.sleep_efficiency_percentage}% efficiency. `;
-      }
-      
-      if (data.workouts.length > 0) {
-        const latest = data.workouts[data.workouts.length - 1];
-        context += `Latest workout: ${latest.workout_type}, strain ${latest.strain_score}. `;
-      }
-    }
-
+  const generateAIResponse = async (question: string, healthData?: ParsedWhoopData): Promise<string> => {
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4.1-2025-04-14',
-          messages: [
-            {
-              role: 'system',
-              content: context + "Provide helpful, personalized advice based on the data. Keep responses concise and actionable."
-            },
-            {
-              role: 'user',
-              content: question
-            }
-          ],
-          max_tokens: 300,
-          temperature: 0.7
-        }),
+      const { data, error } = await supabase.functions.invoke('ai-health-coach', {
+        body: {
+          message: question,
+          healthData: healthData
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-      return data.choices[0].message.content;
+      return data.response;
     } catch (error) {
-      return "I apologize, but I'm having trouble accessing the AI service. Please check your API key and try again.";
+      console.error('Error calling AI coach:', error);
+      return "I'm having trouble connecting to the AI service right now. Please try again in a moment.";
     }
   };
 
@@ -285,37 +248,6 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* API Key Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">OpenAI API Key {!apiKey && <span className="text-red-500">*</span>}</label>
-            <Input
-              type="password"
-              placeholder="Enter your OpenAI API key to enable AI coaching"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Your API key is stored locally and used only for generating personalized advice.{' '}
-              <a 
-                href="https://platform.openai.com/api-keys" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary underline"
-              >
-                Get your API key here
-              </a>
-            </p>
-          </div>
-
-          {/* Chat Interface Preview */}
-          {!apiKey && (
-            <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center bg-muted/30">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground mb-2">AI Chat Interface</p>
-              <p className="text-xs text-muted-foreground">Enter your OpenAI API key above to unlock personalized health coaching</p>
-            </div>
-          )}
-
           {/* Chat Messages */}
           {chatMessages.length > 0 && (
             <div className="space-y-3 max-h-60 overflow-y-auto">
@@ -342,37 +274,34 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
           )}
 
           {/* Chat Input */}
-          {apiKey && (
-            <div className="flex gap-2">
-              <Textarea
-                placeholder="Ask about your recovery, sleep patterns, training load, or any health-related question..."
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                className="flex-1"
-                rows={2}
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!userInput.trim() || isAnalyzing}
-                size="sm"
-                className="self-end"
-              >
-                {isAnalyzing ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Sample Questions - Show even without API key */}
+          <div className="flex gap-2">
+            <Textarea
+              placeholder="Ask about your recovery, sleep patterns, training load, or any health-related question..."
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="flex-1"
+              rows={2}
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!userInput.trim() || isAnalyzing}
+              size="sm"
+              className="self-end"
+            >
+              {isAnalyzing ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          {/* Sample Questions */}
           {chatMessages.length === 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">Sample questions you can ask:</p>
@@ -387,9 +316,8 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
                     key={question}
                     variant="outline"
                     size="sm"
-                    onClick={() => apiKey ? setUserInput(question) : null}
-                    disabled={!apiKey}
-                    className="text-left justify-start h-auto p-2 opacity-60"
+                    onClick={() => setUserInput(question)}
+                    className="text-left justify-start h-auto p-2"
                   >
                     {question}
                   </Button>
