@@ -203,7 +203,7 @@ export const HealthDashboard = () => {
         <MetricCard
           title="Weekly Volume"
           value={healthMetrics.strengthMetrics?.weekly.volume 
-            ? `${healthMetrics.strengthMetrics.weekly.volume.toLocaleString()} lbs`
+            ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
             : "No data"
           }
           target={healthMetrics.strengthMetrics?.weekly.sets 
