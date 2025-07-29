@@ -169,7 +169,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                     disabled={isLoading}
                     className="w-full"
                   >
-                    {isLoading ? 'Connecting...' : 'Connect to Whoop API'}
+                    {isLoading ? 'Connecting...' : 'Connect Whoop API'}
                   </Button>
                   
                   <p className="text-xs text-muted-foreground">
