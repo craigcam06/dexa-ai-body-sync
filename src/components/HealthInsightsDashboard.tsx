@@ -387,8 +387,37 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       <CardContent className="space-y-6">
         {/* Health Score Section */}
         <div className="text-center py-6">
-          <div className="text-6xl font-bold text-primary mb-2">{healthScore.toFixed(0)}</div>
-          <div className="text-lg text-muted-foreground">Overall Health Score</div>
+          <div className="relative inline-flex items-center justify-center">
+            <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 100 100">
+              {/* Background circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="hsl(var(--muted))"
+                strokeWidth="8"
+                fill="transparent"
+                className="opacity-20"
+              />
+              {/* Progress circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="hsl(var(--primary))"
+                strokeWidth="8"
+                fill="transparent"
+                strokeDasharray={`${2 * Math.PI * 45}`}
+                strokeDashoffset={`${2 * Math.PI * 45 * (1 - healthScore / 100)}`}
+                className="transition-all duration-500 ease-out"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-4xl font-bold text-primary">{healthScore.toFixed(0)}</div>
+              <div className="text-sm text-muted-foreground">Health Score</div>
+            </div>
+          </div>
         </div>
 
         {/* Critical Alerts */}
