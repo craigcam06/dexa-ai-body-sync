@@ -156,43 +156,6 @@ export const HealthDashboard = () => {
           <p className="text-sm sm:text-base text-muted-foreground">Optimizing body composition through data-driven insights</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          <Button 
-            onClick={() => {
-              console.log('Upload button clicked!');
-              // Try multiple approaches to find the upload section
-              
-              // First try to find mobile connect section
-              let connectSection = document.querySelector('.lg\\:hidden .space-y-4');
-              console.log('Found mobile connect section:', connectSection);
-              
-              // If not found, try desktop connect section
-              if (!connectSection) {
-                connectSection = document.querySelector('[data-state="inactive"]');
-                console.log('Found desktop connect section:', connectSection);
-              }
-              
-              // If still not found, try finding the WhoopConnect component
-              if (!connectSection) {
-                connectSection = document.querySelector('[role="tabpanel"]');
-                console.log('Found tab panel:', connectSection);
-              }
-              
-              if (connectSection) {
-                connectSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                console.log('Scrolled to connect section');
-              } else {
-                // Final fallback: just scroll down significantly
-                console.log('No connect section found, scrolling to bottom');
-                window.scrollTo({ top: document.body.scrollHeight - window.innerHeight, behavior: 'smooth' });
-              }
-            }}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/90"
-            size="sm"
-          >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Upload Health Data</span>
-            <span className="sm:hidden">Upload</span>
-          </Button>
           <Badge variant="outline" className="text-success border-success text-xs sm:text-sm">
             Next DEXA: {mockData.nextDexa}
           </Badge>
