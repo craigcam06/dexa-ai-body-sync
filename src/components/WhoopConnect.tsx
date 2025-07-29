@@ -159,37 +159,17 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                   Sync your recovery, sleep, and strain data automatically
                 </p>
                 
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Demo mode: Real Whoop integration requires developer API keys. 
-                    Use CSV upload for now or apply for developer access.
-                  </AlertDescription>
-                </Alert>
-                
                 <div className="mt-4 space-y-3">
                   <Button 
-                    onClick={() => {
-                      // Demo connection
-                      setIsAuthenticated(true);
-                      // Set demo data...
-                    }}
+                    onClick={connectWhoop}
                     disabled={isLoading}
                     className="w-full"
                   >
-                    {isLoading ? 'Connecting...' : 'Demo API Connection'}
+                    {isLoading ? 'Connecting...' : 'Connect to Whoop API'}
                   </Button>
                   
                   <p className="text-xs text-muted-foreground">
-                    Need real API access? 
-                    <a 
-                      href="https://developer.whoop.com" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline ml-1"
-                    >
-                      Apply here <ExternalLink className="h-3 w-3 inline" />
-                    </a>
+                    You'll be redirected to Whoop to authorize access to your data
                   </p>
                 </div>
               </div>
