@@ -45,7 +45,13 @@ const mockData = {
 
 export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
-  console.log('HealthDashboard current whoopData state:', whoopData);
+  console.log('🏠 HealthDashboard render - current whoopData state:', whoopData);
+  console.log('🏋️ StrongLifts data check:', {
+    hasWhoopData: !!whoopData,
+    hasStronglifts: !!whoopData?.stronglifts,
+    strongliftsLength: whoopData?.stronglifts?.length || 0,
+    strongliftsType: typeof whoopData?.stronglifts
+  });
 
   // Calculate TDEE and strength metrics when data changes
   const healthMetrics = useMemo(() => {
@@ -72,20 +78,29 @@ export const HealthDashboard = () => {
   }, [whoopData]);
 
   const handleWhoopDataUpdate = (data: any) => {
-    console.log('HealthDashboard received data update:', data);
-    console.log('Data structure:', {
+    console.log('🔄 HealthDashboard received data update:', data);
+    console.log('🔍 Data structure analysis:', {
       hasRecovery: data?.recovery?.length || 0,
       hasSleep: data?.sleep?.length || 0,
       hasWorkouts: data?.workouts?.length || 0,
       hasDaily: data?.daily?.length || 0,
       hasJournal: data?.journal?.length || 0,
-      hasStronglifts: data?.stronglifts?.length || 0
+      hasStronglifts: data?.stronglifts?.length || 0,
+      strongliftsDataType: typeof data?.stronglifts,
+      strongliftsIsArray: Array.isArray(data?.stronglifts),
+      strongliftsSample: data?.stronglifts?.slice(0, 2)
     });
-    console.log('Setting whoopData state with:', data);
+    
+    console.log('📦 Setting whoopData state with:', data);
     setWhoopData(data);
-    console.log('whoopData state should now be updated');
-    // Force re-render
-    setTimeout(() => console.log('Current whoopData after state update:', whoopData), 500);
+    
+    // Immediate verification
+    console.log('⚡ Current whoopData after setState:', whoopData);
+    
+    // Delayed verification to check if state persisted
+    setTimeout(() => {
+      console.log('⏱️ whoopData state 1 second later:', whoopData);
+    }, 1000);
   };
 
   return (

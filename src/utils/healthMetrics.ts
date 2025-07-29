@@ -91,8 +91,16 @@ export interface StrengthMetrics {
 }
 
 export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): StrengthMetrics => {
-  console.log('calculateStrengthMetrics called with data length:', strongliftsData?.length);
-  console.log('Sample entries with dates:', strongliftsData?.slice(0, 5).map(w => ({ date: w.date, exercise: w.exercise })));
+  console.log('💪 calculateStrengthMetrics called with:');
+  console.log('  - Data type:', typeof strongliftsData);
+  console.log('  - Is array:', Array.isArray(strongliftsData));
+  console.log('  - Data length:', strongliftsData?.length);
+  console.log('  - Sample entries:', strongliftsData?.slice(0, 3).map(w => ({ 
+    date: w.date, 
+    exercise: w.exercise, 
+    volume: w.volume,
+    sets: w.sets 
+  })));
   
   if (!strongliftsData || strongliftsData.length === 0) {
     return {
