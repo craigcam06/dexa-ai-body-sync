@@ -165,10 +165,16 @@ export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): St
   console.log('Strength metrics calculated:', {
     totalWorkouts: strongliftsData.length,
     mostRecentDate: mostRecentDate.toISOString(),
+    weekBefore: weekBefore.toISOString(),
+    monthBefore: monthBefore.toISOString(),
     weeklyData: weeklyData.length,
     monthlyData: monthlyData.length,
+    weeklyVolume: weeklyMetrics.volume,
+    monthlyVolume: monthlyMetrics.volume,
     weekly: weeklyMetrics,
-    monthly: monthlyMetrics
+    monthly: monthlyMetrics,
+    weeklyWorkouts: weeklyData.map(w => ({ date: w.date, volume: w.volume })),
+    monthlyWorkouts: monthlyData.map(w => ({ date: w.date, volume: w.volume }))
   });
   
   return {
