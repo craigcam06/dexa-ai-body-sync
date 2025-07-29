@@ -22,12 +22,12 @@ import { BodyCompositionChart } from "./BodyCompositionChart";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
 
-// Mock data - will be replaced with real API data
+// Real data from BodySpec DEXA report (Craig Campbell)
 const mockData = {
   bodyComposition: {
-    bodyFat: { current: 15.2, target: 12.0, trend: -0.8 },
-    leanMass: { current: 152.8, previous: 150.6, trend: 2.2 },
-    totalWeight: { current: 180.5, target: 175.0 }
+    bodyFat: { current: 24.8, target: 18.0, trend: 1.2 }, // Latest: 24.8%, up from 23.6%
+    leanMass: { current: 149.4, previous: 152.8, trend: -3.4 }, // Down from previous scan
+    totalWeight: { current: 210.4, target: 200.0 }
   },
   devices: {
     whoop: { recovery: 85, strain: 14.2, sleep: 7.8 },
@@ -35,7 +35,7 @@ const mockData = {
     strongLifts: { lastWorkout: "Squat 225lbs", streak: 12 },
     steps: { current: 8420, target: 10000 }
   },
-  nextDexa: "2025-01-15"
+  nextDexa: "2025-08-15"
 };
 
 export const HealthDashboard = () => {

@@ -3,12 +3,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target, Calendar } from "lucide-react";
 
-// Mock DEXA scan data over time
+// Real DEXA scan data from BodySpec report (Craig Campbell)
 const mockDexaData = [
-  { date: "2024-05-18", bodyFat: 16.8, leanMass: 148.2, totalWeight: 178.5 },
-  { date: "2024-07-14", bodyFat: 15.8, leanMass: 150.1, totalWeight: 179.2 },
-  { date: "2024-09-22", bodyFat: 15.4, leanMass: 151.8, totalWeight: 180.1 },
-  { date: "2025-01-14", bodyFat: 15.2, leanMass: 152.8, totalWeight: 180.5 }
+  { date: "2025-05-18", bodyFat: 25.1, leanMass: 149.8, totalWeight: 212.1 },
+  { date: "2025-06-01", bodyFat: 23.9, leanMass: 150.6, totalWeight: 209.7 },
+  { date: "2025-06-22", bodyFat: 23.6, leanMass: 152.8, totalWeight: 211.7 },
+  { date: "2025-07-14", bodyFat: 24.8, leanMass: 149.4, totalWeight: 210.4 }
 ];
 
 export const BodyCompositionChart = () => {
@@ -18,8 +18,8 @@ export const BodyCompositionChart = () => {
   const bodyFatChange = latestData.bodyFat - previousData.bodyFat;
   const leanMassChange = latestData.leanMass - previousData.leanMass;
   
-  const bodyFatProgress = ((20 - latestData.bodyFat) / (20 - 12)) * 100; // Progress toward 12% target
-  const leanMassProgress = ((latestData.leanMass - 145) / (160 - 145)) * 100; // Progress toward 160lbs target
+  const bodyFatProgress = ((28 - latestData.bodyFat) / (28 - 18)) * 100; // Progress toward 18% target (realistic for current level)
+  const leanMassProgress = ((latestData.leanMass - 145) / (165 - 145)) * 100; // Progress toward 165lbs target
 
   return (
     <Card className="shadow-card">
@@ -52,7 +52,7 @@ export const BodyCompositionChart = () => {
               </div>
             </div>
             <Progress value={bodyFatProgress} className="h-3" />
-            <p className="text-xs text-muted-foreground">Target: 12% body fat</p>
+            <p className="text-xs text-muted-foreground">Target: 18% body fat</p>
           </div>
 
           <div className="space-y-2">
@@ -69,7 +69,7 @@ export const BodyCompositionChart = () => {
               </div>
             </div>
             <Progress value={leanMassProgress} className="h-3" />
-            <p className="text-xs text-muted-foreground">Target: 160 lbs lean mass</p>
+            <p className="text-xs text-muted-foreground">Target: 165 lbs lean mass</p>
           </div>
         </div>
 
@@ -100,8 +100,8 @@ export const BodyCompositionChart = () => {
         <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-primary/10">
           <h4 className="font-medium text-sm mb-2 text-primary">Body Recomposition Progress</h4>
           <p className="text-sm text-muted-foreground">
-            Excellent progress! You've gained {leanMassChange.toFixed(1)} lbs of lean mass while losing{' '}
-            {Math.abs(bodyFatChange).toFixed(1)}% body fat since your last scan. Continue current protocol.
+            Body fat increased by {bodyFatChange.toFixed(1)}% and lean mass decreased by {Math.abs(leanMassChange).toFixed(1)} lbs since last scan. 
+            Focus on consistent training and nutrition to reverse this trend.
           </p>
         </div>
       </CardContent>
