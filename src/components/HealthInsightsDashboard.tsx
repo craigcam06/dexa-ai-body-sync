@@ -386,32 +386,9 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Health Score Section */}
-        <div className="text-center py-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/10">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full bg-background border-8 border-primary/20 flex items-center justify-center">
-                <div className="text-center">
-                  <div className={`text-3xl font-bold ${getHealthScoreColor(healthScore)}`}>
-                    {healthScore.toFixed(0)}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-medium">
-                    HEALTH SCORE
-                  </div>
-                </div>
-              </div>
-              <div className="absolute inset-0 rounded-full" style={{
-                background: `conic-gradient(from 0deg, hsl(var(--primary)) ${healthScore * 3.6}deg, transparent ${healthScore * 3.6}deg)`
-              }} />
-            </div>
-            <div className="text-center">
-              <div className={`text-lg font-semibold ${getHealthScoreColor(healthScore)}`}>
-                {getHealthScoreLabel(healthScore)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Based on recovery, sleep, and training balance
-              </div>
-            </div>
-          </div>
+        <div className="text-center py-6">
+          <div className="text-6xl font-bold text-primary mb-2">{healthScore.toFixed(0)}</div>
+          <div className="text-lg text-muted-foreground">Overall Health Score</div>
         </div>
 
         {/* Critical Alerts */}
