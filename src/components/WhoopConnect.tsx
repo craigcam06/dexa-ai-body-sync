@@ -29,21 +29,10 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   });
 
   const handleCSVDataUpdate = (data: ParsedWhoopData) => {
+    console.log('WhoopConnect handleCSVDataUpdate received:', data);
     setCsvData(data);
-    // Convert CSV data to format expected by dashboard
-    if (data.recovery.length > 0) {
-      const latestRecovery = data.recovery[data.recovery.length - 1];
-      onDataUpdate?.({
-        recovery: {
-          score: {
-            recovery_score: latestRecovery.recovery_score,
-            hrv_rmssd_milli: latestRecovery.hrv_rmssd_milli,
-            resting_heart_rate: latestRecovery.resting_heart_rate,
-            skin_temp_celsius: latestRecovery.skin_temp_celsius
-          }
-        }
-      });
-    }
+    // Pass all parsed data to the dashboard
+    onDataUpdate?.(data);
   };
 
   useEffect(() => {
