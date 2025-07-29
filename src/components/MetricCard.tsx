@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ interface MetricCardProps {
   trend?: number;
   icon: LucideIcon;
   variant?: "primary" | "success" | "accent" | "warning";
+  tooltip?: string;
 }
 
 export const MetricCard = ({
@@ -19,7 +21,8 @@ export const MetricCard = ({
   target,
   trend,
   icon: Icon,
-  variant = "primary"
+  variant = "primary",
+  tooltip
 }: MetricCardProps) => {
   const variantStyles = {
     primary: "border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10",
@@ -35,7 +38,7 @@ export const MetricCard = ({
     warning: "text-warning"
   };
 
-  return (
+  const cardContent = (
     <Card className={cn("shadow-card transition-smooth hover:shadow-primary", variantStyles[variant])}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
@@ -70,4 +73,21 @@ export const MetricCard = ({
       </CardContent>
     </Card>
   );
+
+  if (tooltip) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {cardContent}
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            <p className="text-sm">{tooltip}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return cardContent;
 };

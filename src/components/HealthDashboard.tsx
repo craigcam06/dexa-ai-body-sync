@@ -115,6 +115,7 @@ export const HealthDashboard = () => {
           trend={mockData.bodyComposition.bodyFat.trend}
           icon={Target}
           variant="primary"
+          tooltip="Body fat percentage from latest DEXA scan. Target is optimal range for your physique goals."
         />
         <MetricCard
           title="Lean Mass"
@@ -123,6 +124,7 @@ export const HealthDashboard = () => {
           trend={mockData.bodyComposition.leanMass.trend}
           icon={Dumbbell}
           variant="success"
+          tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to maintain or increase while losing fat."
         />
         <MetricCard
           title="Recovery Score"
@@ -131,6 +133,7 @@ export const HealthDashboard = () => {
           trend={whoopData?.recovery?.length > 0 ? (whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 80) : 5}
           icon={Heart}
           variant="accent"
+          tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
         />
       </div>
 
@@ -143,6 +146,7 @@ export const HealthDashboard = () => {
           trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
           icon={Flame}
           variant="warning"
+          tooltip="Total Daily Energy Expenditure calculated from BMR + activity level. Use this for calorie targets - deficit for fat loss, surplus for muscle gain."
         />
         <MetricCard
           title="Weekly Volume"
@@ -157,6 +161,7 @@ export const HealthDashboard = () => {
           trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
           icon={Dumbbell}
           variant="primary"
+          tooltip="Total weight lifted in past 7 days (sets × reps × weight). Key indicator of training intensity and progressive overload."
         />
         <MetricCard
           title="30-Day Volume"
@@ -171,6 +176,7 @@ export const HealthDashboard = () => {
           trend={healthMetrics.strengthMetrics?.monthly.workouts || 0}
           icon={Calendar}
           variant="success"
+          tooltip="Monthly training volume for tracking consistency and progressive overload trends. Higher volume generally correlates with muscle growth."
         />
       </div>
 
