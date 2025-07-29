@@ -17,14 +17,15 @@ import {
   MessageSquare,
   Settings,
   Flame,
-  Calendar
+  Calendar,
+  Sparkles
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
+import { HealthInsights } from "./HealthInsights";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
 import { AppleHealthConnect } from "./AppleHealthConnect";
-import { DataAnalytics } from "./DataAnalytics";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
@@ -248,15 +249,15 @@ export const HealthDashboard = () => {
 
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
-          <Tabs defaultValue="devices" className="space-y-4">
+          <Tabs defaultValue="insights" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="insights" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Insights
+              </TabsTrigger>
               <TabsTrigger value="coach" className="flex items-center gap-2">
                 <Brain className="h-4 w-4" />
                 AI Coach
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Analytics
               </TabsTrigger>
               <TabsTrigger value="devices" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -264,12 +265,12 @@ export const HealthDashboard = () => {
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="coach">
-              <AICoachPanel whoopData={whoopData} />
+            <TabsContent value="insights">
+              <HealthInsights whoopData={whoopData} />
             </TabsContent>
             
-            <TabsContent value="analytics">
-              <DataAnalytics whoopData={whoopData} />
+            <TabsContent value="coach">
+              <AICoachPanel whoopData={whoopData} />
             </TabsContent>
             
             <TabsContent value="devices" className="space-y-4">
