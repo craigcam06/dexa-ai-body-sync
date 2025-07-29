@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,22 @@ const mockData = {
 
 export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
+  
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('healthDashboardData');
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        console.log('📥 Loaded data from localStorage:', parsedData);
+        setWhoopData(parsedData);
+      } catch (error) {
+        console.error('❌ Error loading data from localStorage:', error);
+        localStorage.removeItem('healthDashboardData'); // Clear corrupted data
+      }
+    }
+  }, []);
+  
   console.log('🏠 HealthDashboard render - current whoopData state:', whoopData);
   console.log('🏋️ StrongLifts data check:', {
     hasWhoopData: !!whoopData,
@@ -90,6 +106,14 @@ export const HealthDashboard = () => {
       strongliftsIsArray: Array.isArray(data?.stronglifts),
       strongliftsSample: data?.stronglifts?.slice(0, 2)
     });
+    
+    // Save to localStorage for persistence
+    try {
+      localStorage.setItem('healthDashboardData', JSON.stringify(data));
+      console.log('💾 Data saved to localStorage successfully');
+    } catch (error) {
+      console.error('❌ Error saving data to localStorage:', error);
+    }
     
     console.log('📦 Setting whoopData state with:', data);
     setWhoopData(data);
