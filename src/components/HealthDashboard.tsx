@@ -112,7 +112,7 @@ export const HealthDashboard = () => {
           title="Body Fat Progress"
           value={`${mockData.bodyComposition.bodyFat.current}%`}
           target={`Target: ${mockData.bodyComposition.bodyFat.target}%`}
-          trend={mockData.bodyComposition.bodyFat.trend}
+          trend={-mockData.bodyComposition.bodyFat.trend} // Invert: increases show as negative (red)
           icon={Target}
           variant="primary"
           tooltip="Body fat percentage from latest DEXA scan. Target is optimal range for your physique goals."
