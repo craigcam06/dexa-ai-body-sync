@@ -11,96 +11,118 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  try {
-    const url = new URL(req.url)
-    let code, client_id
+  const url = new URL(req.url)
+  
+  // Handle GET request (OAuth callback from Whoop)
+  if (req.method === 'GET') {
+    const code = url.searchParams.get('code')
+    const error = url.searchParams.get('error')
     
-    if (req.method === 'GET') {
-      // Handle OAuth callback from Whoop (URL parameters)
-      code = url.searchParams.get('code')
-      client_id = '641ac502-42e1-4c38-8b51-15e0c5b5cbef'
-      
-      // If this is a callback with an authorization code, redirect to frontend
-      if (code) {
-        return Response.redirect(`${url.origin}/?code=${code}`)
-      }
-    } else if (req.method === 'POST') {
-      // Handle POST request from frontend (JSON body)
-      const body = await req.json()
-      code = body.code
-      client_id = body.client_id
+    if (error) {
+      console.error('OAuth error from Whoop:', error)
+      return Response.redirect(`${url.origin}/?auth=error`)
     }
     
-    if (!code) {
+    if (code) {
+      console.log('Received authorization code, redirecting to frontend')
+      return Response.redirect(`${url.origin}/?code=${code}`)
+    }
+    
+    return new Response(
+      JSON.stringify({ error: 'No authorization code received' }),
+      { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  }
+
+  // Handle POST request (token exchange from frontend)
+  if (req.method === 'POST') {
+    try {
+      const body = await req.json()
+      const { code, client_id } = body
+      
+      if (!code) {
+        return new Response(
+          JSON.stringify({ error: 'Authorization code is required' }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      const clientSecret = Deno.env.get('WHOOP_CLIENT_SECRET')
+      
+      if (!clientSecret) {
+        console.error('Missing WHOOP_CLIENT_SECRET')
+        return new Response(
+          JSON.stringify({ error: 'OAuth configuration incomplete' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      const redirectUri = `https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth`
+
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: client_id,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          code: code,
+        }),
+      })
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text()
+        console.error('Token exchange failed:', errorText)
+        return new Response(
+          JSON.stringify({ error: 'Failed to exchange authorization code for token' }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      const tokenData = await tokenResponse.json()
+      
       return new Response(
-        JSON.stringify({ error: 'Authorization code is required' }),
+        JSON.stringify(tokenData),
         { 
-          status: 400, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
-    }
 
-    const clientSecret = Deno.env.get('WHOOP_CLIENT_SECRET')
-    
-    if (!clientSecret) {
-      console.error('Missing WHOOP_CLIENT_SECRET')
+    } catch (error) {
+      console.error('Error processing POST request:', error)
       return new Response(
-        JSON.stringify({ error: 'OAuth configuration incomplete' }),
+        JSON.stringify({ error: 'Failed to process token exchange request' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     }
-
-    const redirectUri = `https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth`
-
-    // Exchange authorization code for access token
-    const tokenResponse = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: client_id,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        code: code,
-      }),
-    })
-
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text()
-      console.error('Token exchange failed:', errorText)
-      return new Response(
-        JSON.stringify({ error: 'Failed to exchange authorization code for token' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    const tokenData = await tokenResponse.json()
-    
-    return new Response(
-      JSON.stringify(tokenData),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-
-  } catch (error) {
-    console.error('Error in whoop-oauth function:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
   }
+
+  // Method not allowed
+  return new Response(
+    JSON.stringify({ error: 'Method not allowed' }),
+    { 
+      status: 405, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    }
+  )
 })
