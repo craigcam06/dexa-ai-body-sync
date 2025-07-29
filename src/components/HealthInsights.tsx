@@ -48,14 +48,19 @@ export function HealthInsights({ whoopData }: HealthInsightsProps) {
   }, [whoopData]);
 
   const generateCorrelationAnalysis = () => {
-    if (!whoopData) return;
+    if (!whoopData) {
+      console.log('❌ No whoopData available');
+      return;
+    }
     
     console.log('🔍 Correlation Analysis Debug:');
+    console.log('- Full whoopData object:', whoopData);
     console.log('- Recovery data:', whoopData.recovery?.length || 0, 'entries');
     console.log('- Sleep data:', whoopData.sleep?.length || 0, 'entries');
     console.log('- Workout data:', whoopData.workouts?.length || 0, 'entries');
     console.log('- Daily data:', whoopData.daily?.length || 0, 'entries');
     console.log('- StrongLifts data:', whoopData.stronglifts?.length || 0, 'entries');
+    console.log('- Object keys:', Object.keys(whoopData));
     
     const { insights: corrInsights, recommendations: corrRecs } = analyzeHealthCorrelations(whoopData);
     console.log('📊 Generated correlation insights:', corrInsights.length);
