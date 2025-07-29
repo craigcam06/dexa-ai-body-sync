@@ -20,7 +20,8 @@ import {
   Calendar,
   Sparkles,
   Bell,
-  Mic
+  Mic,
+  Upload
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
@@ -155,6 +156,25 @@ export const HealthDashboard = () => {
           <p className="text-sm sm:text-base text-muted-foreground">Optimizing body composition through data-driven insights</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
+          <Button 
+            onClick={() => {
+              // Scroll to the upload section
+              const connectSection = document.querySelector('.lg\\:hidden') || document.querySelector('[data-radix-scroll-area-viewport]');
+              if (connectSection) {
+                connectSection.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                // Fallback: scroll to bottom of page where device connections are
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+              }
+            }}
+            className="flex items-center gap-2"
+            variant="outline"
+            size="sm"
+          >
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Upload Health Data</span>
+            <span className="sm:hidden">Upload</span>
+          </Button>
           <Badge variant="outline" className="text-success border-success text-xs sm:text-sm">
             Next DEXA: {mockData.nextDexa}
           </Badge>
