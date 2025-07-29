@@ -56,6 +56,8 @@ export const HealthDashboard = () => {
     console.log('Setting whoopData state with:', data);
     setWhoopData(data);
     console.log('whoopData state should now be updated');
+    // Force re-render
+    setTimeout(() => console.log('Current whoopData after state update:', whoopData), 500);
   };
 
   return (
