@@ -333,7 +333,12 @@ export const HealthDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+                  <WhoopConnect 
+                    onDataUpdate={(data) => {
+                      console.log('🔄 Upload tab data update received:', data);
+                      handleWhoopDataUpdate(data);
+                    }} 
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
