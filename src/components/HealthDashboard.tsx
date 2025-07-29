@@ -53,7 +53,9 @@ export const HealthDashboard = () => {
       hasJournal: data?.journal?.length || 0,
       hasStronglifts: data?.stronglifts?.length || 0
     });
+    console.log('Setting whoopData state with:', data);
     setWhoopData(data);
+    console.log('whoopData state should now be updated');
   };
 
   return (

@@ -90,8 +90,11 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
           
           // Auto-update dashboard when StrongLifts data is loaded
           if (dataType === 'stronglifts') {
-            console.log('Auto-updating dashboard with StrongLifts data');
+            console.log('Auto-updating dashboard with StrongLifts data:', result.data);
+            console.log('StrongLifts count:', result.data.stronglifts?.length);
+            console.log('Calling onDataUpdate...');
             onDataUpdate(result.data);
+            console.log('onDataUpdate called');
           }
           
           toast({
