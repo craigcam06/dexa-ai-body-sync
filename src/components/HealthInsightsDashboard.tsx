@@ -428,7 +428,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
               <h3 className="font-semibold">Critical Alerts</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
-            {activeNotifications.map((notification) => (
+            {activeNotifications.slice(0, 4).map((notification) => (
               <Alert key={notification.id} variant={getAlertVariant(notification.type)}>
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
