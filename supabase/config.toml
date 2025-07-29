@@ -1,1 +1,4 @@
 project_id = "wkuziiubjtvickimapau"
+
+[functions.whoop-webhook]
+verify_jwt = false
