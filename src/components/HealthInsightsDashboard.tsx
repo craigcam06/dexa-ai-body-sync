@@ -59,7 +59,11 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
     console.log('📊 Health score data check:', {
       recovery: whoopData.recovery?.length || 0,
       sleep: whoopData.sleep?.length || 0,
-      workouts: whoopData.workouts?.length || 0
+      workouts: whoopData.workouts?.length || 0,
+      recoveryData: whoopData.recovery,
+      sleepData: whoopData.sleep,
+      workoutsData: whoopData.workouts,
+      allKeys: Object.keys(whoopData)
     });
     
     // Recovery score (30% weight)
