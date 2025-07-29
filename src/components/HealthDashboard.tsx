@@ -18,7 +18,9 @@ import {
   Settings,
   Flame,
   Calendar,
-  Sparkles
+  Sparkles,
+  Bell,
+  Mic
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
@@ -26,6 +28,9 @@ import { HealthInsights } from "./HealthInsights";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
 import { AppleHealthConnect } from "./AppleHealthConnect";
+import { SmartNotifications } from "./SmartNotifications";
+import { GoalSetting } from "./GoalSetting";
+import { VoiceInterface } from "./VoiceInterface";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
@@ -142,25 +147,28 @@ export const HealthDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Health Dashboard</h1>
-          <p className="text-muted-foreground">Optimizing body composition through data-driven insights</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Health Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Optimizing body composition through data-driven insights</p>
         </div>
-        <div className="flex items-center gap-4">
-          <Badge variant="outline" className="text-success border-success">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Badge variant="outline" className="text-success border-success text-xs sm:text-sm">
             Next DEXA: {mockData.nextDexa}
           </Badge>
-          <Avatar>
-            <AvatarFallback className="bg-gradient-primary text-primary-foreground">CC</AvatarFallback>
+          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+            <AvatarFallback className="bg-gradient-primary text-primary-foreground text-sm">CC</AvatarFallback>
           </Avatar>
         </div>
       </div>
 
+      {/* Smart Notifications */}
+      <SmartNotifications whoopData={whoopData} />
+
       {/* Key Metrics - Row 1: Body Composition & Recovery */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <MetricCard
           title="Body Fat Progress"
           value={`${mockData.bodyComposition.bodyFat.current}%`}
@@ -194,7 +202,7 @@ export const HealthDashboard = () => {
       </div>
 
       {/* Key Metrics - Row 2: Performance & Training */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <MetricCard
           title="TDEE"
           value={`${healthMetrics.tdeeData.tdee} cal`}
@@ -241,7 +249,7 @@ export const HealthDashboard = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Body Composition Chart */}
         <div className="lg:col-span-2">
           <BodyCompositionChart />
@@ -250,18 +258,26 @@ export const HealthDashboard = () => {
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
           <Tabs defaultValue="insights" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="insights" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Insights
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
+              <TabsTrigger value="insights" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Insights</span>
+                <span className="sm:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="coach" className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                AI Coach
+              <TabsTrigger value="goals" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Goals</span>
+                <span className="sm:hidden">Goals</span>
               </TabsTrigger>
-              <TabsTrigger value="devices" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Devices
+              <TabsTrigger value="coach" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">AI Coach</span>
+                <span className="sm:hidden">AI</span>
+              </TabsTrigger>
+              <TabsTrigger value="voice" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Voice</span>
+                <span className="sm:hidden">Voice</span>
               </TabsTrigger>
             </TabsList>
             
@@ -269,20 +285,39 @@ export const HealthDashboard = () => {
               <HealthInsights whoopData={whoopData} />
             </TabsContent>
             
+            <TabsContent value="goals">
+              <GoalSetting whoopData={whoopData} />
+            </TabsContent>
+            
             <TabsContent value="coach">
               <AICoachPanel whoopData={whoopData} />
             </TabsContent>
-            
-            <TabsContent value="devices" className="space-y-4">
-              <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
-              <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+
+            <TabsContent value="voice">
+              <VoiceInterface whoopData={whoopData} />
             </TabsContent>
+            
+            {/* Devices moved to bottom for mobile */}
+            <div className="lg:hidden mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Connect Devices
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+                  <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+                </CardContent>
+              </Card>
+            </div>
           </Tabs>
         </div>
       </div>
 
-      {/* Device Integration Status */}
-      <Card className="shadow-card">
+      {/* Device Integration Status - Hidden on mobile, shown on desktop */}
+      <Card className="shadow-card hidden lg:block">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5 text-primary" />
@@ -300,10 +335,10 @@ export const HealthDashboard = () => {
               { name: "Pedometer++", icon: Activity, status: "connected", lastSync: "5 min ago" }
             ].map((device) => (
               <div key={device.name} className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <device.icon className="h-6 w-6 text-primary-foreground" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 bg-gradient-primary rounded-full flex items-center justify-center">
+                  <device.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
                 </div>
-                <p className="font-medium text-sm">{device.name}</p>
+                <p className="font-medium text-xs sm:text-sm">{device.name}</p>
                 <p className="text-xs text-muted-foreground">{device.lastSync}</p>
                 <div className="w-2 h-2 bg-success rounded-full mx-auto mt-1"></div>
               </div>
