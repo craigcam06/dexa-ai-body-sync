@@ -1,4 +1,4 @@
-import { ParsedWhoopData, CSVParseResult, WhoopRecoveryData, WhoopSleepData, WhoopWorkoutData, WhoopDailyData } from '@/types/whoopData';
+import { ParsedWhoopData, CSVParseResult, WhoopRecoveryData, WhoopSleepData, WhoopWorkoutData, WhoopDailyData, WhoopJournalData } from '@/types/whoopData';
 
 export class CSVParser {
   static parseCSV(csvText: string): string[][] {
@@ -24,7 +24,7 @@ export class CSVParser {
     });
   }
 
-  static detectDataType(headers: string[]): 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown' {
+  static detectDataType(headers: string[]): 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'unknown' {
     const headerStr = headers.join(',').toLowerCase();
     
     // Recovery indicators (including comprehensive physiological data)
@@ -56,6 +56,13 @@ export class CSVParser {
         headerStr.includes('ambient') || headerStr.includes('temperature') ||
         headerStr.includes('day strain') || headerStr.includes('calories')) {
       return 'daily';
+    }
+    
+    // Journal indicators
+    if (headerStr.includes('journal') || headerStr.includes('question text') || 
+        headerStr.includes('answered yes') || headerStr.includes('notes') ||
+        (headerStr.includes('question') && headerStr.includes('answer'))) {
+      return 'journal';
     }
     
     // If we can't detect, let's be more lenient and try to parse as daily data
@@ -239,6 +246,37 @@ export class CSVParser {
     return data;
   }
 
+  static parseJournalData(rows: string[][], headers: string[]): WhoopJournalData[] {
+    const data: WhoopJournalData[] = [];
+    
+    const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('cycle start time') ||
+      h.toLowerCase().includes('date') || 
+      h.toLowerCase().includes('day')
+    );
+    const questionIndex = headers.findIndex(h => h.toLowerCase().includes('question text'));
+    const answeredIndex = headers.findIndex(h => h.toLowerCase().includes('answered yes'));
+    const notesIndex = headers.findIndex(h => h.toLowerCase().includes('notes'));
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.length < headers.length) continue;
+
+      try {
+        data.push({
+          date: row[dateIndex] || '',
+          question_text: row[questionIndex] || '',
+          answered_yes: row[answeredIndex]?.toLowerCase() === 'true' || row[answeredIndex] === '1',
+          notes: row[notesIndex] || '',
+        });
+      } catch (error) {
+        console.warn(`Error parsing journal row ${i}:`, error);
+      }
+    }
+    
+    return data;
+  }
+
   static parseTimeToMillis(timeStr: string): number {
     if (!timeStr) return 0;
     
@@ -296,7 +334,8 @@ export class CSVParser {
         recovery: [],
         sleep: [],
         workouts: [],
-        daily: []
+        daily: [],
+        journal: []
       };
 
       switch (dataType) {
@@ -311,6 +350,9 @@ export class CSVParser {
           break;
         case 'daily':
           result.daily = this.parseDailyData(rows, headers);
+          break;
+        case 'journal':
+          result.journal = this.parseJournalData(rows, headers);
           break;
       }
 

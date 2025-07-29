@@ -16,10 +16,10 @@ interface CSVUploaderProps {
 interface UploadedFile {
   file: File;
   name: string;
-  type: 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown';
+  type: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'unknown';
   rows: number;
   status: 'uploaded' | 'processing' | 'processed' | 'error';
-  data?: any[];
+  data?: ParsedWhoopData;
   error?: string;
 }
 
@@ -62,22 +62,18 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
         const result = await CSVParser.parseWhoopCSV(file);
 
         if (result.success && result.data) {
-          let dataType: 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown' = 'unknown';
+          let dataType: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'unknown' = 'unknown';
           
           if (result.data.recovery.length > 0) dataType = 'recovery';
           else if (result.data.sleep.length > 0) dataType = 'sleep';
           else if (result.data.workouts.length > 0) dataType = 'workout';
           else if (result.data.daily.length > 0) dataType = 'daily';
+          else if (result.data.journal.length > 0) dataType = 'journal';
           
           newFile.status = 'processed';
           newFile.type = dataType;
           newFile.rows = result.rowsProcessed || 0;
-          
-          if (dataType === 'workout' && result.data.workouts) {
-            newFile.data = result.data.workouts;
-          } else if (dataType !== 'unknown') {
-            newFile.data = result.data[dataType as keyof Pick<ParsedWhoopData, 'recovery' | 'sleep' | 'daily'>];
-          }
+          newFile.data = result.data;
           
           toast({
             title: "File processed successfully",
@@ -120,24 +116,26 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
   const consolidateAndUpdate = () => {
     const processedFiles = uploadedFiles.filter(f => f.status === 'processed' && f.data);
     
-    const consolidatedData: ParsedWhoopData = {
+    // Consolidate all processed files into a single dataset
+    const consolidated: ParsedWhoopData = {
       recovery: [],
       sleep: [],
       workouts: [],
-      daily: []
+      daily: [],
+      journal: []
     };
 
     processedFiles.forEach(file => {
-      if (file.data && file.type !== 'unknown') {
-        if (file.type === 'workout') {
-          consolidatedData.workouts.push(...file.data);
-        } else {
-          consolidatedData[file.type as keyof Pick<ParsedWhoopData, 'recovery' | 'sleep' | 'daily'>].push(...file.data);
-        }
+      if (file.data) {
+        consolidated.recovery.push(...(file.data.recovery || []));
+        consolidated.sleep.push(...(file.data.sleep || []));
+        consolidated.workouts.push(...(file.data.workouts || []));
+        consolidated.daily.push(...(file.data.daily || []));
+        consolidated.journal.push(...(file.data.journal || []));
       }
     });
 
-    onDataUpdate(consolidatedData);
+    onDataUpdate(consolidated);
     
     toast({
       title: "Data updated",
@@ -164,6 +162,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       case 'sleep': return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'workout': return 'bg-green-100 text-green-800 border-green-200';
       case 'daily': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'journal': return 'bg-pink-100 text-pink-800 border-pink-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };

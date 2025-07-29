@@ -34,11 +34,19 @@ export interface WhoopDailyData {
   ambient_temperature_celsius: number;
 }
 
+export interface WhoopJournalData {
+  date: string;
+  question_text: string;
+  answered_yes: boolean;
+  notes: string;
+}
+
 export interface ParsedWhoopData {
   recovery: WhoopRecoveryData[];
   sleep: WhoopSleepData[];
   workouts: WhoopWorkoutData[];
   daily: WhoopDailyData[];
+  journal: WhoopJournalData[];
 }
 
 export interface CSVParseResult {
