@@ -36,16 +36,20 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   };
 
   useEffect(() => {
+    console.log('WhoopConnect mounted, checking auth status...');
     // Check if already authenticated
-    setIsAuthenticated(whoopService.isAuthenticated());
+    const isAuth = whoopService.isAuthenticated();
+    console.log('Is authenticated:', isAuth);
+    setIsAuthenticated(isAuth);
     
     // Handle OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    console.log('OAuth code from URL:', code);
     
     if (code) {
       handleOAuthCallback(code);
-    } else if (whoopService.isAuthenticated()) {
+    } else if (isAuth) {
       fetchWhoopData();
     }
   }, []);
