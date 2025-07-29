@@ -219,16 +219,16 @@ export const HealthDashboard = () => {
         <MetricCard
           title="Lean Mass Progress"
           value={`${mockData.bodyComposition.leanMass.current} lbs`}
-          target={`+${mockData.bodyComposition.leanMass.trend} lbs`}
+          target={`Target: +5 lbs`}
           trend={mockData.bodyComposition.leanMass.trend}
           icon={Dumbbell}
           variant="success"
-          tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to maintain or increase while losing fat."
+          tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass while losing fat."
         />
         <MetricCard
           title="Recovery Score"
           value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
-          target="Whoop"
+          target="Target: 70%+"
           trend={whoopData?.recovery?.length > 1 ? 
             Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 
             whoopData.recovery.slice(-7).reduce((sum, r) => sum + r.recovery_score, 0) / Math.min(7, whoopData.recovery.length)) : 
@@ -244,11 +244,11 @@ export const HealthDashboard = () => {
         <MetricCard
           title="TDEE"
           value={`${healthMetrics.tdeeData.tdee} cal`}
-          target={healthMetrics.tdeeData.activityLevel}
+          target="Target: 2400 cal"
           trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
           icon={Flame}
           variant="warning"
-          tooltip="Total Daily Energy Expenditure calculated from BMR + activity level. Use this for calorie targets - deficit for fat loss, surplus for muscle gain."
+          tooltip="Total Daily Energy Expenditure. Target 2400 cal for fat loss (deficit of ~465 cal/day for 1 lb/week loss)."
         />
         <MetricCard
           title="Weekly Volume"
@@ -256,14 +256,11 @@ export const HealthDashboard = () => {
             ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
             : "No data"
           }
-          target={healthMetrics.strengthMetrics?.weekly.sets 
-            ? `${healthMetrics.strengthMetrics.weekly.sets} sets`
-            : "Upload CSV data"
-          }
+          target="Target: 180k lbs"
           trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
           icon={Dumbbell}
           variant="primary"
-          tooltip="Total weight lifted in past 7 days. Most actionable metric for tracking training intensity and weekly consistency."
+          tooltip="Total weight lifted in past 7 days. Target 180k lbs weekly for progressive overload and strength gains."
         />
         <MetricCard
           title="Sleep Quality"
@@ -271,10 +268,7 @@ export const HealthDashboard = () => {
             ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage || 85}%` 
             : "85%"
           }
-          target={whoopData?.sleep?.length > 0 
-            ? `${(whoopData.sleep[whoopData.sleep.length - 1].total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1)}h sleep`
-            : "8.2h sleep"
-          }
+          target="Target: 85%+ & 8h"
           trend={whoopData?.sleep?.length > 1 
             ? Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage - 
               whoopData.sleep.slice(-7).reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / Math.min(7, whoopData.sleep.length))
@@ -282,7 +276,7 @@ export const HealthDashboard = () => {
           }
           icon={Heart}
           variant="accent"
-          tooltip="Sleep efficiency from Whoop. Shows percentage of time in bed actually sleeping. 85%+ is excellent for recovery and performance."
+          tooltip="Sleep efficiency target 85%+ with 8 hours total sleep for optimal recovery and performance."
         />
       </div>
 
