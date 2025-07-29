@@ -182,7 +182,10 @@ export const HealthDashboard = () => {
           title="Recovery Score"
           value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
           target="Whoop"
-          trend={whoopData?.recovery?.length > 0 ? (whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 80) : 5}
+          trend={whoopData?.recovery?.length > 1 ? 
+            Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 
+            whoopData.recovery.slice(-7).reduce((sum, r) => sum + r.recovery_score, 0) / Math.min(7, whoopData.recovery.length)) : 
+            5}
           icon={Heart}
           variant="accent"
           tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
@@ -218,15 +221,16 @@ export const HealthDashboard = () => {
         <MetricCard
           title="Sleep Quality"
           value={whoopData?.sleep?.length > 0 
-            ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency || 85}%` 
+            ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage || 85}%` 
             : "85%"
           }
           target={whoopData?.sleep?.length > 0 
-            ? `${(whoopData.sleep[whoopData.sleep.length - 1].total_sleep_time / 60 / 60 / 1000).toFixed(1)}h sleep`
+            ? `${(whoopData.sleep[whoopData.sleep.length - 1].total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1)}h sleep`
             : "8.2h sleep"
           }
-          trend={whoopData?.sleep?.length > 0 
-            ? (whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency - 80) 
+          trend={whoopData?.sleep?.length > 1 
+            ? Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage - 
+              whoopData.sleep.slice(-7).reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / Math.min(7, whoopData.sleep.length))
             : 5
           }
           icon={Heart}
