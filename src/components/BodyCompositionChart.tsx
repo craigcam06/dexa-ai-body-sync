@@ -40,7 +40,7 @@ export const BodyCompositionChart = () => {
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Body Fat Reduction</span>
+              <span className="text-sm font-medium">Body Fat Progress</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{latestData.bodyFat}%</span>
                 <Badge 
@@ -57,7 +57,7 @@ export const BodyCompositionChart = () => {
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Lean Mass Gain</span>
+              <span className="text-sm font-medium">Lean Mass Progress</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{latestData.leanMass} lbs</span>
                 <Badge 
