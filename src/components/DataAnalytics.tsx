@@ -10,6 +10,8 @@ interface DataAnalyticsProps {
 }
 
 export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
+  console.log('DataAnalytics received whoopData:', whoopData);
+  
   if (!whoopData) {
     return (
       <Card>

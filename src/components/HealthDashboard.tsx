@@ -43,6 +43,7 @@ export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
 
   const handleWhoopDataUpdate = (data: any) => {
+    console.log('HealthDashboard received data update:', data);
     setWhoopData(data);
   };
 

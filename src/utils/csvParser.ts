@@ -289,6 +289,8 @@ export class CSVParser {
   static parseStrongLiftsData(rows: string[][], headers: string[]): StrongLiftsData[] {
     const data: StrongLiftsData[] = [];
     
+    console.log('Parsing StrongLifts data. Headers:', headers);
+    
     const dateIndex = headers.findIndex(h => 
       h.toLowerCase().includes('date') || 
       h.toLowerCase().includes('day') ||
@@ -301,6 +303,17 @@ export class CSVParser {
     const volumeIndex = headers.findIndex(h => h.toLowerCase().includes('volume') || h.toLowerCase().includes('total'));
     const oneRMIndex = headers.findIndex(h => h.toLowerCase().includes('1rm') || h.toLowerCase().includes('one rep max'));
     const durationIndex = headers.findIndex(h => h.toLowerCase().includes('duration') || h.toLowerCase().includes('time'));
+
+    console.log('StrongLifts column indices:', {
+      date: dateIndex,
+      exercise: exerciseIndex,
+      weight: weightIndex,
+      reps: repsIndex,
+      sets: setsIndex,
+      volume: volumeIndex,
+      oneRM: oneRMIndex,
+      duration: durationIndex
+    });
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -317,7 +330,7 @@ export class CSVParser {
           volume = weight * reps * sets;
         }
 
-        data.push({
+        const entry = {
           date: row[dateIndex] || '',
           exercise: row[exerciseIndex] || '',
           weight: weight,
@@ -326,12 +339,16 @@ export class CSVParser {
           volume: volume,
           one_rep_max: parseFloat(row[oneRMIndex]) || undefined,
           workout_duration: this.parseTimeToMillis(row[durationIndex]) || undefined,
-        });
+        };
+
+        console.log(`StrongLifts row ${i}:`, entry);
+        data.push(entry);
       } catch (error) {
         console.warn(`Error parsing StrongLifts row ${i}:`, error);
       }
     }
     
+    console.log('Parsed StrongLifts data:', data.length, 'entries');
     return data;
   }
 

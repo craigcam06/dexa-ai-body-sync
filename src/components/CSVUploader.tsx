@@ -56,10 +56,13 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       setUploadedFiles(prev => [...prev, newFile]);
 
       try {
+        console.log('Processing file:', file.name);
         newFile.status = 'processing';
         setUploadedFiles(prev => prev.map(f => f.file === file ? newFile : f));
 
+        console.log('About to parse CSV file...');
         const result = await CSVParser.parseWhoopCSV(file);
+        console.log('Parse result:', result);
 
         if (result.success && result.data) {
           let dataType: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'stronglifts' | 'unknown' = 'unknown';
@@ -70,6 +73,15 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
           else if (result.data.daily.length > 0) dataType = 'daily';
           else if (result.data.journal.length > 0) dataType = 'journal';
           else if (result.data.stronglifts.length > 0) dataType = 'stronglifts';
+          
+          console.log('Detected data type:', dataType, 'Data counts:', {
+            recovery: result.data.recovery.length,
+            sleep: result.data.sleep.length,
+            workouts: result.data.workouts.length,
+            daily: result.data.daily.length,
+            journal: result.data.journal.length,
+            stronglifts: result.data.stronglifts.length
+          });
           
           newFile.status = 'processed';
           newFile.type = dataType;
@@ -127,6 +139,9 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       stronglifts: []
     };
 
+    console.log('Consolidating data from', processedFiles.length, 'files');
+    console.log('Processed files:', processedFiles.map(f => ({ name: f.name, type: f.type, dataKeys: f.data ? Object.keys(f.data) : [] })));
+
     processedFiles.forEach(file => {
       if (file.data) {
         consolidated.recovery.push(...(file.data.recovery || []));
@@ -136,6 +151,15 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
         consolidated.journal.push(...(file.data.journal || []));
         consolidated.stronglifts.push(...(file.data.stronglifts || []));
       }
+    });
+
+    console.log('Final consolidated data:', {
+      recovery: consolidated.recovery.length,
+      sleep: consolidated.sleep.length,
+      workouts: consolidated.workouts.length,
+      daily: consolidated.daily.length,
+      journal: consolidated.journal.length,
+      stronglifts: consolidated.stronglifts.length
     });
 
     onDataUpdate(consolidated);
@@ -166,6 +190,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       case 'workout': return 'bg-green-100 text-green-800 border-green-200';
       case 'daily': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'journal': return 'bg-pink-100 text-pink-800 border-pink-200';
+      case 'stronglifts': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
