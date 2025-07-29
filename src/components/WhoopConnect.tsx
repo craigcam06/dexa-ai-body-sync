@@ -1,0 +1,302 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Heart, Activity, Moon, Zap, AlertCircle, CheckCircle } from "lucide-react";
+import { whoopService, WhoopRecovery, WhoopSleep, WhoopWorkout } from "@/services/whoopApi";
+
+interface WhoopConnectProps {
+  onDataUpdate?: (data: any) => void;
+}
+
+export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [whoopData, setWhoopData] = useState<{
+    recovery: WhoopRecovery | null;
+    sleep: WhoopSleep[];
+    workouts: WhoopWorkout[];
+  }>({
+    recovery: null,
+    sleep: [],
+    workouts: []
+  });
+
+  useEffect(() => {
+    // Check if already authenticated
+    setIsAuthenticated(whoopService.isAuthenticated());
+    
+    // Handle OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      handleOAuthCallback(code);
+    } else if (whoopService.isAuthenticated()) {
+      fetchWhoopData();
+    }
+  }, []);
+
+  const handleOAuthCallback = async (code: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const tokens = await whoopService.exchangeCodeForToken(code);
+      whoopService.storeTokens(tokens);
+      setIsAuthenticated(true);
+      
+      // Clear the code from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Fetch initial data
+      await fetchWhoopData();
+    } catch (error) {
+      setError('Failed to connect to Whoop. Please try again.');
+      console.error('OAuth callback error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const connectWhoop = () => {
+    const authUrl = whoopService.getAuthorizationUrl();
+    window.location.href = authUrl;
+  };
+
+  const disconnectWhoop = () => {
+    whoopService.clearTokens();
+    setIsAuthenticated(false);
+    setWhoopData({ recovery: null, sleep: [], workouts: [] });
+    setError(null);
+  };
+
+  const fetchWhoopData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const [recovery, sleep, workouts] = await Promise.all([
+        whoopService.getLatestRecovery(),
+        whoopService.getRecentSleep(7),
+        whoopService.getRecentWorkouts(5)
+      ]);
+
+      const data = { recovery, sleep, workouts };
+      setWhoopData(data);
+      
+      // Notify parent component of data update
+      onDataUpdate?.(data);
+    } catch (error) {
+      setError('Failed to fetch Whoop data. Please try reconnecting.');
+      console.error('Data fetch error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDuration = (millis: number): string => {
+    const hours = Math.floor(millis / (1000 * 60 * 60));
+    const minutes = Math.floor((millis % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-destructive" />
+            Connect Whoop
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Connect your Whoop device to track recovery, sleep, and strain data in real-time.
+          </p>
+          
+          {error && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          <Button 
+            onClick={connectWhoop} 
+            disabled={isLoading}
+            className="w-full"
+          >
+            {isLoading ? 'Connecting...' : 'Connect to Whoop'}
+          </Button>
+          
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>• Recovery & strain tracking</p>
+            <p>• Sleep performance analysis</p>
+            <p>• Workout data integration</p>
+            <p>• Heart rate variability</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Connection Status */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-success" />
+              Whoop Connected
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-success border-success">
+                Live
+              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={disconnectWhoop}
+              >
+                Disconnect
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <span className="text-sm">Data syncing automatically</span>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={fetchWhoopData}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Syncing...' : 'Refresh'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recovery Data */}
+      {whoopData.recovery && (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              Today's Recovery
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {whoopData.recovery.score.recovery_score}%
+                </div>
+                <div className="text-xs text-muted-foreground">Recovery Score</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-accent">
+                  {whoopData.recovery.score.resting_heart_rate}
+                </div>
+                <div className="text-xs text-muted-foreground">Resting HR</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-warning">
+                  {Math.round(whoopData.recovery.score.hrv_rmssd_milli)}
+                </div>
+                <div className="text-xs text-muted-foreground">HRV (ms)</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-success">
+                  {whoopData.recovery.score.spo2_percentage.toFixed(1)}%
+                </div>
+                <div className="text-xs text-muted-foreground">SpO2</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent Sleep */}
+      {whoopData.sleep.length > 0 && (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Moon className="h-5 w-5 text-primary" />
+              Recent Sleep
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {whoopData.sleep.slice(0, 3).map((sleep, index) => (
+                <div key={sleep.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                  <div>
+                    <div className="font-medium">
+                      {new Date(sleep.start).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatDuration(sleep.score.stage_summary.total_in_bed_time_milli)}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-primary">
+                      {sleep.score.sleep_performance_percentage}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">Performance</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent Workouts */}
+      {whoopData.workouts.length > 0 && (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Recent Workouts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {whoopData.workouts.slice(0, 3).map((workout) => (
+                <div key={workout.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                  <div>
+                    <div className="font-medium">
+                      {new Date(workout.start).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatDuration(new Date(workout.end).getTime() - new Date(workout.start).getTime())}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-warning">
+                      {workout.score.strain.toFixed(1)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Strain</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {error && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+};

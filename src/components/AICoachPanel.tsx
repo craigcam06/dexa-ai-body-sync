@@ -42,7 +42,50 @@ const upcomingActions = [
   { task: "Training Adjustment", date: "Jan 5", status: "completed" }
 ];
 
-export const AICoachPanel = () => {
+interface AICoachPanelProps {
+  whoopData?: any;
+}
+
+export const AICoachPanel = ({ whoopData }: AICoachPanelProps) => {
+  // Generate dynamic insights based on real Whoop data
+  const generateInsights = () => {
+    const insights = [...coachInsights];
+    
+    if (whoopData?.recovery) {
+      const recoveryScore = whoopData.recovery.score.recovery_score;
+      const hrv = whoopData.recovery.score.hrv_rmssd_milli;
+      
+      if (recoveryScore >= 80) {
+        insights.unshift({
+          type: "success",
+          title: "Excellent Recovery",
+          message: `Your recovery score of ${recoveryScore}% indicates you're ready for high-intensity training. Consider progressive overload today.`,
+          priority: "high",
+          timestamp: "Live data"
+        });
+      } else if (recoveryScore < 60) {
+        insights.unshift({
+          type: "warning",
+          title: "Low Recovery Alert",
+          message: `Recovery at ${recoveryScore}%. Focus on light movement, hydration, and sleep optimization today.`,
+          priority: "high",
+          timestamp: "Live data"
+        });
+      }
+      
+      if (hrv < 30) {
+        insights.push({
+          type: "info",
+          title: "HRV Optimization",
+          message: `HRV at ${Math.round(hrv)}ms suggests stress management focus. Try breathing exercises or meditation.`,
+          priority: "medium",
+          timestamp: "Live data"
+        });
+      }
+    }
+    
+    return insights.slice(0, 4); // Limit to 4 insights
+  };
   return (
     <div className="space-y-4">
       {/* AI Coach Chat */}
@@ -89,7 +132,7 @@ export const AICoachPanel = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {coachInsights.map((insight, index) => (
+          {generateInsights().map((insight, index) => (
             <div key={index} className="space-y-2">
               <div className="flex items-start gap-2">
                 {insight.type === "success" && <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />}
@@ -116,7 +159,7 @@ export const AICoachPanel = () => {
                   </p>
                 </div>
               </div>
-              {index < coachInsights.length - 1 && <div className="border-b border-border" />}
+              {index < generateInsights().length - 1 && <div className="border-b border-border" />}
             </div>
           ))}
         </CardContent>

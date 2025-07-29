@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Activity, 
   Brain, 
@@ -12,11 +14,13 @@ import {
   Apple,
   Dumbbell,
   Target,
-  MessageSquare
+  MessageSquare,
+  Settings
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
 import { AICoachPanel } from "./AICoachPanel";
+import { WhoopConnect } from "./WhoopConnect";
 
 // Mock data - will be replaced with real API data
 const mockData = {
@@ -35,6 +39,12 @@ const mockData = {
 };
 
 export const HealthDashboard = () => {
+  const [whoopData, setWhoopData] = useState<any>(null);
+
+  const handleWhoopDataUpdate = (data: any) => {
+    setWhoopData(data);
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 space-y-6">
       {/* Header */}
@@ -73,9 +83,9 @@ export const HealthDashboard = () => {
         />
         <MetricCard
           title="Recovery Score"
-          value={`${mockData.devices.whoop.recovery}%`}
+          value={whoopData?.recovery ? `${whoopData.recovery.score.recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
           target="Whoop"
-          trend={5}
+          trend={whoopData?.recovery ? (whoopData.recovery.score.recovery_score - 80) : 5}
           icon={Heart}
           variant="accent"
         />
@@ -96,9 +106,28 @@ export const HealthDashboard = () => {
           <BodyCompositionChart />
         </div>
 
-        {/* AI Coach Panel */}
+        {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
-          <AICoachPanel />
+          <Tabs defaultValue="coach" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="coach" className="flex items-center gap-2">
+                <Brain className="h-4 w-4" />
+                AI Coach
+              </TabsTrigger>
+              <TabsTrigger value="devices" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Devices
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="coach">
+              <AICoachPanel whoopData={whoopData} />
+            </TabsContent>
+            
+            <TabsContent value="devices" className="space-y-4">
+              <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
