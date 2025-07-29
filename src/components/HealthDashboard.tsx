@@ -71,8 +71,13 @@ export const HealthDashboard = () => {
 
   // Calculate TDEE and strength metrics when data changes
   const healthMetrics = useMemo(() => {
-    console.log('Calculating healthMetrics with whoopData:', whoopData);
-    console.log('StrongLifts data available:', whoopData?.stronglifts?.length || 0);
+    console.log('🧮 Calculating healthMetrics with whoopData:', whoopData);
+    console.log('🏋️ StrongLifts data available:', whoopData?.stronglifts?.length || 0);
+    
+    // Force immediate log of what we're passing to the calculation
+    if (whoopData?.stronglifts) {
+      console.log('📊 About to calculate with StrongLifts data length:', whoopData.stronglifts.length);
+    }
     
     const tdeeData = calculateTDEE(
       DEFAULT_USER_PROFILE.weight,
@@ -87,8 +92,16 @@ export const HealthDashboard = () => {
       ? calculateStrengthMetrics(whoopData.stronglifts)
       : null;
 
-    console.log('Calculated strengthMetrics:', strengthMetrics);
-    console.log('TDEE data:', tdeeData);
+    console.log('✅ Calculated strengthMetrics:', strengthMetrics);
+    console.log('🔢 TDEE data:', tdeeData);
+    
+    // Immediate volume comparison check
+    if (strengthMetrics) {
+      console.log('⚠️ VOLUME COMPARISON CHECK:');
+      console.log('   Weekly Volume:', strengthMetrics.weekly.volume);
+      console.log('   Monthly Volume:', strengthMetrics.monthly.volume);
+      console.log('   Weekly > Monthly?', strengthMetrics.weekly.volume > strengthMetrics.monthly.volume);
+    }
 
     return { tdeeData, strengthMetrics };
   }, [whoopData]);
