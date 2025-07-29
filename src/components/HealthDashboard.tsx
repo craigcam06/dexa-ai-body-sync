@@ -41,9 +41,18 @@ const mockData = {
 
 export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
+  console.log('HealthDashboard current whoopData state:', whoopData);
 
   const handleWhoopDataUpdate = (data: any) => {
     console.log('HealthDashboard received data update:', data);
+    console.log('Data structure:', {
+      hasRecovery: data?.recovery?.length || 0,
+      hasSleep: data?.sleep?.length || 0,
+      hasWorkouts: data?.workouts?.length || 0,
+      hasDaily: data?.daily?.length || 0,
+      hasJournal: data?.journal?.length || 0,
+      hasStronglifts: data?.stronglifts?.length || 0
+    });
     setWhoopData(data);
   };
 
@@ -85,18 +94,21 @@ export const HealthDashboard = () => {
         />
         <MetricCard
           title="Recovery Score"
-          value={whoopData?.recovery ? `${whoopData.recovery.score.recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
+          value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
           target="Whoop"
-          trend={whoopData?.recovery ? (whoopData.recovery.score.recovery_score - 80) : 5}
+          trend={whoopData?.recovery?.length > 0 ? (whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 80) : 5}
           icon={Heart}
           variant="accent"
         />
         <MetricCard
-          title="Metabolic Flex"
-          value={`${mockData.devices.lumen.metabolicFlex}%`}
-          target="Lumen"
+          title={whoopData?.stronglifts?.length > 0 ? "Max Squat" : "Metabolic Flex"}
+          value={whoopData?.stronglifts?.length > 0 ? 
+            `${Math.max(...whoopData.stronglifts.map((s: any) => s.weight).filter((w: number) => w < 500))}lbs` : 
+            `${mockData.devices.lumen.metabolicFlex}%`
+          }
+          target={whoopData?.stronglifts?.length > 0 ? "StrongLifts" : "Lumen"}
           trend={3}
-          icon={Zap}
+          icon={whoopData?.stronglifts?.length > 0 ? Dumbbell : Zap}
           variant="warning"
         />
       </div>
