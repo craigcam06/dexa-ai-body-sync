@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, Moon, Zap, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Moon, Zap, BarChart3, Dumbbell } from 'lucide-react';
 import { ParsedWhoopData } from '@/types/whoopData';
 
 interface DataAnalyticsProps {
@@ -66,6 +66,32 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
       date: w.date
     }));
 
+  // Process StrongLifts data
+  const strengthProgressData = whoopData.stronglifts
+    .filter(s => ['Squat', 'Bench Press', 'Deadlift', 'Overhead Press', 'Barbell Row'].includes(s.exercise))
+    .reduce((acc, entry) => {
+      const existing = acc.find(item => item.exercise === entry.exercise);
+      if (existing) {
+        existing.sessions.push({
+          date: entry.date,
+          weight: entry.weight,
+          volume: entry.volume,
+          oneRM: entry.one_rep_max || entry.weight * (1 + entry.reps / 30) // Estimate 1RM
+        });
+      } else {
+        acc.push({
+          exercise: entry.exercise,
+          sessions: [{
+            date: entry.date,
+            weight: entry.weight,
+            volume: entry.volume,
+            oneRM: entry.one_rep_max || entry.weight * (1 + entry.reps / 30)
+          }]
+        });
+      }
+      return acc;
+    }, [] as Array<{exercise: string, sessions: Array<{date: string, weight: number, volume: number, oneRM: number}>}>);
+
   // Calculate correlations and insights
   const calculateTrend = (data: number[]) => {
     if (data.length < 2) return 0;
@@ -82,11 +108,25 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
   const recoveryTrend = calculateTrend(recoveryTrendData.map(d => d.recovery));
   const sleepTrend = calculateTrend(sleepTrendData.map(d => d.efficiency));
   const strainTrend = calculateTrend(workoutTrendData.map(d => d.strain));
+  
+  // Calculate strength progression trends
+  const getStrengthTrend = (exercise: string) => {
+    const exerciseData = strengthProgressData.find(s => s.exercise === exercise);
+    if (!exerciseData || exerciseData.sessions.length < 2) return 0;
+    return calculateTrend(exerciseData.sessions.map(s => s.weight));
+  };
 
   // Calculate averages
   const avgRecovery = recoveryTrendData.reduce((sum, d) => sum + d.recovery, 0) / recoveryTrendData.length;
   const avgSleepEfficiency = sleepTrendData.reduce((sum, d) => sum + d.efficiency, 0) / sleepTrendData.length;
   const avgStrain = workoutTrendData.reduce((sum, d) => sum + d.strain, 0) / workoutTrendData.length;
+  
+  // Calculate max lifts
+  const getMaxLift = (exercise: string) => {
+    const exerciseData = strengthProgressData.find(s => s.exercise === exercise);
+    if (!exerciseData || exerciseData.sessions.length === 0) return 0;
+    return Math.max(...exerciseData.sessions.map(s => s.weight));
+  };
 
   const getTrendIcon = (trend: number) => {
     return trend > 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />;
@@ -99,7 +139,7 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
   return (
     <div className="space-y-6">
       {/* Trend Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -163,6 +203,30 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
                 {getTrendIcon(strainTrend)}
                 <Badge className={getTrendBadgeColor(strainTrend)}>
                   {strainTrend > 0 ? '+' : ''}{strainTrend.toFixed(2)}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Strength Progress Card */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Dumbbell className="h-4 w-4" />
+              Strength Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold">{getMaxLift('Squat')}lbs</p>
+                <p className="text-xs text-muted-foreground">Max Squat</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {getTrendIcon(getStrengthTrend('Squat'))}
+                <Badge className={getTrendBadgeColor(getStrengthTrend('Squat'))}>
+                  {getStrengthTrend('Squat') > 0 ? '+' : ''}{getStrengthTrend('Squat').toFixed(1)}
                 </Badge>
               </div>
             </div>
@@ -251,6 +315,58 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
         </Card>
       )}
 
+      {/* Strength Training Progress */}
+      {whoopData.stronglifts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Strength Training Progress</CardTitle>
+            <CardDescription>Weight progression for main lifts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={strengthProgressData.find(s => s.exercise === 'Squat')?.sessions.slice(-20) || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value, name) => [
+                    `${value} lbs`,
+                    name === 'weight' ? 'Working Weight' : 'Estimated 1RM'
+                  ]}
+                />
+                <Line type="monotone" dataKey="weight" stroke="#8884d8" strokeWidth={2} />
+                <Line type="monotone" dataKey="oneRM" stroke="#82ca9d" strokeWidth={2} strokeDasharray="5 5" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Big 3 Lifts Comparison */}
+      {whoopData.stronglifts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Big 3 Lifts Comparison</CardTitle>
+            <CardDescription>Current max weights for Squat, Bench, and Deadlift</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={[
+                { exercise: 'Squat', weight: getMaxLift('Squat'), trend: getStrengthTrend('Squat') },
+                { exercise: 'Bench', weight: getMaxLift('Bench Press'), trend: getStrengthTrend('Bench Press') },
+                { exercise: 'Deadlift', weight: getMaxLift('Deadlift'), trend: getStrengthTrend('Deadlift') }
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="exercise" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${value} lbs`, 'Max Weight']} />
+                <Bar dataKey="weight" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Data Summary */}
       <Card>
         <CardHeader>
@@ -258,7 +374,7 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
           <CardDescription>Overview of your uploaded data</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-blue-600">{whoopData.recovery.length}</p>
               <p className="text-sm text-muted-foreground">Recovery Records</p>
@@ -274,6 +390,10 @@ export function DataAnalytics({ whoopData }: DataAnalyticsProps) {
             <div>
               <p className="text-2xl font-bold text-orange-600">{whoopData.daily.length}</p>
               <p className="text-sm text-muted-foreground">Daily Records</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-indigo-600">{whoopData.stronglifts.length}</p>
+              <p className="text-sm text-muted-foreground">Strength Sessions</p>
             </div>
           </div>
         </CardContent>

@@ -16,7 +16,7 @@ interface CSVUploaderProps {
 interface UploadedFile {
   file: File;
   name: string;
-  type: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'unknown';
+  type: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'stronglifts' | 'unknown';
   rows: number;
   status: 'uploaded' | 'processing' | 'processed' | 'error';
   data?: ParsedWhoopData;
@@ -62,13 +62,14 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
         const result = await CSVParser.parseWhoopCSV(file);
 
         if (result.success && result.data) {
-          let dataType: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'unknown' = 'unknown';
+          let dataType: 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'stronglifts' | 'unknown' = 'unknown';
           
           if (result.data.recovery.length > 0) dataType = 'recovery';
           else if (result.data.sleep.length > 0) dataType = 'sleep';
           else if (result.data.workouts.length > 0) dataType = 'workout';
           else if (result.data.daily.length > 0) dataType = 'daily';
           else if (result.data.journal.length > 0) dataType = 'journal';
+          else if (result.data.stronglifts.length > 0) dataType = 'stronglifts';
           
           newFile.status = 'processed';
           newFile.type = dataType;
@@ -122,7 +123,8 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       sleep: [],
       workouts: [],
       daily: [],
-      journal: []
+      journal: [],
+      stronglifts: []
     };
 
     processedFiles.forEach(file => {
@@ -132,6 +134,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
         consolidated.workouts.push(...(file.data.workouts || []));
         consolidated.daily.push(...(file.data.daily || []));
         consolidated.journal.push(...(file.data.journal || []));
+        consolidated.stronglifts.push(...(file.data.stronglifts || []));
       }
     });
 

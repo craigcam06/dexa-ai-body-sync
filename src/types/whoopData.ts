@@ -34,6 +34,17 @@ export interface WhoopDailyData {
   ambient_temperature_celsius: number;
 }
 
+export interface StrongLiftsData {
+  date: string;
+  exercise: string;
+  weight: number;
+  reps: number;
+  sets: number;
+  volume: number;
+  one_rep_max?: number;
+  workout_duration?: number;
+}
+
 export interface WhoopJournalData {
   date: string;
   question_text: string;
@@ -47,6 +58,7 @@ export interface ParsedWhoopData {
   workouts: WhoopWorkoutData[];
   daily: WhoopDailyData[];
   journal: WhoopJournalData[];
+  stronglifts: StrongLiftsData[];
 }
 
 export interface CSVParseResult {

@@ -1,4 +1,4 @@
-import { ParsedWhoopData, CSVParseResult, WhoopRecoveryData, WhoopSleepData, WhoopWorkoutData, WhoopDailyData, WhoopJournalData } from '@/types/whoopData';
+import { ParsedWhoopData, CSVParseResult, WhoopRecoveryData, WhoopSleepData, WhoopWorkoutData, WhoopDailyData, WhoopJournalData, StrongLiftsData } from '@/types/whoopData';
 
 export class CSVParser {
   static parseCSV(csvText: string): string[][] {
@@ -24,7 +24,7 @@ export class CSVParser {
     });
   }
 
-  static detectDataType(headers: string[]): 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'unknown' {
+  static detectDataType(headers: string[]): 'recovery' | 'sleep' | 'workout' | 'daily' | 'journal' | 'stronglifts' | 'unknown' {
     const headerStr = headers.join(',').toLowerCase();
     
     // Recovery indicators (including comprehensive physiological data)
@@ -56,6 +56,15 @@ export class CSVParser {
         headerStr.includes('ambient') || headerStr.includes('temperature') ||
         headerStr.includes('day strain') || headerStr.includes('calories')) {
       return 'daily';
+    }
+    
+    // StrongLifts indicators
+    if (headerStr.includes('exercise') || headerStr.includes('weight') || 
+        headerStr.includes('reps') || headerStr.includes('sets') ||
+        headerStr.includes('volume') || headerStr.includes('1rm') ||
+        (headerStr.includes('squat') && headerStr.includes('bench')) ||
+        headerStr.includes('stronglifts')) {
+      return 'stronglifts';
     }
     
     // Journal indicators
@@ -277,6 +286,55 @@ export class CSVParser {
     return data;
   }
 
+  static parseStrongLiftsData(rows: string[][], headers: string[]): StrongLiftsData[] {
+    const data: StrongLiftsData[] = [];
+    
+    const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('date') || 
+      h.toLowerCase().includes('day') ||
+      h.toLowerCase().includes('time')
+    );
+    const exerciseIndex = headers.findIndex(h => h.toLowerCase().includes('exercise') || h.toLowerCase().includes('name'));
+    const weightIndex = headers.findIndex(h => h.toLowerCase().includes('weight') || h.toLowerCase().includes('load'));
+    const repsIndex = headers.findIndex(h => h.toLowerCase().includes('reps') || h.toLowerCase().includes('repetitions'));
+    const setsIndex = headers.findIndex(h => h.toLowerCase().includes('sets'));
+    const volumeIndex = headers.findIndex(h => h.toLowerCase().includes('volume') || h.toLowerCase().includes('total'));
+    const oneRMIndex = headers.findIndex(h => h.toLowerCase().includes('1rm') || h.toLowerCase().includes('one rep max'));
+    const durationIndex = headers.findIndex(h => h.toLowerCase().includes('duration') || h.toLowerCase().includes('time'));
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.length < headers.length) continue;
+
+      try {
+        // Calculate volume if not provided
+        let volume = parseFloat(row[volumeIndex]) || 0;
+        const weight = parseFloat(row[weightIndex]) || 0;
+        const reps = parseInt(row[repsIndex]) || 0;
+        const sets = parseInt(row[setsIndex]) || 0;
+        
+        if (!volume && weight && reps && sets) {
+          volume = weight * reps * sets;
+        }
+
+        data.push({
+          date: row[dateIndex] || '',
+          exercise: row[exerciseIndex] || '',
+          weight: weight,
+          reps: reps,
+          sets: sets,
+          volume: volume,
+          one_rep_max: parseFloat(row[oneRMIndex]) || undefined,
+          workout_duration: this.parseTimeToMillis(row[durationIndex]) || undefined,
+        });
+      } catch (error) {
+        console.warn(`Error parsing StrongLifts row ${i}:`, error);
+      }
+    }
+    
+    return data;
+  }
+
   static parseTimeToMillis(timeStr: string): number {
     if (!timeStr) return 0;
     
@@ -335,7 +393,8 @@ export class CSVParser {
         sleep: [],
         workouts: [],
         daily: [],
-        journal: []
+        journal: [],
+        stronglifts: []
       };
 
       switch (dataType) {
@@ -353,6 +412,9 @@ export class CSVParser {
           break;
         case 'journal':
           result.journal = this.parseJournalData(rows, headers);
+          break;
+        case 'stronglifts':
+          result.stronglifts = this.parseStrongLiftsData(rows, headers);
           break;
       }
 
