@@ -88,15 +88,21 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
           newFile.rows = result.rowsProcessed || 0;
           newFile.data = result.data;
           
-          // Auto-update dashboard when StrongLifts data is loaded
-          if (dataType === 'stronglifts') {
-            console.log('Auto-updating dashboard with StrongLifts data:', result.data);
-            console.log('StrongLifts count:', result.data.stronglifts?.length);
-            console.log('Calling onDataUpdate...');
-            // Force immediate update
-            setTimeout(() => onDataUpdate(result.data), 100);
-            console.log('onDataUpdate called');
-          }
+          // Update dashboard with all data types
+          console.log(`📤 CSVUploader calling onDataUpdate for ${dataType} data:`, result.data);
+          console.log('Data summary:', {
+            recovery: result.data.recovery?.length || 0,
+            sleep: result.data.sleep?.length || 0,
+            workouts: result.data.workouts?.length || 0,
+            daily: result.data.daily?.length || 0,
+            stronglifts: result.data.stronglifts?.length || 0
+          });
+          
+          // Call onDataUpdate for all data types, not just StrongLifts
+          setTimeout(() => {
+            console.log('🚀 Calling onDataUpdate...');
+            onDataUpdate(result.data);
+          }, 100);
           
           toast({
             title: "File processed successfully",
