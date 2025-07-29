@@ -103,12 +103,12 @@ export const HealthDashboard = () => {
           variant="accent"
         />
         <MetricCard
-          title="Max Weight"
+          title="Weekly Volume"
           value={whoopData?.stronglifts?.length > 0 ? 
-            `${Math.max(...whoopData.stronglifts.filter((s: any) => s.weight < 500).map((s: any) => s.weight))}lbs` : 
+            `${whoopData.stronglifts.reduce((sum: number, s: any) => sum + (s.volume || 0), 0).toLocaleString()}lbs` : 
             `${mockData.devices.lumen.metabolicFlex}%`
           }
-          target={whoopData?.stronglifts?.length > 0 ? "StrongLifts" : "Lumen"}
+          target={whoopData?.stronglifts?.length > 0 ? `${whoopData.stronglifts.length} workouts` : "Lumen"}
           trend={3}
           icon={whoopData?.stronglifts?.length > 0 ? Dumbbell : Zap}
           variant="warning"
