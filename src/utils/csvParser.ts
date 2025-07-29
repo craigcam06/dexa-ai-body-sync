@@ -291,18 +291,48 @@ export class CSVParser {
     
     console.log('Parsing StrongLifts data. Headers:', headers);
     
+    // Match exact StrongLifts column names
     const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('date (yyyy/mm/dd)') ||
       h.toLowerCase().includes('date') || 
       h.toLowerCase().includes('day') ||
       h.toLowerCase().includes('time')
     );
-    const exerciseIndex = headers.findIndex(h => h.toLowerCase().includes('exercise') || h.toLowerCase().includes('name'));
-    const weightIndex = headers.findIndex(h => h.toLowerCase().includes('weight') || h.toLowerCase().includes('load'));
-    const repsIndex = headers.findIndex(h => h.toLowerCase().includes('reps') || h.toLowerCase().includes('repetitions'));
-    const setsIndex = headers.findIndex(h => h.toLowerCase().includes('sets'));
-    const volumeIndex = headers.findIndex(h => h.toLowerCase().includes('volume') || h.toLowerCase().includes('total'));
-    const oneRMIndex = headers.findIndex(h => h.toLowerCase().includes('1rm') || h.toLowerCase().includes('one rep max'));
-    const durationIndex = headers.findIndex(h => h.toLowerCase().includes('duration') || h.toLowerCase().includes('time'));
+    const exerciseIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('exercise') || 
+      h.toLowerCase().includes('workout name') ||
+      h.toLowerCase().includes('name')
+    );
+    const weightIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('body weight (lb)') ||
+      h.toLowerCase().includes('top set (reps×lb)') ||
+      h.toLowerCase().includes('weight') || 
+      h.toLowerCase().includes('load')
+    );
+    const repsIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('reps') && !h.toLowerCase().includes('sets') ||
+      h.toLowerCase().includes('repetitions')
+    );
+    const setsIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('sets×reps') ||
+      h.toLowerCase().includes('sets')
+    );
+    const volumeIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('volume (lb)') ||
+      h.toLowerCase().includes('workout volume (lb)') ||
+      h.toLowerCase().includes('volume') || 
+      h.toLowerCase().includes('total')
+    );
+    const oneRMIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('e1rm (lb)') ||
+      h.toLowerCase().includes('1rm') || 
+      h.toLowerCase().includes('one rep max')
+    );
+    const durationIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('duration (hours)') ||
+      h.toLowerCase().includes('duration') || 
+      h.toLowerCase().includes('time')
+    );
 
     console.log('StrongLifts column indices:', {
       date: dateIndex,
@@ -320,12 +350,48 @@ export class CSVParser {
       if (row.length < headers.length) continue;
 
       try {
+        // Parse the data using the specific StrongLifts format
+        let weight = 0;
+        let reps = 0;
+        let sets = 1; // Default to 1 set
+        let volume = 0;
+
+        // Handle different weight formats
+        if (weightIndex >= 0) {
+          const weightStr = row[weightIndex];
+          if (weightStr.includes('×')) {
+            // Format like "5×225" (reps×weight)
+            const parts = weightStr.split('×');
+            if (parts.length === 2) {
+              reps = parseInt(parts[0]) || 0;
+              weight = parseFloat(parts[1]) || 0;
+            }
+          } else {
+            weight = parseFloat(weightStr) || 0;
+          }
+        }
+
+        // Handle reps if not already parsed from weight field
+        if (repsIndex >= 0 && reps === 0) {
+          reps = parseInt(row[repsIndex]) || 0;
+        }
+
+        // Handle sets×reps format
+        if (setsIndex >= 0) {
+          const setsStr = row[setsIndex];
+          if (setsStr.includes('×')) {
+            const parts = setsStr.split('×');
+            if (parts.length === 2) {
+              sets = parseInt(parts[0]) || 1;
+              if (reps === 0) reps = parseInt(parts[1]) || 0;
+            }
+          } else {
+            sets = parseInt(setsStr) || 1;
+          }
+        }
+
         // Calculate volume if not provided
-        let volume = parseFloat(row[volumeIndex]) || 0;
-        const weight = parseFloat(row[weightIndex]) || 0;
-        const reps = parseInt(row[repsIndex]) || 0;
-        const sets = parseInt(row[setsIndex]) || 0;
-        
+        volume = parseFloat(row[volumeIndex]) || 0;
         if (!volume && weight && reps && sets) {
           volume = weight * reps * sets;
         }
