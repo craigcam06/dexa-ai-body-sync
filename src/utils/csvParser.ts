@@ -113,14 +113,32 @@ export class CSVParser {
   static parseSleepData(rows: string[][], headers: string[]): WhoopSleepData[] {
     const data: WhoopSleepData[] = [];
     
-    const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('day'));
-    const totalSleepIndex = headers.findIndex(h => h.toLowerCase().includes('total') && h.toLowerCase().includes('sleep'));
-    const efficiencyIndex = headers.findIndex(h => h.toLowerCase().includes('efficiency'));
-    const slowWaveIndex = headers.findIndex(h => h.toLowerCase().includes('slow') || h.toLowerCase().includes('deep'));
-    const remIndex = headers.findIndex(h => h.toLowerCase().includes('rem'));
-    const lightIndex = headers.findIndex(h => h.toLowerCase().includes('light'));
-    const wakeIndex = headers.findIndex(h => h.toLowerCase().includes('wake') || h.toLowerCase().includes('awake'));
-    const scoreIndex = headers.findIndex(h => h.toLowerCase().includes('sleep') && h.toLowerCase().includes('score'));
+    // Match exact Whoop CSV headers
+    const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('sleep onset') || 
+      h.toLowerCase().includes('cycle start time') ||
+      h.toLowerCase().includes('date') || 
+      h.toLowerCase().includes('day')
+    );
+    const totalSleepIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('asleep duration') || 
+      h.toLowerCase().includes('total sleep') ||
+      h.toLowerCase().includes('total') && h.toLowerCase().includes('sleep')
+    );
+    const efficiencyIndex = headers.findIndex(h => h.toLowerCase().includes('sleep efficiency'));
+    const slowWaveIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('deep (sws) duration') || 
+      h.toLowerCase().includes('deep') || 
+      h.toLowerCase().includes('slow') || 
+      h.toLowerCase().includes('sws')
+    );
+    const remIndex = headers.findIndex(h => h.toLowerCase().includes('rem duration') || h.toLowerCase().includes('rem'));
+    const lightIndex = headers.findIndex(h => h.toLowerCase().includes('light sleep duration') || h.toLowerCase().includes('light'));
+    const wakeIndex = headers.findIndex(h => h.toLowerCase().includes('awake duration') || h.toLowerCase().includes('wake') || h.toLowerCase().includes('awake'));
+    const scoreIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('sleep performance') || 
+      (h.toLowerCase().includes('sleep') && h.toLowerCase().includes('score'))
+    );
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
