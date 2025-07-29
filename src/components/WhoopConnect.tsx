@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ interface WhoopConnectProps {
 }
 
 export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
+  console.log('WhoopConnect component rendering - checking for cached text');
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +72,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   };
 
   const connectWhoop = () => {
+    console.log('connectWhoop button clicked - this should show REAL WHOOP CONNECTION');
     const authUrl = whoopService.getAuthorizationUrl();
     window.location.href = authUrl;
   };
@@ -109,13 +113,16 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     return `${hours}h ${minutes}m`;
   };
 
+  const buttonText = '🔗 REAL WHOOP CONNECTION';
+  console.log('Button text should be:', buttonText);
+
   if (!isAuthenticated && !csvData) {
     return (
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" />
-            🚀 Whoop Data Connection v2
+            🚀 WHOOP DATA CONNECTION V3
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -153,7 +160,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-primary rounded-full flex items-center justify-center">
                   <Activity className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <h3 className="font-semibold mb-2">✨ Real Whoop Connection</h3>
+                <h3 className="font-semibold mb-2">✨ AUTHENTIC WHOOP API CONNECTION</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Connect directly to your Whoop account for live data sync
                 </p>
@@ -164,7 +171,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                     disabled={isLoading}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    {isLoading ? '🔄 Connecting...' : '🔗 Authorize Whoop Access'}
+                    {isLoading ? '🔄 Connecting...' : buttonText}
                   </Button>
                   
                   <p className="text-xs text-muted-foreground">
