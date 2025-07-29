@@ -213,7 +213,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5 text-primary" />
-          Upload Whoop CSV Data
+          Upload Health Data
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -234,7 +234,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
             <div>
               <p className="font-medium">Drop CSV files here or click to browse</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Supports Recovery, Sleep, Workout, and Daily data files
+                Supports Whoop, StrongLifts, and other health device CSV files
               </p>
             </div>
           )}
@@ -295,7 +295,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
             onClick={consolidateAndUpdate}
             className="w-full"
           >
-            Update Dashboard with CSV Data ({processedCount} files)
+            Update Dashboard with Health Data ({processedCount} files)
           </Button>
         )}
       </CardContent>
