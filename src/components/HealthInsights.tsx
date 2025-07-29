@@ -441,25 +441,9 @@ export function HealthInsights({ whoopData }: HealthInsightsProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-5xl font-bold text-primary mb-2">{healthScore}</div>
-                <div className="text-lg font-medium mb-4">
-                  {healthScore >= 80 ? "🌟 Excellent" : 
-                   healthScore >= 70 ? "✅ Good" : 
-                   healthScore >= 60 ? "⚠️ Fair" : "🔴 Needs Attention"}
-                </div>
-                <div className="w-40 bg-secondary rounded-full h-3 mb-4">
-                  <div 
-                    className="bg-primary h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${healthScore}%` }}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground max-w-sm">
-                  Based on recovery ({Math.round(healthScore * 0.3)}%), sleep ({Math.round(healthScore * 0.25)}%), 
-                  training balance ({Math.round(healthScore * 0.2)}%), and consistency ({Math.round(healthScore * 0.25)}%)
-                </p>
-              </div>
+            <div className="text-center space-y-2">
+              <div className="text-6xl font-bold text-primary">{healthScore}</div>
+              <div className="text-lg text-muted-foreground">Overall Health Score</div>
             </div>
           </CardContent>
         </Card>
@@ -561,78 +545,83 @@ export function HealthInsights({ whoopData }: HealthInsightsProps) {
         </Card>
       )}
 
-      {/* Personalized Recommendations */}
-      {recommendations.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Personalized Recommendations
-            </CardTitle>
-            <CardDescription>
-              Action items based on your current health data
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recommendations.map((rec, index) => {
-                const IconComponent = rec.icon;
-                return (
-                  <div key={index} className="flex items-start gap-3 p-4 rounded-lg border hover:shadow-sm transition-shadow">
-                    <div className="flex-shrink-0">
-                      <IconComponent className="h-5 w-5 text-primary mt-1" />
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{rec.title}</h4>
-                        <Badge className={getPriorityColor(rec.priority)}>
-                          {rec.priority}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{rec.description}</p>
-                      <div className="bg-primary/5 border border-primary/20 rounded-md p-2">
-                        <p className="text-sm font-medium text-primary">💡 {rec.action}</p>
+      {/* Insights and Recommendations in Two Columns */}
+      {(insights.length > 0 || recommendations.length > 0) && (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Data Insights */}
+          {insights.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Data Insights
+                </CardTitle>
+                <CardDescription>
+                  Key patterns and trends from your biometric data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {insights.map((insight, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                      {getInsightIcon(insight.type)}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium">{insight.title}</h4>
+                          <Badge className={getInsightBadgeColor(insight.type)}>
+                            {insight.metric}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{insight.message}</p>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Data Insights */}
-      {insights.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Data Insights
-            </CardTitle>
-            <CardDescription>
-              Key patterns and trends from your biometric data
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {insights.map((insight, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                  {getInsightIcon(insight.type)}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium">{insight.title}</h4>
-                      <Badge className={getInsightBadgeColor(insight.type)}>
-                        {insight.metric}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{insight.message}</p>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Personalized Recommendations */}
+          {recommendations.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Personalized Recommendations
+                </CardTitle>
+                <CardDescription>
+                  Action items based on your current health data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recommendations.map((rec, index) => {
+                    const IconComponent = rec.icon;
+                    return (
+                      <div key={index} className="flex items-start gap-3 p-4 rounded-lg border hover:shadow-sm transition-shadow">
+                        <div className="flex-shrink-0">
+                          <IconComponent className="h-5 w-5 text-primary mt-1" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{rec.title}</h4>
+                            <Badge className={getPriorityColor(rec.priority)}>
+                              {rec.priority}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{rec.description}</p>
+                          <div className="bg-primary/5 border border-primary/20 rounded-md p-2">
+                            <p className="text-sm font-medium text-primary">💡 {rec.action}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* No Data State */}
