@@ -91,22 +91,37 @@ export interface StrengthMetrics {
 }
 
 export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): StrengthMetrics => {
-  const now = new Date();
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  if (!strongliftsData || strongliftsData.length === 0) {
+    return {
+      weekly: { volume: 0, sets: 0, workouts: 0 },
+      monthly: { volume: 0, sets: 0, workouts: 0 }
+    };
+  }
+
+  // Sort data by date to get the most recent entries
+  const sortedData = strongliftsData.sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  // Get the most recent date in the data
+  const mostRecentDate = new Date(sortedData[0].date);
   
-  const monthAgo = new Date();
-  monthAgo.setDate(monthAgo.getDate() - 30);
+  // Calculate 7 days and 30 days before the most recent workout
+  const weekBefore = new Date(mostRecentDate);
+  weekBefore.setDate(weekBefore.getDate() - 7);
   
-  // Filter data for weekly and monthly periods
+  const monthBefore = new Date(mostRecentDate);
+  monthBefore.setDate(monthBefore.getDate() - 30);
+  
+  // Filter data for weekly and monthly periods from the most recent date
   const weeklyData = strongliftsData.filter(workout => {
     const workoutDate = new Date(workout.date);
-    return workoutDate >= weekAgo && workoutDate <= now;
+    return workoutDate >= weekBefore && workoutDate <= mostRecentDate;
   });
   
   const monthlyData = strongliftsData.filter(workout => {
     const workoutDate = new Date(workout.date);
-    return workoutDate >= monthAgo && workoutDate <= now;
+    return workoutDate >= monthBefore && workoutDate <= mostRecentDate;
   });
   
   // Calculate metrics
@@ -115,15 +130,33 @@ export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): St
     const sets = data.reduce((sum, workout) => sum + (workout.sets || 0), 0);
     
     // Count unique workout days
-    const uniqueDays = new Set(data.map(workout => workout.date.split('T')[0]));
+    const uniqueDays = new Set(data.map(workout => {
+      // Handle both date formats: "2022/06/02" and "2022-06-02"
+      const dateStr = workout.date.includes('/') 
+        ? workout.date.split('T')[0] 
+        : workout.date.split('T')[0];
+      return dateStr;
+    }));
     const workouts = uniqueDays.size;
     
     return { volume, sets, workouts };
   };
   
+  const weeklyMetrics = calculatePeriodMetrics(weeklyData);
+  const monthlyMetrics = calculatePeriodMetrics(monthlyData);
+  
+  console.log('Strength metrics calculated:', {
+    totalWorkouts: strongliftsData.length,
+    mostRecentDate: mostRecentDate.toISOString(),
+    weeklyData: weeklyData.length,
+    monthlyData: monthlyData.length,
+    weekly: weeklyMetrics,
+    monthly: monthlyMetrics
+  });
+  
   return {
-    weekly: calculatePeriodMetrics(weeklyData),
-    monthly: calculatePeriodMetrics(monthlyData)
+    weekly: weeklyMetrics,
+    monthly: monthlyMetrics
   };
 };
 
