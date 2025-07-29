@@ -158,22 +158,22 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-primary rounded-full flex items-center justify-center">
                   <Activity className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <h3 className="font-semibold mb-2">Connect Your Whoop Account</h3>
+                <h3 className="font-semibold mb-2">🔗 Whoop API Integration</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Sync your recovery, sleep, and strain data automatically
+                  Connect your Whoop account to sync recovery, sleep, and workout data
                 </p>
                 
                 <div className="mt-4 space-y-3">
                   <Button 
                     onClick={connectWhoop}
                     disabled={isLoading}
-                    className="w-full"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    {isLoading ? 'Connecting...' : 'Connect Whoop API'}
+                    {isLoading ? '🔄 Connecting...' : '🚀 Connect Whoop Account'}
                   </Button>
                   
                   <p className="text-xs text-muted-foreground">
-                    You'll be redirected to Whoop to authorize access to your data
+                    Secure OAuth authentication via Whoop's official API
                   </p>
                 </div>
               </div>
