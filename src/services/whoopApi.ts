@@ -100,7 +100,7 @@ class WhoopService {
   constructor() {
     this.authConfig = {
       clientId: '641ac502-42e1-4c38-8b51-15e0c5b5cbef',
-      redirectUri: `${window.location.origin}/auth/whoop/callback`,
+      redirectUri: 'https://dexa-ai-body-sync.lovable.app/auth/whoop/callback',
       scopes: ['read:recovery', 'read:cycles', 'read:workout', 'read:sleep', 'read:profile', 'read:body_measurement']
     };
   }
