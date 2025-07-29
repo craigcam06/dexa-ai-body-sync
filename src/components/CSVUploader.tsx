@@ -93,7 +93,8 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
             console.log('Auto-updating dashboard with StrongLifts data:', result.data);
             console.log('StrongLifts count:', result.data.stronglifts?.length);
             console.log('Calling onDataUpdate...');
-            onDataUpdate(result.data);
+            // Force immediate update
+            setTimeout(() => onDataUpdate(result.data), 100);
             console.log('onDataUpdate called');
           }
           
