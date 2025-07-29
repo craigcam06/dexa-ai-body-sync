@@ -148,13 +148,23 @@ export class CSVParser {
   static parseWorkoutData(rows: string[][], headers: string[]): WhoopWorkoutData[] {
     const data: WhoopWorkoutData[] = [];
     
-    const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('day'));
-    const strainIndex = headers.findIndex(h => h.toLowerCase().includes('strain'));
-    const caloriesIndex = headers.findIndex(h => h.toLowerCase().includes('calorie') || h.toLowerCase().includes('kilojoule'));
-    const avgHrIndex = headers.findIndex(h => h.toLowerCase().includes('average') && h.toLowerCase().includes('heart'));
-    const maxHrIndex = headers.findIndex(h => h.toLowerCase().includes('max') && h.toLowerCase().includes('heart'));
+    // Match exact Whoop CSV headers
+    const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('workout start time') || 
+      h.toLowerCase().includes('cycle start time') ||
+      h.toLowerCase().includes('date') || 
+      h.toLowerCase().includes('day')
+    );
+    const strainIndex = headers.findIndex(h => h.toLowerCase().includes('activity strain') || h.toLowerCase().includes('strain'));
+    const caloriesIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('energy burned') || 
+      h.toLowerCase().includes('calorie') || 
+      h.toLowerCase().includes('kilojoule')
+    );
+    const avgHrIndex = headers.findIndex(h => h.toLowerCase().includes('average hr') || (h.toLowerCase().includes('average') && h.toLowerCase().includes('heart')));
+    const maxHrIndex = headers.findIndex(h => h.toLowerCase().includes('max hr') || (h.toLowerCase().includes('max') && h.toLowerCase().includes('heart')));
     const durationIndex = headers.findIndex(h => h.toLowerCase().includes('duration') || h.toLowerCase().includes('time'));
-    const typeIndex = headers.findIndex(h => h.toLowerCase().includes('type') || h.toLowerCase().includes('activity'));
+    const typeIndex = headers.findIndex(h => h.toLowerCase().includes('activity name') || h.toLowerCase().includes('type') || h.toLowerCase().includes('activity'));
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
