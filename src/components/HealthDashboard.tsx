@@ -29,7 +29,7 @@ import { HealthInsights } from "./HealthInsights";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
 import { AppleHealthConnect } from "./AppleHealthConnect";
-import { SmartNotifications } from "./SmartNotifications";
+import { HealthInsightsDashboard } from "./HealthInsightsDashboard";
 import { GoalSetting } from "./GoalSetting";
 import { VoiceInterface } from "./VoiceInterface";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
@@ -202,8 +202,8 @@ export const HealthDashboard = () => {
         </div>
       </div>
 
-      {/* Smart Notifications */}
-      <SmartNotifications whoopData={whoopData} />
+      {/* Health Insights Dashboard */}
+      <HealthInsightsDashboard whoopData={whoopData} />
 
       {/* Key Metrics - Row 1: Body Composition & Recovery */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
