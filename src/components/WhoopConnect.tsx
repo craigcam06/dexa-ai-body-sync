@@ -31,38 +31,10 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     workouts: []
   });
 
-  const handleCSVDataUpdate = (newData: ParsedWhoopData) => {
-    console.log('WhoopConnect handleCSVDataUpdate received:', newData);
-    
-    // Merge with existing CSV data instead of replacing it
-    setCsvData(prevData => {
-      if (!prevData) {
-        console.log('No previous data, using new data as-is');
-        onDataUpdate?.(newData);
-        return newData;
-      }
-      
-      const mergedData: ParsedWhoopData = {
-        recovery: [...(prevData.recovery || []), ...(newData.recovery || [])],
-        sleep: [...(prevData.sleep || []), ...(newData.sleep || [])],
-        workouts: [...(prevData.workouts || []), ...(newData.workouts || [])],
-        daily: [...(prevData.daily || []), ...(newData.daily || [])],
-        journal: [...(prevData.journal || []), ...(newData.journal || [])],
-        stronglifts: [...(prevData.stronglifts || []), ...(newData.stronglifts || [])]
-      };
-      
-      console.log('Merged CSV data:', {
-        recovery: mergedData.recovery.length,
-        sleep: mergedData.sleep.length,
-        workouts: mergedData.workouts.length,
-        daily: mergedData.daily.length,
-        journal: mergedData.journal.length,
-        stronglifts: mergedData.stronglifts.length
-      });
-      
-      onDataUpdate?.(mergedData);
-      return mergedData;
-    });
+  const handleCSVDataUpdate = (data: ParsedWhoopData) => {
+    console.log('WhoopConnect handleCSVDataUpdate received:', data);
+    setCsvData(data);
+    onDataUpdate?.(data);
   };
 
   useEffect(() => {
