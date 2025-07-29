@@ -99,7 +99,7 @@ class WhoopService {
 
   constructor() {
     this.authConfig = {
-      clientId: import.meta.env.VITE_WHOOP_CLIENT_ID || 'demo_client_id',
+      clientId: '641ac502-42e1-4c38-8b51-15e0c5b5cbef',
       redirectUri: `${window.location.origin}/auth/whoop/callback`,
       scopes: ['read:recovery', 'read:cycles', 'read:workout', 'read:sleep', 'read:profile', 'read:body_measurement']
     };
@@ -123,14 +123,21 @@ class WhoopService {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
-  // For frontend-only apps, we'll use PKCE flow instead of client secret
+  // Exchange authorization code for access token using secure backend
   async exchangeCodeForToken(code: string): Promise<WhoopTokenResponse> {
-    // Note: This is a simplified example. In production, you'd want to:
-    // 1. Use PKCE (Proof Key for Code Exchange) for security
-    // 2. Handle token exchange through a secure backend
-    // 3. Never expose client secrets in frontend code
-    
-    throw new Error('Token exchange must be handled by a secure backend. Please set up Supabase integration for secure OAuth handling.');
+    const response = await fetch('https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to exchange authorization code for token');
+    }
+
+    return response.json();
   }
 
   // Store tokens securely
