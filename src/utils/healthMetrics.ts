@@ -91,6 +91,9 @@ export interface StrengthMetrics {
 }
 
 export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): StrengthMetrics => {
+  console.log('calculateStrengthMetrics called with data length:', strongliftsData?.length);
+  console.log('Sample entries with dates:', strongliftsData?.slice(0, 5).map(w => ({ date: w.date, exercise: w.exercise })));
+  
   if (!strongliftsData || strongliftsData.length === 0) {
     return {
       weekly: { volume: 0, sets: 0, workouts: 0 },
@@ -101,6 +104,7 @@ export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): St
   // Filter data to only include 2024 and 2025
   const filteredData = strongliftsData.filter(workout => {
     const workoutYear = new Date(workout.date).getFullYear();
+    console.log(`Workout: ${workout.exercise}, date: ${workout.date}, parsed year: ${workoutYear}`);
     return workoutYear === 2024 || workoutYear === 2025;
   });
 
