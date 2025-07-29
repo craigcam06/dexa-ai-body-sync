@@ -45,7 +45,7 @@ export const BodyCompositionChart = () => {
                 <span className="text-sm text-muted-foreground">{latestData.bodyFat}%</span>
                 <Badge 
                   variant={bodyFatChange < 0 ? "default" : "secondary"}
-                  className={bodyFatChange < 0 ? "bg-success/10 text-success border-success/20" : ""}
+                  className={bodyFatChange < 0 ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}
                 >
                   {bodyFatChange > 0 ? '+' : ''}{bodyFatChange.toFixed(1)}%
                 </Badge>
@@ -62,7 +62,7 @@ export const BodyCompositionChart = () => {
                 <span className="text-sm text-muted-foreground">{latestData.leanMass} lbs</span>
                 <Badge 
                   variant={leanMassChange > 0 ? "default" : "secondary"}
-                  className={leanMassChange > 0 ? "bg-success/10 text-success border-success/20" : ""}
+                  className={leanMassChange > 0 ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}
                 >
                   {leanMassChange > 0 ? '+' : ''}{leanMassChange.toFixed(1)} lbs
                 </Badge>
