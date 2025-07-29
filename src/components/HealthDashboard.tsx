@@ -158,17 +158,35 @@ export const HealthDashboard = () => {
         <div className="flex items-center gap-2 sm:gap-4">
           <Button 
             onClick={() => {
-              // Scroll to the upload section
-              const connectSection = document.querySelector('.lg\\:hidden') || document.querySelector('[data-radix-scroll-area-viewport]');
+              console.log('Upload button clicked!');
+              // Try multiple approaches to find the upload section
+              
+              // First try to find mobile connect section
+              let connectSection = document.querySelector('.lg\\:hidden .space-y-4');
+              console.log('Found mobile connect section:', connectSection);
+              
+              // If not found, try desktop connect section
+              if (!connectSection) {
+                connectSection = document.querySelector('[data-state="inactive"]');
+                console.log('Found desktop connect section:', connectSection);
+              }
+              
+              // If still not found, try finding the WhoopConnect component
+              if (!connectSection) {
+                connectSection = document.querySelector('[role="tabpanel"]');
+                console.log('Found tab panel:', connectSection);
+              }
+              
               if (connectSection) {
-                connectSection.scrollIntoView({ behavior: 'smooth' });
+                connectSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                console.log('Scrolled to connect section');
               } else {
-                // Fallback: scroll to bottom of page where device connections are
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                // Final fallback: just scroll down significantly
+                console.log('No connect section found, scrolling to bottom');
+                window.scrollTo({ top: document.body.scrollHeight - window.innerHeight, behavior: 'smooth' });
               }
             }}
-            className="flex items-center gap-2"
-            variant="outline"
+            className="flex items-center gap-2 bg-primary hover:bg-primary/90"
             size="sm"
           >
             <Upload className="h-4 w-4" />
