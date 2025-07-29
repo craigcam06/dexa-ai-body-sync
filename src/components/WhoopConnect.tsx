@@ -71,10 +71,10 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     }
   };
 
-  const connectWhoop = async () => {
+  const connectWhoop = () => {
     console.log('connectWhoop button clicked - this should show REAL WHOOP CONNECTION');
     try {
-      const authUrl = await whoopService.getAuthorizationUrl();
+      const authUrl = whoopService.getAuthorizationUrl();
       window.location.href = authUrl;
     } catch (error) {
       console.error('Failed to get authorization URL:', error);

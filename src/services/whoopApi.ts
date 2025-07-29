@@ -98,21 +98,17 @@ class WhoopService {
   private authConfig: WhoopAuthConfig;
 
   constructor() {
-    // Note: Client ID will be fetched from backend, using placeholder for frontend authorization URL
     this.authConfig = {
-      clientId: 'PLACEHOLDER_CLIENT_ID', // Real client ID comes from backend
+      clientId: '641ac502-42e1-4c38-8b51-15e0c5b5cbef', // Use your real client ID here
       redirectUri: 'https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth',
       scopes: ['read:recovery', 'read:cycles', 'read:workout', 'read:sleep', 'read:profile', 'read:body_measurement']
     };
   }
 
-  // Generate OAuth authorization URL
-  async getAuthorizationUrl(): Promise<string> {
-    // Get client ID from backend
-    const clientId = await this.getClientId();
-    
+  // Generate OAuth authorization URL  
+  getAuthorizationUrl(): string {
     const params = new URLSearchParams({
-      client_id: clientId,
+      client_id: this.authConfig.clientId,
       redirect_uri: this.authConfig.redirectUri,
       response_type: 'code',
       scope: this.authConfig.scopes.join(' '),
@@ -120,23 +116,6 @@ class WhoopService {
     });
 
     return `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
-  }
-
-  // Get client ID from backend securely
-  private async getClientId(): Promise<string> {
-    const response = await fetch('https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to get client configuration');
-    }
-
-    const data = await response.json();
-    return data.client_id;
   }
 
   // Generate random state for OAuth security
