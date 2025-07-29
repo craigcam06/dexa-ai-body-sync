@@ -12,14 +12,19 @@ serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url)
     let code, client_id
     
     if (req.method === 'GET') {
       // Handle OAuth callback from Whoop (URL parameters)
-      const url = new URL(req.url)
       code = url.searchParams.get('code')
-      client_id = '641ac502-42e1-4c38-8b51-15e0c5b5cbef' // Use the configured client ID
-    } else {
+      client_id = '641ac502-42e1-4c38-8b51-15e0c5b5cbef'
+      
+      // If this is a callback with an authorization code, redirect to frontend
+      if (code) {
+        return Response.redirect(`${url.origin}/?code=${code}`)
+      }
+    } else if (req.method === 'POST') {
       // Handle POST request from frontend (JSON body)
       const body = await req.json()
       code = body.code
