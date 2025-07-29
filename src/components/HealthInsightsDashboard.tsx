@@ -46,10 +46,21 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
 
   // Calculate health score
   const healthScore = useMemo(() => {
-    if (!whoopData) return 0;
+    console.log('🔥 Calculating health score with whoopData:', whoopData);
+    
+    if (!whoopData) {
+      console.log('❌ No whoopData available for health score');
+      return 0;
+    }
     
     let score = 0;
     let factors = 0;
+    
+    console.log('📊 Health score data check:', {
+      recovery: whoopData.recovery?.length || 0,
+      sleep: whoopData.sleep?.length || 0,
+      workouts: whoopData.workouts?.length || 0
+    });
     
     // Recovery score (30% weight)
     if (whoopData.recovery?.length > 0) {
@@ -57,6 +68,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       const avgRecovery = recentRecovery.reduce((sum, r) => sum + r.recovery_score, 0) / recentRecovery.length;
       score += avgRecovery * 0.3;
       factors += 0.3;
+      console.log('✅ Recovery factor added:', avgRecovery, 'weighted:', avgRecovery * 0.3);
     }
     
     // Sleep efficiency (25% weight)
@@ -65,6 +77,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       const avgSleepEfficiency = recentSleep.reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / recentSleep.length;
       score += avgSleepEfficiency * 0.25;
       factors += 0.25;
+      console.log('✅ Sleep efficiency factor added:', avgSleepEfficiency, 'weighted:', avgSleepEfficiency * 0.25);
     }
     
     // Sleep duration (20% weight)
@@ -74,6 +87,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       const sleepScore = Math.min(100, Math.max(0, (avgSleepHours - 5) / 3 * 100)); // 5-8 hours scale
       score += sleepScore * 0.2;
       factors += 0.2;
+      console.log('✅ Sleep duration factor added:', sleepScore, 'weighted:', sleepScore * 0.2);
     }
     
     // Training balance (15% weight)
@@ -82,6 +96,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       const strainScore = weeklyStrain > 80 ? Math.max(0, 100 - (weeklyStrain - 80) * 2) : 100;
       score += strainScore * 0.15;
       factors += 0.15;
+      console.log('✅ Training factor added:', strainScore, 'weighted:', strainScore * 0.15);
     }
     
     // HRV stability (10% weight)
@@ -92,9 +107,17 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
       const hrvStability = Math.max(0, 100 - Math.abs(hrv7DayAvg - hrv14DayAvg) / hrv14DayAvg * 100);
       score += hrvStability * 0.1;
       factors += 0.1;
+      console.log('✅ HRV stability factor added:', hrvStability, 'weighted:', hrvStability * 0.1);
     }
     
-    return factors > 0 ? score / factors : 0;
+    const finalScore = factors > 0 ? score / factors : 0;
+    console.log('🎯 Final health score calculation:', {
+      totalScore: score,
+      totalFactors: factors,
+      finalScore: finalScore
+    });
+    
+    return finalScore;
   }, [whoopData]);
 
   // Correlation analysis
