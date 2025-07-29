@@ -115,7 +115,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" />
-            🚀 Whoop Data Connection
+            🚀 Whoop Data Connection v2
           </CardTitle>
         </CardHeader>
         <CardContent>
