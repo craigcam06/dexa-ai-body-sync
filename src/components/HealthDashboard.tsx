@@ -48,6 +48,9 @@ export const HealthDashboard = () => {
 
   // Calculate TDEE and strength metrics when data changes
   const healthMetrics = useMemo(() => {
+    console.log('Calculating healthMetrics with whoopData:', whoopData);
+    console.log('StrongLifts data available:', whoopData?.stronglifts?.length || 0);
+    
     const tdeeData = calculateTDEE(
       DEFAULT_USER_PROFILE.weight,
       DEFAULT_USER_PROFILE.height,
@@ -60,6 +63,9 @@ export const HealthDashboard = () => {
     const strengthMetrics = whoopData?.stronglifts 
       ? calculateStrengthMetrics(whoopData.stronglifts)
       : null;
+
+    console.log('Calculated strengthMetrics:', strengthMetrics);
+    console.log('TDEE data:', tdeeData);
 
     return { tdeeData, strengthMetrics };
   }, [whoopData]);
