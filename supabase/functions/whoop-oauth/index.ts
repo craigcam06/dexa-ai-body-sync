@@ -15,8 +15,10 @@ serve(async (req) => {
   if (req.method === 'GET') {
     const clientId = Deno.env.get('WHOOP_CLIENT_ID')
     
+    console.log('GET request for client config, clientId available:', !!clientId)
+    
     if (!clientId) {
-      console.error('Missing WHOOP_CLIENT_ID')
+      console.error('Missing WHOOP_CLIENT_ID secret')
       return new Response(
         JSON.stringify({ error: 'Client configuration not available' }),
         { 
