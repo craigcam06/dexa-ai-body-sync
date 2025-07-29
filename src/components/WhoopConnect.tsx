@@ -71,10 +71,15 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     }
   };
 
-  const connectWhoop = () => {
+  const connectWhoop = async () => {
     console.log('connectWhoop button clicked - this should show REAL WHOOP CONNECTION');
-    const authUrl = whoopService.getAuthorizationUrl();
-    window.location.href = authUrl;
+    try {
+      const authUrl = await whoopService.getAuthorizationUrl();
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Failed to get authorization URL:', error);
+      setError('Failed to initiate OAuth flow');
+    }
   };
 
   const disconnectWhoop = () => {

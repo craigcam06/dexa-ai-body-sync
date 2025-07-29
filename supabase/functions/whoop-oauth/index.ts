@@ -11,6 +11,30 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Handle GET request for client configuration
+  if (req.method === 'GET') {
+    const clientId = Deno.env.get('WHOOP_CLIENT_ID')
+    
+    if (!clientId) {
+      console.error('Missing WHOOP_CLIENT_ID')
+      return new Response(
+        JSON.stringify({ error: 'Client configuration not available' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    return new Response(
+      JSON.stringify({ client_id: clientId }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  }
+
   try {
     const { code } = await req.json()
     
@@ -24,6 +48,23 @@ serve(async (req) => {
       )
     }
 
+    const clientId = Deno.env.get('WHOOP_CLIENT_ID')
+    const clientSecret = Deno.env.get('WHOOP_CLIENT_SECRET')
+    const redirectUri = `https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth`
+
+    if (!clientId || !clientSecret) {
+      console.error('Missing WHOOP_CLIENT_ID or WHOOP_CLIENT_SECRET')
+      return new Response(
+        JSON.stringify({ error: 'OAuth configuration incomplete' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('Exchanging code for token with:', { clientId, redirectUri, code })
+
     // Exchange authorization code for access token
     const tokenResponse = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
       method: 'POST',
@@ -32,9 +73,9 @@ serve(async (req) => {
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
-        client_id: '641ac502-42e1-4c38-8b51-15e0c5b5cbef',
-        client_secret: Deno.env.get('WHOOP_CLIENT_SECRET') || '',
-        redirect_uri: 'https://dexa-ai-body-sync.lovable.app/auth/whoop/callback',
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
         code: code,
       }),
     })
