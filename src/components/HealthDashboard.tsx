@@ -109,7 +109,7 @@ export const HealthDashboard = () => {
       {/* Key Metrics - Row 1: Body Composition & Recovery */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <MetricCard
-          title="Body Fat %"
+          title="Body Fat Progress"
           value={`${mockData.bodyComposition.bodyFat.current}%`}
           target={`Target: ${mockData.bodyComposition.bodyFat.target}%`}
           trend={mockData.bodyComposition.bodyFat.trend}
@@ -118,7 +118,7 @@ export const HealthDashboard = () => {
           tooltip="Body fat percentage from latest DEXA scan. Target is optimal range for your physique goals."
         />
         <MetricCard
-          title="Lean Mass"
+          title="Lean Mass Progress"
           value={`${mockData.bodyComposition.leanMass.current} lbs`}
           target={`+${mockData.bodyComposition.leanMass.trend} lbs`}
           trend={mockData.bodyComposition.leanMass.trend}
