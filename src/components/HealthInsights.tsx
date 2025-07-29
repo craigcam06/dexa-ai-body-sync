@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Download, TrendingUp, AlertTriangle, CheckCircle, Sparkles, Heart, Moon, Dumbbell, Activity, Calendar } from 'lucide-react';
+import { Target, Download, TrendingUp, AlertTriangle, CheckCircle, Sparkles, Heart, Moon, Dumbbell, Activity, Calendar, Network } from 'lucide-react';
 import { ParsedWhoopData } from '@/types/whoopData';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  analyzeHealthCorrelations, 
+  CorrelationInsight, 
+  CorrelationRecommendation 
+} from '@/utils/correlationAnalysis';
 
 interface HealthInsightsProps {
   whoopData?: ParsedWhoopData;
@@ -30,14 +35,25 @@ interface Recommendation {
 export function HealthInsights({ whoopData }: HealthInsightsProps) {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [correlationInsights, setCorrelationInsights] = useState<CorrelationInsight[]>([]);
+  const [correlationRecommendations, setCorrelationRecommendations] = useState<CorrelationRecommendation[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     if (whoopData) {
       generateInsights();
       generateRecommendations();
+      generateCorrelationAnalysis();
     }
   }, [whoopData]);
+
+  const generateCorrelationAnalysis = () => {
+    if (!whoopData) return;
+    
+    const { insights: corrInsights, recommendations: corrRecs } = analyzeHealthCorrelations(whoopData);
+    setCorrelationInsights(corrInsights);
+    setCorrelationRecommendations(corrRecs);
+  };
 
   // Calculate overall health score
   const calculateHealthScore = (): number => {
@@ -429,6 +445,102 @@ export function HealthInsights({ whoopData }: HealthInsightsProps) {
                   training balance ({Math.round(healthScore * 0.2)}%), and consistency ({Math.round(healthScore * 0.25)}%)
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Correlation Insights */}
+      {correlationInsights.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Network className="h-5 w-5" />
+              Cross-Metric Correlations
+            </CardTitle>
+            <CardDescription>
+              Intelligent analysis of relationships between your health metrics
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {correlationInsights.map((insight, index) => (
+                <div key={index} className="p-4 rounded-lg border bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+                  <div className="flex items-start gap-3">
+                    <Network className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-medium text-blue-900">{insight.title}</h4>
+                        <Badge className={`${insight.strength === 'strong' ? 'bg-green-100 text-green-800' : 
+                                          insight.strength === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
+                                          'bg-blue-100 text-blue-800'}`}>
+                          {insight.strength} {insight.direction}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {Math.round(insight.confidence * 100)}% confidence
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-blue-800">{insight.message}</p>
+                      <div className="bg-white/60 border border-blue-300 rounded-md p-2">
+                        <p className="text-sm font-medium text-blue-900">
+                          🎯 {insight.actionable}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Correlation-Based Recommendations */}
+      {correlationRecommendations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              AI-Powered Recommendations
+            </CardTitle>
+            <CardDescription>
+              Data-driven action items based on correlation analysis
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {correlationRecommendations.map((rec, index) => {
+                const IconComponent = getCategoryIcon(rec.category);
+                return (
+                  <div key={index} className="flex items-start gap-3 p-4 rounded-lg border bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+                    <div className="flex-shrink-0">
+                      <IconComponent className="h-5 w-5 text-purple-600 mt-1" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-medium text-purple-900">{rec.title}</h4>
+                        <Badge className={`${rec.priority === 'high' ? 'bg-red-100 text-red-800' : 
+                                          rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                          'bg-blue-100 text-blue-800'}`}>
+                          {rec.priority}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {Math.round(rec.confidence * 100)}% data confidence
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-purple-800">{rec.description}</p>
+                      <div className="bg-white/60 border border-purple-300 rounded-md p-2">
+                        <p className="text-sm font-medium text-purple-900">
+                          💡 {rec.action}
+                        </p>
+                      </div>
+                      <p className="text-xs text-purple-600">
+                        Based on: {rec.basedOn.join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
