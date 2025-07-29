@@ -286,18 +286,33 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* API Key Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">OpenAI API Key {!apiKey && <span className="text-red-500">*</span>}</label>
+            <Input
+              type="password"
+              placeholder="Enter your OpenAI API key to enable AI coaching"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Your API key is stored locally and used only for generating personalized advice.{' '}
+              <a 
+                href="https://platform.openai.com/api-keys" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
+                Get your API key here
+              </a>
+            </p>
+          </div>
+
+          {/* Chat Interface Preview */}
           {!apiKey && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">OpenAI API Key</label>
-              <Input
-                type="password"
-                placeholder="Enter your OpenAI API key to enable AI coaching"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Your API key is stored locally and used only for generating personalized advice
-              </p>
+            <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center bg-muted/30">
+              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground mb-2">AI Chat Interface</p>
+              <p className="text-xs text-muted-foreground">Enter your OpenAI API key above to unlock personalized health coaching</p>
             </div>
           )}
 
@@ -357,25 +372,29 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
             </div>
           )}
 
-          {/* Sample Questions */}
-          {chatMessages.length === 0 && apiKey && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {[
-                "How's my recovery trending?",
-                "Should I train today?",
-                "What can improve my sleep?",
-                "Analyze my training load"
-              ].map((question) => (
-                <Button
-                  key={question}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setUserInput(question)}
-                  className="text-left justify-start h-auto p-2"
-                >
-                  {question}
-                </Button>
-              ))}
+          {/* Sample Questions - Show even without API key */}
+          {chatMessages.length === 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Sample questions you can ask:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {[
+                  "How's my recovery trending?",
+                  "Should I train today?",
+                  "What can improve my sleep?",
+                  "Analyze my training load"
+                ].map((question) => (
+                  <Button
+                    key={question}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => apiKey ? setUserInput(question) : null}
+                    disabled={!apiKey}
+                    className="text-left justify-start h-auto p-2 opacity-60"
+                  >
+                    {question}
+                  </Button>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
