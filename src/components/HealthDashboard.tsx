@@ -210,20 +210,20 @@ export const HealthDashboard = () => {
         <MetricCard
           title="Body Fat Progress"
           value={`${mockData.bodyComposition.bodyFat.current}%`}
-          target={`Target: ${mockData.bodyComposition.bodyFat.target}%`}
+          target={`Target: ${mockData.bodyComposition.bodyFat.target}% by 9/30`}
           trend={-mockData.bodyComposition.bodyFat.trend} // Invert: increases show as negative (red)
           icon={Target}
           variant="primary"
-          tooltip="Body fat percentage from latest DEXA scan. Target is optimal range for your physique goals."
+          tooltip="Body fat percentage from latest DEXA scan. Target is 18% by September 30th for optimal physique."
         />
         <MetricCard
           title="Lean Mass Progress"
           value={`${mockData.bodyComposition.leanMass.current} lbs`}
-          target={`Target: +5 lbs`}
+          target={`Target: +5 lbs by 10/30`}
           trend={mockData.bodyComposition.leanMass.trend}
           icon={Dumbbell}
           variant="success"
-          tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass while losing fat."
+          tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass by October 30th."
         />
         <MetricCard
           title="Recovery Score"
