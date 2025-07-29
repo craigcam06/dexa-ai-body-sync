@@ -289,17 +289,12 @@ export const HealthDashboard = () => {
 
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
-          <Tabs defaultValue="insights" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
+          <Tabs defaultValue="upload" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Upload</span>
                 <span className="sm:hidden">Upload</span>
-              </TabsTrigger>
-              <TabsTrigger value="insights" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Insights</span>
-                <span className="sm:hidden">Info</span>
               </TabsTrigger>
               <TabsTrigger value="goals" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Target className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -337,9 +332,6 @@ export const HealthDashboard = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="insights">
-              <HealthInsights whoopData={whoopData} />
-            </TabsContent>
             
             <TabsContent value="goals">
               <GoalSetting whoopData={whoopData} />
