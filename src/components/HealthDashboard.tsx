@@ -23,6 +23,7 @@ import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
+import { AppleHealthConnect } from "./AppleHealthConnect";
 import { DataAnalytics } from "./DataAnalytics";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 
@@ -207,6 +208,7 @@ export const HealthDashboard = () => {
             </TabsContent>
             
             <TabsContent value="devices" className="space-y-4">
+              <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
               <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
             </TabsContent>
           </Tabs>
