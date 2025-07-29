@@ -162,6 +162,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       stronglifts: consolidated.stronglifts.length
     });
 
+    console.log('Calling onDataUpdate with:', consolidated);
     onDataUpdate(consolidated);
     
     toast({
