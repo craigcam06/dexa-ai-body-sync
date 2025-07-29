@@ -27,27 +27,68 @@ export class CSVParser {
   static detectDataType(headers: string[]): 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown' {
     const headerStr = headers.join(',').toLowerCase();
     
-    if (headerStr.includes('recovery_score') || headerStr.includes('hrv')) {
+    // Recovery indicators
+    if (headerStr.includes('recovery') || headerStr.includes('hrv') || 
+        headerStr.includes('resting heart rate') || headerStr.includes('rhr') ||
+        headerStr.includes('readiness') || headerStr.includes('recovery score')) {
       return 'recovery';
-    } else if (headerStr.includes('sleep_efficiency') || headerStr.includes('total_sleep')) {
+    }
+    
+    // Sleep indicators  
+    if (headerStr.includes('sleep') || headerStr.includes('bed time') || 
+        headerStr.includes('wake time') || headerStr.includes('sleep efficiency') ||
+        headerStr.includes('rem') || headerStr.includes('deep sleep') ||
+        headerStr.includes('light sleep') || headerStr.includes('total sleep')) {
       return 'sleep';
-    } else if (headerStr.includes('strain_score') || headerStr.includes('workout')) {
+    }
+    
+    // Workout indicators
+    if (headerStr.includes('strain') || headerStr.includes('workout') || 
+        headerStr.includes('activity') || headerStr.includes('exercise') ||
+        headerStr.includes('kilojoule') || headerStr.includes('max heart rate') ||
+        headerStr.includes('average heart rate') || headerStr.includes('calories burned')) {
       return 'workout';
-    } else if (headerStr.includes('steps') || headerStr.includes('calories')) {
+    }
+    
+    // Daily/general indicators
+    if (headerStr.includes('steps') || headerStr.includes('daily') ||
+        headerStr.includes('ambient') || headerStr.includes('temperature') ||
+        headerStr.includes('day strain') || headerStr.includes('calories')) {
       return 'daily';
     }
     
+    // If we can't detect, let's be more lenient and try to parse as daily data
+    console.log('Could not detect data type from headers:', headers);
     return 'unknown';
   }
 
   static parseRecoveryData(rows: string[][], headers: string[]): WhoopRecoveryData[] {
     const data: WhoopRecoveryData[] = [];
     
-    const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('day'));
-    const recoveryIndex = headers.findIndex(h => h.toLowerCase().includes('recovery_score') || h.toLowerCase().includes('recovery'));
-    const hrvIndex = headers.findIndex(h => h.toLowerCase().includes('hrv') || h.toLowerCase().includes('rmssd'));
-    const rhrIndex = headers.findIndex(h => h.toLowerCase().includes('resting') && h.toLowerCase().includes('heart'));
-    const tempIndex = headers.findIndex(h => h.toLowerCase().includes('skin') && h.toLowerCase().includes('temp'));
+    // More flexible header matching
+    const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('date') || 
+      h.toLowerCase().includes('day') || 
+      h.toLowerCase().includes('time')
+    );
+    const recoveryIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('recovery') || 
+      h.toLowerCase().includes('readiness')
+    );
+    const hrvIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('hrv') || 
+      h.toLowerCase().includes('rmssd') ||
+      h.toLowerCase().includes('variability')
+    );
+    const rhrIndex = headers.findIndex(h => 
+      (h.toLowerCase().includes('resting') && h.toLowerCase().includes('heart')) ||
+      h.toLowerCase().includes('rhr') ||
+      h.toLowerCase().includes('rest hr')
+    );
+    const tempIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('temp') && 
+      (h.toLowerCase().includes('skin') || h.toLowerCase().includes('body'))
+    );
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -205,12 +246,15 @@ export class CSVParser {
       }
 
       const headers = rows[0];
+      console.log('CSV Headers found:', headers);
+      
       const dataType = this.detectDataType(headers);
+      console.log('Detected data type:', dataType);
       
       if (dataType === 'unknown') {
         return {
           success: false,
-          error: 'Could not detect data type. Please ensure your CSV contains Whoop data with appropriate headers.'
+          error: `Could not detect data type from headers: ${headers.join(', ')}. Expected Whoop data with headers like 'Recovery Score', 'Sleep Efficiency', 'Strain Score', or 'Steps'.`
         };
       }
 
