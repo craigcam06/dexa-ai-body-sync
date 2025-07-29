@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Heart, Activity, Moon, Zap, AlertCircle, CheckCircle } from "lucide-react";
+import { Heart, Activity, Moon, Zap, AlertCircle, CheckCircle, Upload, ExternalLink } from "lucide-react";
 import { whoopService, WhoopRecovery, WhoopSleep, WhoopWorkout } from "@/services/whoopApi";
+import { CSVUploader } from "./CSVUploader";
+import { ParsedWhoopData } from "@/types/whoopData";
 
 interface WhoopConnectProps {
   onDataUpdate?: (data: any) => void;
@@ -14,6 +17,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [csvData, setCsvData] = useState<ParsedWhoopData | null>(null);
   const [whoopData, setWhoopData] = useState<{
     recovery: WhoopRecovery | null;
     sleep: WhoopSleep[];
@@ -23,6 +27,24 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     sleep: [],
     workouts: []
   });
+
+  const handleCSVDataUpdate = (data: ParsedWhoopData) => {
+    setCsvData(data);
+    // Convert CSV data to format expected by dashboard
+    if (data.recovery.length > 0) {
+      const latestRecovery = data.recovery[data.recovery.length - 1];
+      onDataUpdate?.({
+        recovery: {
+          score: {
+            recovery_score: latestRecovery.recovery_score,
+            hrv_rmssd_milli: latestRecovery.hrv_rmssd_milli,
+            resting_heart_rate: latestRecovery.resting_heart_rate,
+            skin_temp_celsius: latestRecovery.skin_temp_celsius
+          }
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     // Check if already authenticated
@@ -103,129 +125,87 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     return `${hours}h ${minutes}m`;
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !csvData) {
     return (
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-destructive" />
-            Connect Whoop
+            <Heart className="h-5 w-5 text-primary" />
+            Whoop Integration
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Connect your Whoop device to track recovery, sleep, and strain data in real-time.
-          </p>
-          
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Demo mode: Real Whoop integration requires secure backend setup. 
-              Click below to see the integration interface.
-            </AlertDescription>
-          </Alert>
-          
-          <Button 
-            onClick={() => {
-              // Demo: Show what the connection interface would look like
-              setIsAuthenticated(true);
-              setWhoopData({
-                recovery: {
-                  cycle_id: 1,
-                  sleep_id: 1,
-                  user_id: 1,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                  score_state: "scored",
-                  score: {
-                    user_calibrating: false,
-                    recovery_score: 85,
-                    resting_heart_rate: 52,
-                    hrv_rmssd_milli: 45,
-                    spo2_percentage: 97.5,
-                    skin_temp_celsius: 36.2
-                  }
-                },
-                sleep: [
-                  {
-                    id: 1,
-                    user_id: 1,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    start: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-                    end: new Date(Date.now()).toISOString(),
-                    timezone_offset: "-08:00",
-                    nap: false,
-                    score_state: "scored",
-                    score: {
-                      stage_summary: {
-                        total_in_bed_time_milli: 8 * 60 * 60 * 1000,
-                        total_awake_time_milli: 30 * 60 * 1000,
-                        total_no_data_time_milli: 0,
-                        total_light_sleep_time_milli: 3.5 * 60 * 60 * 1000,
-                        total_slow_wave_sleep_time_milli: 2 * 60 * 60 * 1000,
-                        total_rem_sleep_time_milli: 2 * 60 * 60 * 1000,
-                        sleep_cycle_count: 5,
-                        disturbance_count: 2
-                      },
-                      sleep_needed: {
-                        baseline_milli: 8 * 60 * 60 * 1000,
-                        need_from_sleep_debt_milli: 0,
-                        need_from_recent_strain_milli: 30 * 60 * 1000,
-                        need_from_recent_nap_milli: 0
-                      },
-                      respiratory_rate: 14.5,
-                      sleep_performance_percentage: 87,
-                      sleep_consistency_percentage: 92,
-                      sleep_efficiency_percentage: 95
-                    }
-                  }
-                ],
-                workouts: [
-                  {
-                    id: 1,
-                    user_id: 1,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                    end: new Date(Date.now() - 23 * 60 * 60 * 1000).toISOString(),
-                    timezone_offset: "-08:00",
-                    sport_id: 1,
-                    score_state: "scored",
-                    score: {
-                      strain: 16.2,
-                      average_heart_rate: 145,
-                      max_heart_rate: 185,
-                      kilojoule: 1250,
-                      percent_recorded: 98,
-                      distance_meter: 5000,
-                      altitude_gain_meter: 150,
-                      altitude_change_meter: 75,
-                      zone_duration: {
-                        zone_zero_milli: 0,
-                        zone_one_milli: 10 * 60 * 1000,
-                        zone_two_milli: 15 * 60 * 1000,
-                        zone_three_milli: 20 * 60 * 1000,
-                        zone_four_milli: 10 * 60 * 1000,
-                        zone_five_milli: 5 * 60 * 1000
-                      }
-                    }
-                  }
-                ]
-              });
-            }}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? 'Connecting...' : 'Demo Whoop Connection'}
-          </Button>
-          
-          <div className="text-xs text-muted-foreground space-y-1">
-            <p>• Recovery & strain tracking</p>
-            <p>• Sleep performance analysis</p>
-            <p>• Workout data integration</p>
-            <p>• Heart rate variability</p>
-          </div>
+        <CardContent>
+          <Tabs defaultValue="csv" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="csv" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                CSV Upload
+              </TabsTrigger>
+              <TabsTrigger value="api" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                API Connect
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="csv">
+              <CSVUploader onDataUpdate={handleCSVDataUpdate} />
+              {csvData && (
+                <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg">
+                  <p className="text-sm font-medium text-success">CSV Data Loaded</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recovery: {csvData.recovery.length} • Sleep: {csvData.sleep.length} • 
+                    Workouts: {csvData.workouts.length} • Daily: {csvData.daily.length}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="api" className="space-y-4">
+              <div className="text-center py-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-primary rounded-full flex items-center justify-center">
+                  <Activity className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <h3 className="font-semibold mb-2">Connect Your Whoop Account</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Sync your recovery, sleep, and strain data automatically
+                </p>
+                
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Demo mode: Real Whoop integration requires developer API keys. 
+                    Use CSV upload for now or apply for developer access.
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="mt-4 space-y-3">
+                  <Button 
+                    onClick={() => {
+                      // Demo connection
+                      setIsAuthenticated(true);
+                      // Set demo data...
+                    }}
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    {isLoading ? 'Connecting...' : 'Demo API Connection'}
+                  </Button>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    Need real API access? 
+                    <a 
+                      href="https://developer.whoop.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline ml-1"
+                    >
+                      Apply here <ExternalLink className="h-3 w-3 inline" />
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     );

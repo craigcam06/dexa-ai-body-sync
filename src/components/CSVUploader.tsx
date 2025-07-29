@@ -1,0 +1,266 @@
+import { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
+import { Upload, FileText, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
+import { CSVParser } from '@/utils/csvParser';
+import { ParsedWhoopData } from '@/types/whoopData';
+
+interface CSVUploaderProps {
+  onDataUpdate: (data: ParsedWhoopData) => void;
+}
+
+interface UploadedFile {
+  file: File;
+  name: string;
+  type: 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown';
+  rows: number;
+  status: 'uploaded' | 'processing' | 'processed' | 'error';
+  data?: any[];
+  error?: string;
+}
+
+export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const csvFiles = acceptedFiles.filter(file => 
+      file.type === 'text/csv' || file.name.endsWith('.csv')
+    );
+
+    if (csvFiles.length === 0) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload CSV files only",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    for (const file of csvFiles) {
+      const newFile: UploadedFile = {
+        file,
+        name: file.name,
+        type: 'unknown',
+        rows: 0,
+        status: 'uploaded'
+      };
+
+      setUploadedFiles(prev => [...prev, newFile]);
+
+      try {
+        newFile.status = 'processing';
+        setUploadedFiles(prev => prev.map(f => f.file === file ? newFile : f));
+
+        const result = await CSVParser.parseWhoopCSV(file);
+
+        if (result.success && result.data) {
+          let dataType: 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown' = 'unknown';
+          
+          if (result.data.recovery.length > 0) dataType = 'recovery';
+          else if (result.data.sleep.length > 0) dataType = 'sleep';
+          else if (result.data.workouts.length > 0) dataType = 'workout';
+          else if (result.data.daily.length > 0) dataType = 'daily';
+          
+          newFile.status = 'processed';
+          newFile.type = dataType;
+          newFile.rows = result.rowsProcessed || 0;
+          
+          if (dataType === 'workout' && result.data.workouts) {
+            newFile.data = result.data.workouts;
+          } else if (dataType !== 'unknown') {
+            newFile.data = result.data[dataType as keyof Pick<ParsedWhoopData, 'recovery' | 'sleep' | 'daily'>];
+          }
+          
+          toast({
+            title: "File processed successfully",
+            description: `${file.name} - ${result.rowsProcessed} rows processed`,
+          });
+        } else {
+          newFile.status = 'error';
+          newFile.error = result.error;
+          
+          toast({
+            title: "Processing failed",
+            description: result.error,
+            variant: "destructive",
+          });
+        }
+
+        setUploadedFiles(prev => prev.map(f => f.file === file ? newFile : f));
+      } catch (error) {
+        newFile.status = 'error';
+        newFile.error = error instanceof Error ? error.message : 'Unknown error';
+        setUploadedFiles(prev => prev.map(f => f.file === file ? newFile : f));
+      }
+    }
+
+    setIsProcessing(false);
+  }, [toast]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'text/csv': ['.csv'],
+    },
+    multiple: true,
+  });
+
+  const removeFile = (file: File) => {
+    setUploadedFiles(prev => prev.filter(f => f.file !== file));
+  };
+
+  const consolidateAndUpdate = () => {
+    const processedFiles = uploadedFiles.filter(f => f.status === 'processed' && f.data);
+    
+    const consolidatedData: ParsedWhoopData = {
+      recovery: [],
+      sleep: [],
+      workouts: [],
+      daily: []
+    };
+
+    processedFiles.forEach(file => {
+      if (file.data && file.type !== 'unknown') {
+        if (file.type === 'workout') {
+          consolidatedData.workouts.push(...file.data);
+        } else {
+          consolidatedData[file.type as keyof Pick<ParsedWhoopData, 'recovery' | 'sleep' | 'daily'>].push(...file.data);
+        }
+      }
+    });
+
+    onDataUpdate(consolidatedData);
+    
+    toast({
+      title: "Data updated",
+      description: `Consolidated data from ${processedFiles.length} files`,
+    });
+  };
+
+  const getTypeIcon = (status: string) => {
+    switch (status) {
+      case 'processed':
+        return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
+      case 'processing':
+        return <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />;
+      default:
+        return <FileText className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getTypeBadgeColor = (type: string) => {
+    switch (type) {
+      case 'recovery': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'sleep': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'workout': return 'bg-green-100 text-green-800 border-green-200';
+      case 'daily': return 'bg-orange-100 text-orange-800 border-orange-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const processedCount = uploadedFiles.filter(f => f.status === 'processed').length;
+
+  return (
+    <Card className="shadow-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="h-5 w-5 text-primary" />
+          Upload Whoop CSV Data
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Upload Zone */}
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+            isDragActive
+              ? 'border-primary bg-primary/5'
+              : 'border-muted-foreground/25 hover:border-primary/50'
+          }`}
+        >
+          <input {...getInputProps()} />
+          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+          {isDragActive ? (
+            <p className="text-primary">Drop your CSV files here...</p>
+          ) : (
+            <div>
+              <p className="font-medium">Drop CSV files here or click to browse</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Supports Recovery, Sleep, Workout, and Daily data files
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Processing Progress */}
+        {isProcessing && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Processing files...</p>
+            <Progress value={undefined} className="h-2" />
+          </div>
+        )}
+
+        {/* Uploaded Files List */}
+        {uploadedFiles.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-medium">Uploaded Files</h4>
+            {uploadedFiles.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-3">
+                  {getTypeIcon(file.status)}
+                  <div>
+                    <p className="font-medium text-sm">{file.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs ${getTypeBadgeColor(file.type)}`}
+                      >
+                        {file.type}
+                      </Badge>
+                      {file.rows > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {file.rows} rows
+                        </span>
+                      )}
+                    </div>
+                    {file.error && (
+                      <p className="text-xs text-destructive mt-1">{file.error}</p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(file.file)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Update Button */}
+        {processedCount > 0 && (
+          <Button 
+            onClick={consolidateAndUpdate}
+            className="w-full"
+          >
+            Update Dashboard with CSV Data ({processedCount} files)
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
