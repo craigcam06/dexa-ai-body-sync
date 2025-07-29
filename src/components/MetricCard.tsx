@@ -37,9 +37,9 @@ export const MetricCard = ({
 
   return (
     <Card className={cn("shadow-card transition-smooth hover:shadow-primary", variantStyles[variant])}>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <Icon className={cn("h-6 w-6", iconStyles[variant])} />
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <Icon className={cn("h-5 w-5", iconStyles[variant])} />
           {trend !== undefined && (
             <Badge 
               variant={trend >= 0 ? "default" : "secondary"} 
@@ -60,11 +60,11 @@ export const MetricCard = ({
           )}
         </div>
         
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
+          <p className="text-xl font-bold text-foreground">{value}</p>
           {target && (
-            <p className="text-sm text-muted-foreground">{target}</p>
+            <p className="text-xs text-muted-foreground">{target}</p>
           )}
         </div>
       </CardContent>
