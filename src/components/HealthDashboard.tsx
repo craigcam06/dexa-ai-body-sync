@@ -143,7 +143,13 @@ export const HealthDashboard = () => {
     
     // Delayed verification to check if state persisted
     setTimeout(() => {
-      console.log('⏱️ whoopData state 1 second later:', whoopData);
+      console.log('⏱️ Checking localStorage after setState...');
+      const savedData = localStorage.getItem('healthDashboardData');
+      if (savedData) {
+        console.log('✅ Data still exists in localStorage');
+      } else {
+        console.log('❌ Data missing from localStorage');
+      }
     }, 1000);
   };
 
