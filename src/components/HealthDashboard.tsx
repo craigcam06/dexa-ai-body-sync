@@ -103,9 +103,9 @@ export const HealthDashboard = () => {
           variant="accent"
         />
         <MetricCard
-          title={whoopData?.stronglifts?.length > 0 ? "Max Squat" : "Metabolic Flex"}
+          title="Max Squat"
           value={whoopData?.stronglifts?.length > 0 ? 
-            `${Math.max(...whoopData.stronglifts.map((s: any) => s.weight).filter((w: number) => w < 500))}lbs` : 
+            `${Math.max(...whoopData.stronglifts.filter((s: any) => s.weight < 500).map((s: any) => s.weight))}lbs` : 
             `${mockData.devices.lumen.metabolicFlex}%`
           }
           target={whoopData?.stronglifts?.length > 0 ? "StrongLifts" : "Lumen"}
