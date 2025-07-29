@@ -126,7 +126,7 @@ export const HealthDashboard = () => {
 
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
-          <Tabs defaultValue="coach" className="space-y-4">
+          <Tabs defaultValue="devices" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="coach" className="flex items-center gap-2">
                 <Brain className="h-4 w-4" />
