@@ -427,6 +427,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
               <AlertTriangle className="h-5 w-5 text-red-500" />
               <h3 className="font-semibold">Critical Alerts</h3>
             </div>
+            <div className="grid md:grid-cols-2 gap-4">
             {activeNotifications.map((notification) => (
               <Alert key={notification.id} variant={getAlertVariant(notification.type)}>
                 <div className="flex items-start justify-between">
@@ -463,6 +464,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
                 </div>
               </Alert>
             ))}
+            </div>
           </div>
         )}
 
