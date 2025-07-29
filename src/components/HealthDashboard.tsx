@@ -26,7 +26,6 @@ import { WhoopConnect } from "./WhoopConnect";
 import { AppleHealthConnect } from "./AppleHealthConnect";
 import { DataAnalytics } from "./DataAnalytics";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
-import { CombinedVolumeCard } from "./CombinedVolumeCard";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
 const mockData = {
@@ -201,14 +200,20 @@ export const HealthDashboard = () => {
           variant="warning"
           tooltip="Total Daily Energy Expenditure calculated from BMR + activity level. Use this for calorie targets - deficit for fat loss, surplus for muscle gain."
         />
-        <CombinedVolumeCard
-          weeklyVolume={healthMetrics.strengthMetrics?.weekly.volume}
-          weeklyWorkouts={healthMetrics.strengthMetrics?.weekly.workouts}
-          weeklySets={healthMetrics.strengthMetrics?.weekly.sets}
-          monthlyVolume={healthMetrics.strengthMetrics?.monthly.volume}
-          monthlyWorkouts={healthMetrics.strengthMetrics?.monthly.workouts}
-          monthlySets={healthMetrics.strengthMetrics?.monthly.sets}
-          tooltip="Training volume comparison showing weekly vs 30-day totals. Monthly should always be higher than weekly, showing overall training consistency."
+        <MetricCard
+          title="Weekly Volume"
+          value={healthMetrics.strengthMetrics?.weekly.volume 
+            ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
+            : "No data"
+          }
+          target={healthMetrics.strengthMetrics?.weekly.sets 
+            ? `${healthMetrics.strengthMetrics.weekly.sets} sets`
+            : "Upload CSV data"
+          }
+          trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
+          icon={Dumbbell}
+          variant="primary"
+          tooltip="Total weight lifted in past 7 days. Most actionable metric for tracking training intensity and weekly consistency."
         />
         <MetricCard
           title="Sleep Quality"
