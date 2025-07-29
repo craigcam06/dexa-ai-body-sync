@@ -475,7 +475,7 @@ export function HealthInsightsDashboard({ whoopData }: HealthInsightsDashboardPr
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
-                <h3 className="font-semibold">Data Insights</h3>
+                <h3 className="font-semibold">Correlation Insights</h3>
                 <Badge variant="outline" className="text-xs">
                   {correlationAnalysis.insights.length} found
                 </Badge>
