@@ -27,10 +27,11 @@ export class CSVParser {
   static detectDataType(headers: string[]): 'recovery' | 'sleep' | 'workout' | 'daily' | 'unknown' {
     const headerStr = headers.join(',').toLowerCase();
     
-    // Recovery indicators
+    // Recovery indicators (including comprehensive physiological data)
     if (headerStr.includes('recovery') || headerStr.includes('hrv') || 
         headerStr.includes('resting heart rate') || headerStr.includes('rhr') ||
-        headerStr.includes('readiness') || headerStr.includes('recovery score')) {
+        headerStr.includes('readiness') || headerStr.includes('recovery score') ||
+        headerStr.includes('heart rate variability') || headerStr.includes('skin temp')) {
       return 'recovery';
     }
     
@@ -65,27 +66,32 @@ export class CSVParser {
   static parseRecoveryData(rows: string[][], headers: string[]): WhoopRecoveryData[] {
     const data: WhoopRecoveryData[] = [];
     
-    // More flexible header matching
+    // More flexible header matching for physiological data
     const dateIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('cycle start time') ||
       h.toLowerCase().includes('date') || 
       h.toLowerCase().includes('day') || 
       h.toLowerCase().includes('time')
     );
     const recoveryIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('recovery score') || 
       h.toLowerCase().includes('recovery') || 
       h.toLowerCase().includes('readiness')
     );
     const hrvIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('heart rate variability') ||
       h.toLowerCase().includes('hrv') || 
       h.toLowerCase().includes('rmssd') ||
       h.toLowerCase().includes('variability')
     );
     const rhrIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('resting heart rate') ||
       (h.toLowerCase().includes('resting') && h.toLowerCase().includes('heart')) ||
       h.toLowerCase().includes('rhr') ||
       h.toLowerCase().includes('rest hr')
     );
     const tempIndex = headers.findIndex(h => 
+      h.toLowerCase().includes('skin temp') ||
       h.toLowerCase().includes('temp') && 
       (h.toLowerCase().includes('skin') || h.toLowerCase().includes('body'))
     );
