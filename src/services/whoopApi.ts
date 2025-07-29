@@ -99,18 +99,16 @@ class WhoopService {
 
   constructor() {
     this.authConfig = {
-      clientId: '', // Will be fetched from backend
+      clientId: 'YOUR_WHOOP_CLIENT_ID_HERE', // Replace with your actual client ID
       redirectUri: 'https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth',
       scopes: ['read:recovery', 'read:cycles', 'read:workout', 'read:sleep', 'read:profile', 'read:body_measurement']
     };
   }
 
   // Generate OAuth authorization URL  
-  async getAuthorizationUrl(): Promise<string> {
-    const clientId = await this.getClientId();
-    
+  getAuthorizationUrl(): string {
     const params = new URLSearchParams({
-      client_id: clientId,
+      client_id: this.authConfig.clientId,
       redirect_uri: this.authConfig.redirectUri,
       response_type: 'code',
       scope: this.authConfig.scopes.join(' '),
@@ -118,25 +116,6 @@ class WhoopService {
     });
 
     return `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
-  }
-
-  // Get client ID from backend securely
-  private async getClientId(): Promise<string> {
-    const response = await fetch('https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to get client configuration:', errorText);
-      throw new Error('Failed to get client configuration');
-    }
-
-    const data = await response.json();
-    return data.client_id;
   }
 
   // Generate random state for OAuth security
@@ -151,7 +130,10 @@ class WhoopService {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ 
+        code,
+        client_id: this.authConfig.clientId 
+      }),
     });
 
     if (!response.ok) {

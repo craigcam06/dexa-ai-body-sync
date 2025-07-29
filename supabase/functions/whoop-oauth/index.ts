@@ -11,34 +11,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Handle GET request for client configuration
-  if (req.method === 'GET') {
-    const clientId = Deno.env.get('WHOOP_CLIENT_ID')
-    
-    console.log('GET request for client config, clientId available:', !!clientId)
-    
-    if (!clientId) {
-      console.error('Missing WHOOP_CLIENT_ID secret')
-      return new Response(
-        JSON.stringify({ error: 'Client configuration not available' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    return new Response(
-      JSON.stringify({ client_id: clientId }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  }
-
   try {
-    const { code } = await req.json()
+    const body = await req.json()
+    const { code, client_id } = body
     
     if (!code) {
       return new Response(
@@ -50,12 +25,10 @@ serve(async (req) => {
       )
     }
 
-    const clientId = Deno.env.get('WHOOP_CLIENT_ID')
     const clientSecret = Deno.env.get('WHOOP_CLIENT_SECRET')
-    const redirectUri = `https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth`
-
-    if (!clientId || !clientSecret) {
-      console.error('Missing WHOOP_CLIENT_ID or WHOOP_CLIENT_SECRET')
+    
+    if (!clientSecret) {
+      console.error('Missing WHOOP_CLIENT_SECRET')
       return new Response(
         JSON.stringify({ error: 'OAuth configuration incomplete' }),
         { 
@@ -65,7 +38,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('Exchanging code for token with:', { clientId, redirectUri, code })
+    const redirectUri = `https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth`
 
     // Exchange authorization code for access token
     const tokenResponse = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
@@ -75,7 +48,7 @@ serve(async (req) => {
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
-        client_id: clientId,
+        client_id: client_id,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
         code: code,
