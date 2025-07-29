@@ -1,206 +1,385 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  Brain, 
-  MessageSquare, 
-  Lightbulb, 
-  AlertTriangle,
-  CheckCircle,
-  Clock
-} from "lucide-react";
-
-// Mock AI coach insights and recommendations
-const coachInsights = [
-  {
-    type: "success",
-    title: "Great Recovery Trends",
-    message: "Your Whoop data shows 85% recovery. Perfect time for a high-intensity workout today.",
-    priority: "low",
-    timestamp: "2 hours ago"
-  },
-  {
-    type: "warning", 
-    title: "Metabolism Optimization",
-    message: "Lumen shows you're in fat-burning mode. Consider extending your fasting window by 2 hours.",
-    priority: "medium",
-    timestamp: "This morning"
-  },
-  {
-    type: "info",
-    title: "Strength Progress",
-    message: "StrongLifts data suggests increasing squat weight by 5lbs next session based on your lean mass gains.",
-    priority: "high",
-    timestamp: "Yesterday"
-  }
-];
-
-const upcomingActions = [
-  { task: "DEXA Scan", date: "Jan 15", status: "scheduled" },
-  { task: "Nutrition Review", date: "Jan 8", status: "pending" },
-  { task: "Training Adjustment", date: "Jan 5", status: "completed" }
-];
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Brain, TrendingUp, AlertTriangle, CheckCircle, MessageSquare, Send, Sparkles } from 'lucide-react';
+import { ParsedWhoopData } from '@/types/whoopData';
 
 interface AICoachPanelProps {
-  whoopData?: any;
+  whoopData?: ParsedWhoopData;
 }
 
-export const AICoachPanel = ({ whoopData }: AICoachPanelProps) => {
-  // Generate dynamic insights based on real Whoop data
+interface Insight {
+  type: 'success' | 'warning' | 'info';
+  title: string;
+  message: string;
+  metric?: string;
+  value?: number;
+}
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+export function AICoachPanel({ whoopData }: AICoachPanelProps) {
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [userInput, setUserInput] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+
+  useEffect(() => {
+    if (whoopData) {
+      generateInsights();
+    }
+  }, [whoopData]);
+
   const generateInsights = () => {
-    const insights = [...coachInsights];
-    
-    if (whoopData?.recovery) {
-      const recoveryScore = whoopData.recovery.score.recovery_score;
-      const hrv = whoopData.recovery.score.hrv_rmssd_milli;
+    if (!whoopData) return;
+
+    const newInsights: Insight[] = [];
+
+    // Recovery insights
+    if (whoopData.recovery.length > 0) {
+      const latestRecovery = whoopData.recovery[whoopData.recovery.length - 1];
+      const avgRecovery = whoopData.recovery.reduce((sum, r) => sum + r.recovery_score, 0) / whoopData.recovery.length;
       
-      if (recoveryScore >= 80) {
-        insights.unshift({
-          type: "success",
-          title: "Excellent Recovery",
-          message: `Your recovery score of ${recoveryScore}% indicates you're ready for high-intensity training. Consider progressive overload today.`,
-          priority: "high",
-          timestamp: "Live data"
+      if (latestRecovery.recovery_score > avgRecovery + 10) {
+        newInsights.push({
+          type: 'success',
+          title: 'Excellent Recovery',
+          message: `Your latest recovery score of ${latestRecovery.recovery_score}% is ${Math.round(latestRecovery.recovery_score - avgRecovery)}% above your average. Great job!`,
+          metric: 'Recovery',
+          value: latestRecovery.recovery_score
         });
-      } else if (recoveryScore < 60) {
-        insights.unshift({
-          type: "warning",
-          title: "Low Recovery Alert",
-          message: `Recovery at ${recoveryScore}%. Focus on light movement, hydration, and sleep optimization today.`,
-          priority: "high",
-          timestamp: "Live data"
+      } else if (latestRecovery.recovery_score < avgRecovery - 10) {
+        newInsights.push({
+          type: 'warning',
+          title: 'Recovery Needs Attention',
+          message: `Your latest recovery score of ${latestRecovery.recovery_score}% is below your average. Consider prioritizing sleep and stress management.`,
+          metric: 'Recovery',
+          value: latestRecovery.recovery_score
         });
       }
-      
-      if (hrv < 30) {
-        insights.push({
-          type: "info",
-          title: "HRV Optimization",
-          message: `HRV at ${Math.round(hrv)}ms suggests stress management focus. Try breathing exercises or meditation.`,
-          priority: "medium",
-          timestamp: "Live data"
+
+      // HRV insights
+      const avgHRV = whoopData.recovery.reduce((sum, r) => sum + r.hrv_rmssd_milli, 0) / whoopData.recovery.length;
+      if (latestRecovery.hrv_rmssd_milli > avgHRV * 1.1) {
+        newInsights.push({
+          type: 'success',
+          title: 'High HRV',
+          message: 'Your heart rate variability is above average, indicating good autonomic nervous system balance.',
+          metric: 'HRV',
+          value: latestRecovery.hrv_rmssd_milli
         });
       }
     }
-    
-    return insights.slice(0, 4); // Limit to 4 insights
+
+    // Sleep insights
+    if (whoopData.sleep.length > 0) {
+      const latestSleep = whoopData.sleep[whoopData.sleep.length - 1];
+      const avgEfficiency = whoopData.sleep.reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / whoopData.sleep.length;
+      
+      if (latestSleep.sleep_efficiency_percentage < 80) {
+        newInsights.push({
+          type: 'warning',
+          title: 'Sleep Efficiency Low',
+          message: `Your sleep efficiency of ${latestSleep.sleep_efficiency_percentage}% is below optimal. Aim for 85%+ for better recovery.`,
+          metric: 'Sleep Efficiency',
+          value: latestSleep.sleep_efficiency_percentage
+        });
+      }
+
+      const totalSleepHours = latestSleep.total_sleep_time_milli / (1000 * 60 * 60);
+      if (totalSleepHours < 7) {
+        newInsights.push({
+          type: 'warning',
+          title: 'Insufficient Sleep',
+          message: `You only got ${totalSleepHours.toFixed(1)} hours of sleep. Aim for 7-9 hours for optimal performance.`,
+          metric: 'Sleep Duration',
+          value: totalSleepHours
+        });
+      }
+    }
+
+    // Workout insights
+    if (whoopData.workouts.length > 0) {
+      const weeklyStrain = whoopData.workouts
+        .slice(-7)
+        .reduce((sum, w) => sum + w.strain_score, 0);
+      
+      if (weeklyStrain > 70) {
+        newInsights.push({
+          type: 'warning',
+          title: 'High Training Load',
+          message: `Your weekly strain of ${weeklyStrain.toFixed(1)} is quite high. Consider adding more recovery days.`,
+          metric: 'Weekly Strain',
+          value: weeklyStrain
+        });
+      }
+    }
+
+    setInsights(newInsights);
   };
+
+  const handleSendMessage = async () => {
+    if (!userInput.trim() || !apiKey) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: userInput,
+      timestamp: new Date()
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    setUserInput('');
+    setIsAnalyzing(true);
+
+    try {
+      // Generate AI response based on data
+      const response = await generateAIResponse(userInput, whoopData);
+      
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response,
+        timestamp: new Date()
+      };
+
+      setChatMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const generateAIResponse = async (question: string, data?: ParsedWhoopData): Promise<string> => {
+    // Create context from data
+    let context = "You are a health and fitness coach analyzing biometric data. ";
+    
+    if (data) {
+      if (data.recovery.length > 0) {
+        const latest = data.recovery[data.recovery.length - 1];
+        context += `Latest recovery: ${latest.recovery_score}%, HRV: ${latest.hrv_rmssd_milli}ms, RHR: ${latest.resting_heart_rate}bpm. `;
+      }
+      
+      if (data.sleep.length > 0) {
+        const latest = data.sleep[data.sleep.length - 1];
+        const hours = (latest.total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1);
+        context += `Latest sleep: ${hours}h total, ${latest.sleep_efficiency_percentage}% efficiency. `;
+      }
+      
+      if (data.workouts.length > 0) {
+        const latest = data.workouts[data.workouts.length - 1];
+        context += `Latest workout: ${latest.workout_type}, strain ${latest.strain_score}. `;
+      }
+    }
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4.1-2025-04-14',
+          messages: [
+            {
+              role: 'system',
+              content: context + "Provide helpful, personalized advice based on the data. Keep responses concise and actionable."
+            },
+            {
+              role: 'user',
+              content: question
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.7
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      return "I apologize, but I'm having trouble accessing the AI service. Please check your API key and try again.";
+    }
+  };
+
+  const getInsightIcon = (type: string) => {
+    switch (type) {
+      case 'success': return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'warning': return <AlertTriangle className="h-5 w-5 text-orange-500" />;
+      default: return <TrendingUp className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
+  const getInsightBadgeColor = (type: string) => {
+    switch (type) {
+      case 'success': return 'bg-green-100 text-green-800';
+      case 'warning': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      {/* AI Coach Chat */}
-      <Card className="shadow-card">
+    <div className="space-y-6">
+      {/* Data Insights */}
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
-            AI Fitness Coach
+            <Sparkles className="h-5 w-5" />
+            AI Insights
           </CardTitle>
+          <CardDescription>
+            Personalized recommendations based on your biometric data
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {insights.length > 0 ? (
+            <div className="space-y-3">
+              {insights.map((insight, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                  {getInsightIcon(insight.type)}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-medium">{insight.title}</h4>
+                      <Badge className={getInsightBadgeColor(insight.type)}>
+                        {insight.metric}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{insight.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Brain className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>Upload your Whoop data to get personalized insights</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* AI Chat */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            AI Health Coach
+          </CardTitle>
+          <CardDescription>
+            Ask questions about your health data and get personalized advice
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Coach Avatar & Status */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-primary">
-            <Avatar className="border-2 border-primary-foreground/20">
-              <AvatarFallback className="bg-primary-foreground text-primary font-bold">AI</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <p className="font-medium text-primary-foreground">Coach Alex</p>
-              <p className="text-sm text-primary-foreground/80">Analyzing your data...</p>
+          {/* API Key Input */}
+          {!apiKey && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">OpenAI API Key</label>
+              <Input
+                type="password"
+                placeholder="Enter your OpenAI API key to enable AI coaching"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Your API key is stored locally and used only for generating personalized advice
+              </p>
             </div>
-            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-          </div>
+          )}
 
-          {/* Quick Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" className="h-8">
-              <MessageSquare className="h-3 w-3 mr-1" />
-              Ask Coach
-            </Button>
-            <Button variant="outline" size="sm" className="h-8">
-              <Lightbulb className="h-3 w-3 mr-1" />
-              Get Tips
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Real-time Insights */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <Lightbulb className="h-4 w-4 text-accent" />
-            Live Insights
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {generateInsights().map((insight, index) => (
-            <div key={index} className="space-y-2">
-              <div className="flex items-start gap-2">
-                {insight.type === "success" && <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />}
-                {insight.type === "warning" && <AlertTriangle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />}
-                {insight.type === "info" && <Brain className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium">{insight.title}</p>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${
-                        insight.priority === "high" ? "border-destructive text-destructive" :
-                        insight.priority === "medium" ? "border-warning text-warning" :
-                        "border-muted-foreground text-muted-foreground"
-                      }`}
-                    >
-                      {insight.priority}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-1">{insight.message}</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {insight.timestamp}
-                  </p>
-                </div>
-              </div>
-              {index < generateInsights().length - 1 && <div className="border-b border-border" />}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Upcoming Actions */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-primary" />
-            Action Items
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {upcomingActions.map((action, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  action.status === "completed" ? "bg-success" :
-                  action.status === "scheduled" ? "bg-primary" :
-                  "bg-warning"
-                }`} />
-                <span className="text-sm font-medium">{action.task}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{action.date}</span>
-                <Badge 
-                  variant="outline" 
-                  className={`text-xs ${
-                    action.status === "completed" ? "border-success text-success" :
-                    action.status === "scheduled" ? "border-primary text-primary" :
-                    "border-warning text-warning"
-                  }`}
+          {/* Chat Messages */}
+          {chatMessages.length > 0 && (
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {action.status}
-                </Badge>
-              </div>
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Chat Input */}
+          {apiKey && (
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Ask about your recovery, sleep patterns, training load, or any health-related question..."
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="flex-1"
+                rows={2}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!userInput.trim() || isAnalyzing}
+                size="sm"
+                className="self-end"
+              >
+                {isAnalyzing ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Sample Questions */}
+          {chatMessages.length === 0 && apiKey && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {[
+                "How's my recovery trending?",
+                "Should I train today?",
+                "What can improve my sleep?",
+                "Analyze my training load"
+              ].map((question) => (
+                <Button
+                  key={question}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUserInput(question)}
+                  className="text-left justify-start h-auto p-2"
+                >
+                  {question}
+                </Button>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
-};
+}

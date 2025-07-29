@@ -21,6 +21,7 @@ import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
 import { AICoachPanel } from "./AICoachPanel";
 import { WhoopConnect } from "./WhoopConnect";
+import { DataAnalytics } from "./DataAnalytics";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
 const mockData = {
@@ -109,10 +110,14 @@ export const HealthDashboard = () => {
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
           <Tabs defaultValue="coach" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="coach" className="flex items-center gap-2">
                 <Brain className="h-4 w-4" />
                 AI Coach
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Analytics
               </TabsTrigger>
               <TabsTrigger value="devices" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -122,6 +127,10 @@ export const HealthDashboard = () => {
             
             <TabsContent value="coach">
               <AICoachPanel whoopData={whoopData} />
+            </TabsContent>
+            
+            <TabsContent value="analytics">
+              <DataAnalytics whoopData={whoopData} />
             </TabsContent>
             
             <TabsContent value="devices" className="space-y-4">
