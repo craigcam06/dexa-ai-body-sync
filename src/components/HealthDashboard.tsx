@@ -296,7 +296,12 @@ export const HealthDashboard = () => {
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
           <Tabs defaultValue="insights" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
+              <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Upload</span>
+                <span className="sm:hidden">Upload</span>
+              </TabsTrigger>
               <TabsTrigger value="insights" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Insights</span>
@@ -319,6 +324,20 @@ export const HealthDashboard = () => {
               </TabsTrigger>
             </TabsList>
             
+            <TabsContent value="upload">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="h-5 w-5" />
+                    Upload Health Data
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="insights">
               <HealthInsights whoopData={whoopData} />
             </TabsContent>
