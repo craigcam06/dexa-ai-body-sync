@@ -15,10 +15,26 @@ serve(async (req) => {
   }
 
   try {
-    const { message, healthData } = await req.json();
+    console.log('AI Health Coach function called');
+    
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not found');
+      throw new Error('OpenAI API key not configured');
+    }
 
-    // Build context from health data
+    const { message, healthData } = await req.json();
+    console.log('Request received:', { message, hasHealthData: !!healthData });
+
+    // Build context from health data including StrongLifts
     let systemContext = "You are a professional health and fitness coach analyzing biometric data. Provide helpful, personalized advice based on the user's data. Keep responses concise and actionable. ";
+    
+    // Add StrongLifts data analysis
+    if (healthData && healthData.stronglifts && healthData.stronglifts.length > 0) {
+      const totalVolume = healthData.stronglifts.reduce((sum: number, workout: any) => sum + (workout.volume || 0), 0);
+      const uniqueDays = new Set(healthData.stronglifts.map((w: any) => w.date.split('T')[0]));
+      const totalWorkouts = uniqueDays.size;
+      systemContext += `StrongLifts data: Total ${healthData.stronglifts.length} exercises, ${totalWorkouts} workout days, ${totalVolume.toLocaleString()} lbs total volume. `;
+    }
     
     if (healthData) {
       if (healthData.recovery && healthData.recovery.length > 0) {
@@ -46,6 +62,7 @@ serve(async (req) => {
       }
     }
 
+    console.log('Making OpenAI API request...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -53,7 +70,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { 
             role: 'system', 
@@ -66,19 +83,28 @@ serve(async (req) => {
       }),
     });
 
+    console.log('OpenAI API response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
+    
+    console.log('AI response generated successfully');
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in ai-health-coach function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      details: 'Check function logs for more information'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
