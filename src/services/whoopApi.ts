@@ -99,7 +99,7 @@ class WhoopService {
 
   constructor() {
     this.authConfig = {
-      clientId: 'YOUR_WHOOP_CLIENT_ID_HERE', // Replace with your actual client ID
+      clientId: '641ac502-42e1-4c38-8b51-15e0c5b5cbef', // Your Whoop Client ID
       redirectUri: 'https://wkuziiubjtvickimapau.supabase.co/functions/v1/whoop-oauth',
       scopes: ['read:recovery', 'read:cycles', 'read:workout', 'read:sleep', 'read:profile', 'read:body_measurement']
     };
