@@ -98,12 +98,25 @@ export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): St
     };
   }
 
-  // Sort data by date to get the most recent entries
-  const sortedData = strongliftsData.sort((a, b) => 
+  // Filter data to only include 2024 and 2025
+  const filteredData = strongliftsData.filter(workout => {
+    const workoutYear = new Date(workout.date).getFullYear();
+    return workoutYear === 2024 || workoutYear === 2025;
+  });
+
+  if (filteredData.length === 0) {
+    return {
+      weekly: { volume: 0, sets: 0, workouts: 0 },
+      monthly: { volume: 0, sets: 0, workouts: 0 }
+    };
+  }
+
+  // Sort filtered data by date to get the most recent entries
+  const sortedData = filteredData.sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  // Get the most recent date in the data
+  // Get the most recent date in the filtered data
   const mostRecentDate = new Date(sortedData[0].date);
   
   // Calculate 7 days and 30 days before the most recent workout
@@ -114,12 +127,12 @@ export const calculateStrengthMetrics = (strongliftsData: StrongLiftsData[]): St
   monthBefore.setDate(monthBefore.getDate() - 30);
   
   // Filter data for weekly and monthly periods from the most recent date
-  const weeklyData = strongliftsData.filter(workout => {
+  const weeklyData = filteredData.filter(workout => {
     const workoutDate = new Date(workout.date);
     return workoutDate >= weekBefore && workoutDate <= mostRecentDate;
   });
   
-  const monthlyData = strongliftsData.filter(workout => {
+  const monthlyData = filteredData.filter(workout => {
     const workoutDate = new Date(workout.date);
     return workoutDate >= monthBefore && workoutDate <= mostRecentDate;
   });
