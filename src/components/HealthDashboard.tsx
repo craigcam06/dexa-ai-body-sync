@@ -99,8 +99,8 @@ export const HealthDashboard = () => {
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+      {/* Key Metrics - Row 1: Body Composition & Recovery */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <MetricCard
           title="Body Fat %"
           value={`${mockData.bodyComposition.bodyFat.current}%`}
@@ -118,20 +118,24 @@ export const HealthDashboard = () => {
           variant="success"
         />
         <MetricCard
-          title="TDEE"
-          value={`${healthMetrics.tdeeData.tdee} cal`}
-          target={healthMetrics.tdeeData.activityLevel}
-          trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
-          icon={Flame}
-          variant="warning"
-        />
-        <MetricCard
           title="Recovery Score"
           value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
           target="Whoop"
           trend={whoopData?.recovery?.length > 0 ? (whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 80) : 5}
           icon={Heart}
           variant="accent"
+        />
+      </div>
+
+      {/* Key Metrics - Row 2: Performance & Training */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <MetricCard
+          title="TDEE"
+          value={`${healthMetrics.tdeeData.tdee} cal`}
+          target={healthMetrics.tdeeData.activityLevel}
+          trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
+          icon={Flame}
+          variant="warning"
         />
         <MetricCard
           title="Weekly Volume"
