@@ -16,10 +16,13 @@ serve(async (req) => {
 
   try {
     console.log('AI Health Coach function called');
+    console.log('Available env vars:', Object.keys(Deno.env.toObject()));
+    console.log('OpenAI key exists:', !!openAIApiKey);
+    console.log('OpenAI key length:', openAIApiKey?.length || 0);
     
     if (!openAIApiKey) {
-      console.error('OpenAI API key not found');
-      throw new Error('OpenAI API key not configured');
+      console.error('OpenAI API key not found in environment variables');
+      throw new Error('OpenAI API key not configured. Please check Supabase secrets.');
     }
 
     const { message, healthData } = await req.json();
