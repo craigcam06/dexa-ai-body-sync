@@ -50,7 +50,17 @@ export function HealthInsights({ whoopData }: HealthInsightsProps) {
   const generateCorrelationAnalysis = () => {
     if (!whoopData) return;
     
+    console.log('🔍 Correlation Analysis Debug:');
+    console.log('- Recovery data:', whoopData.recovery?.length || 0, 'entries');
+    console.log('- Sleep data:', whoopData.sleep?.length || 0, 'entries');
+    console.log('- Workout data:', whoopData.workouts?.length || 0, 'entries');
+    console.log('- Daily data:', whoopData.daily?.length || 0, 'entries');
+    console.log('- StrongLifts data:', whoopData.stronglifts?.length || 0, 'entries');
+    
     const { insights: corrInsights, recommendations: corrRecs } = analyzeHealthCorrelations(whoopData);
+    console.log('📊 Generated correlation insights:', corrInsights.length);
+    console.log('📝 Generated correlation recommendations:', corrRecs.length);
+    
     setCorrelationInsights(corrInsights);
     setCorrelationRecommendations(corrRecs);
   };
