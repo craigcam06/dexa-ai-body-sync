@@ -25,12 +25,11 @@ import {
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
-import { HealthInsights } from "./HealthInsights";
-import { AICoachPanel } from "./AICoachPanel";
+import { UnifiedHealthInsights } from "./UnifiedHealthInsights";
 import { WhoopConnect } from "./WhoopConnect";
 import { AppleHealthConnect } from "./AppleHealthConnect";
-import { HealthInsightsDashboard } from "./HealthInsightsDashboard";
 import { GoalSetting } from "./GoalSetting";
+import { AICoachPanel } from "./AICoachPanel";
 import { VoiceInterface } from "./VoiceInterface";
 import { PlanSetup } from "./PlanSetup";
 import { PlanDashboard } from "./PlanDashboard";
@@ -248,8 +247,8 @@ export const HealthDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Health Insights Dashboard */}
-            <HealthInsightsDashboard whoopData={whoopData} />
+            {/* Unified Health Insights */}
+            <UnifiedHealthInsights whoopData={whoopData} />
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
