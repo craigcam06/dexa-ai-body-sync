@@ -16,14 +16,15 @@ import {
   Dumbbell,
   Activity,
   X,
-  Edit
+  Edit,
+  Apple
 } from 'lucide-react';
 import { ParsedWhoopData } from '@/types/whoopData';
 import { useToast } from '@/hooks/use-toast';
 
 interface Goal {
   id: string;
-  category: 'recovery' | 'sleep' | 'training' | 'general';
+  category: 'recovery' | 'sleep' | 'training' | 'nutrition' | 'general';
   title: string;
   description: string;
   targetValue: number;
@@ -87,12 +88,44 @@ const PRESET_GOALS = [
     targetValue: 70,
     unit: 'strain',
     timeframe: 'weekly' as const
+  },
+  {
+    category: 'nutrition' as const,
+    title: 'Daily Water Intake',
+    description: 'Drink at least 2.5 liters of water daily',
+    targetValue: 2.5,
+    unit: 'liters',
+    timeframe: 'daily' as const
+  },
+  {
+    category: 'nutrition' as const,
+    title: '5 Servings Fruits & Vegetables',
+    description: 'Eat at least 5 servings of fruits and vegetables daily',
+    targetValue: 5,
+    unit: 'servings',
+    timeframe: 'daily' as const
+  },
+  {
+    category: 'nutrition' as const,
+    title: 'Protein Goal',
+    description: 'Meet daily protein target based on body weight',
+    targetValue: 120,
+    unit: 'grams',
+    timeframe: 'daily' as const
+  },
+  {
+    category: 'nutrition' as const,
+    title: 'Limit Processed Foods',
+    description: 'Minimize processed food intake to 2 or fewer servings',
+    targetValue: 2,
+    unit: 'servings',
+    timeframe: 'daily' as const
   }
 ];
 
 // Smart goal generator based on user's actual data patterns
 const generateSmartGoals = (whoopData: ParsedWhoopData): Array<{
-  category: 'recovery' | 'sleep' | 'training' | 'general';
+  category: 'recovery' | 'sleep' | 'training' | 'nutrition' | 'general';
   title: string;
   description: string;
   targetValue: number;
@@ -100,7 +133,7 @@ const generateSmartGoals = (whoopData: ParsedWhoopData): Array<{
   timeframe: 'daily' | 'weekly' | 'monthly';
 }> => {
   const smartGoals: Array<{
-    category: 'recovery' | 'sleep' | 'training' | 'general';
+    category: 'recovery' | 'sleep' | 'training' | 'nutrition' | 'general';
     title: string;
     description: string;
     targetValue: number;
@@ -183,7 +216,7 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [smartGoals, setSmartGoals] = useState<Array<{
-    category: 'recovery' | 'sleep' | 'training' | 'general';
+    category: 'recovery' | 'sleep' | 'training' | 'nutrition' | 'general';
     title: string;
     description: string;
     targetValue: number;
@@ -379,6 +412,7 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
       case 'recovery': return Heart;
       case 'sleep': return Moon;
       case 'training': return Dumbbell;
+      case 'nutrition': return Apple;
       default: return Activity;
     }
   };
@@ -388,6 +422,7 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
       case 'recovery': return 'text-red-500 bg-red-50 border-red-200';
       case 'sleep': return 'text-purple-500 bg-purple-50 border-purple-200';
       case 'training': return 'text-blue-500 bg-blue-50 border-blue-200';
+      case 'nutrition': return 'text-orange-500 bg-orange-50 border-orange-200';
       default: return 'text-green-500 bg-green-50 border-green-200';
     }
   };
