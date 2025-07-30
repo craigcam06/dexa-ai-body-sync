@@ -459,10 +459,11 @@ export class CSVParser {
       }
 
       const headers = rows[0];
-      console.log('CSV Headers found:', headers);
+      console.log('🔍 CSV Headers found:', headers);
+      console.log('🔍 Total rows in CSV:', rows.length);
       
       const dataType = this.detectDataType(headers);
-      console.log('Detected data type:', dataType);
+      console.log('🔍 Detected data type:', dataType);
       
       if (dataType === 'unknown') {
         return {
