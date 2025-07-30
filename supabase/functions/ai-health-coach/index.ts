@@ -28,42 +28,121 @@ serve(async (req) => {
     const { message, healthData } = await req.json();
     console.log('Request received:', { message, hasHealthData: !!healthData });
 
-    // Build context from health data including StrongLifts
-    let systemContext = "You are a professional health and fitness coach analyzing biometric data. Provide helpful, personalized advice based on the user's data. Keep responses concise and actionable. ";
-    
-    // Add StrongLifts data analysis
-    if (healthData && healthData.stronglifts && healthData.stronglifts.length > 0) {
-      const totalVolume = healthData.stronglifts.reduce((sum: number, workout: any) => sum + (workout.volume || 0), 0);
-      const uniqueDays = new Set(healthData.stronglifts.map((w: any) => w.date.split('T')[0]));
-      const totalWorkouts = uniqueDays.size;
-      systemContext += `StrongLifts data: Total ${healthData.stronglifts.length} exercises, ${totalWorkouts} workout days, ${totalVolume.toLocaleString()} lbs total volume. `;
-    }
+    // Build comprehensive health analysis context
+    let systemContext = `You are an advanced AI Health Coach with expertise in exercise science, nutrition, sleep optimization, and recovery strategies. 
+
+You analyze comprehensive biometric data to provide highly personalized, science-based recommendations. Your responses should be:
+- Actionable and specific
+- Evidence-based
+- Tailored to the user's current data patterns
+- Include specific metrics and targets
+- Provide step-by-step guidance
+
+When creating recommendations, consider:
+1. Current trends vs baseline patterns
+2. Correlation between different metrics
+3. Recovery-training balance
+4. Sleep-performance relationships
+5. Individual progression rates
+
+Format your responses with clear sections when appropriate (🏋️ Workout Plan, 💤 Sleep Optimization, 🥗 Nutrition, 🔄 Recovery).
+`;
+
+    // Advanced health data analysis
+    let healthInsights = "";
     
     if (healthData) {
+      // Recovery Analysis with Trends
       if (healthData.recovery && healthData.recovery.length > 0) {
         const latest = healthData.recovery[healthData.recovery.length - 1];
-        const avg = healthData.recovery.reduce((sum: number, r: any) => sum + r.recovery_score, 0) / healthData.recovery.length;
-        systemContext += `Recovery data: Latest ${latest.recovery_score}%, average ${avg.toFixed(1)}%, HRV ${latest.hrv_rmssd_milli}ms, RHR ${latest.resting_heart_rate}bpm. `;
+        const recent7 = healthData.recovery.slice(-7);
+        const avg7day = recent7.reduce((sum: number, r: any) => sum + r.recovery_score, 0) / recent7.length;
+        const avg30day = healthData.recovery.reduce((sum: number, r: any) => sum + r.recovery_score, 0) / healthData.recovery.length;
+        const recoveryTrend = avg7day > avg30day ? "improving" : "declining";
+        
+        healthInsights += `RECOVERY ANALYSIS:
+- Current: ${latest.recovery_score}% (7-day avg: ${avg7day.toFixed(1)}%, 30-day avg: ${avg30day.toFixed(1)}%)
+- Trend: ${recoveryTrend} (${(avg7day - avg30day).toFixed(1)}% change)
+- HRV: ${latest.hrv_rmssd_milli}ms, RHR: ${latest.resting_heart_rate}bpm
+- Recovery readiness: ${latest.recovery_score >= 70 ? 'HIGH' : latest.recovery_score >= 50 ? 'MODERATE' : 'LOW'}
+
+`;
       }
       
+      // Sleep Analysis with Efficiency Patterns
       if (healthData.sleep && healthData.sleep.length > 0) {
         const latest = healthData.sleep[healthData.sleep.length - 1];
+        const recent7 = healthData.sleep.slice(-7);
+        const avgSleep = recent7.reduce((sum: number, s: any) => sum + (s.total_sleep_time_milli / (1000 * 60 * 60)), 0) / recent7.length;
+        const avgEfficiency = recent7.reduce((sum: number, s: any) => sum + s.sleep_efficiency_percentage, 0) / recent7.length;
         const hours = (latest.total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1);
-        const avgEfficiency = healthData.sleep.reduce((sum: number, s: any) => sum + s.sleep_efficiency_percentage, 0) / healthData.sleep.length;
-        systemContext += `Sleep data: Latest ${hours}h total, ${latest.sleep_efficiency_percentage}% efficiency (avg ${avgEfficiency.toFixed(1)}%). `;
+        
+        healthInsights += `SLEEP ANALYSIS:
+- Last night: ${hours}h (${latest.sleep_efficiency_percentage}% efficiency)
+- 7-day avg: ${avgSleep.toFixed(1)}h (${avgEfficiency.toFixed(1)}% efficiency)
+- Sleep debt: ${avgSleep < 7.5 ? `${(7.5 - avgSleep).toFixed(1)}h deficit` : 'optimal'}
+- Quality indicators: ${latest.sleep_efficiency_percentage >= 85 ? 'EXCELLENT' : latest.sleep_efficiency_percentage >= 75 ? 'GOOD' : 'NEEDS IMPROVEMENT'}
+
+`;
       }
       
+      // Training Load & Workout Analysis
       if (healthData.workouts && healthData.workouts.length > 0) {
-        const latest = healthData.workouts[healthData.workouts.length - 1];
-        const weeklyStrain = healthData.workouts.slice(-7).reduce((sum: number, w: any) => sum + w.strain_score, 0);
-        systemContext += `Workout data: Latest ${latest.workout_type}, strain ${latest.strain_score}, weekly strain ${weeklyStrain.toFixed(1)}. `;
+        const recent7 = healthData.workouts.slice(-7);
+        const weeklyStrain = recent7.reduce((sum: number, w: any) => sum + w.strain_score, 0);
+        const avgStrain = weeklyStrain / recent7.length;
+        const workoutTypes = [...new Set(recent7.map((w: any) => w.workout_type))];
+        
+        healthInsights += `TRAINING ANALYSIS:
+- Weekly strain: ${weeklyStrain.toFixed(1)} (avg per workout: ${avgStrain.toFixed(1)})
+- Training load: ${weeklyStrain > 60 ? 'HIGH' : weeklyStrain > 40 ? 'MODERATE' : 'LOW'}
+- Recent activities: ${workoutTypes.join(', ')}
+- Volume trend: ${recent7.length >= 4 ? 'Consistent' : 'Variable'}
+
+`;
       }
 
+      // StrongLifts Strength Training Analysis
+      if (healthData.stronglifts && healthData.stronglifts.length > 0) {
+        const totalVolume = healthData.stronglifts.reduce((sum: number, workout: any) => sum + (workout.volume || 0), 0);
+        const uniqueDays = new Set(healthData.stronglifts.map((w: any) => w.date.split('T')[0]));
+        const totalWorkouts = uniqueDays.size;
+        const exercises = [...new Set(healthData.stronglifts.map((w: any) => w.exercise))];
+        
+        healthInsights += `STRENGTH TRAINING (StrongLifts):
+- Total volume: ${totalVolume.toLocaleString()} lbs across ${totalWorkouts} sessions
+- Exercises tracked: ${exercises.join(', ')}
+- Training frequency: ${(totalWorkouts / 4).toFixed(1)} sessions/week (recent month)
+
+`;
+      }
+
+      // Lifestyle & Journal Insights
       if (healthData.journal && healthData.journal.length > 0) {
-        const recentEntries = healthData.journal.slice(-3);
-        systemContext += `Recent journal insights: ${recentEntries.map((j: any) => `${j.question_text}: ${j.answered_yes ? 'Yes' : 'No'}`).join(', ')}. `;
+        const recentEntries = healthData.journal.slice(-5);
+        const stressIndicators = recentEntries.filter((j: any) => j.question_text.toLowerCase().includes('stress')).length;
+        const energyIndicators = recentEntries.filter((j: any) => j.question_text.toLowerCase().includes('energy')).length;
+        
+        healthInsights += `LIFESTYLE FACTORS:
+- Recent journal patterns: ${recentEntries.map((j: any) => `${j.question_text}: ${j.answered_yes ? 'Yes' : 'No'}`).join(', ')}
+- Stress tracking: ${stressIndicators > 0 ? 'Monitored' : 'Not tracked'}
+- Energy tracking: ${energyIndicators > 0 ? 'Monitored' : 'Not tracked'}
+
+`;
+      }
+
+      // Add correlation insights
+      if (healthData.recovery && healthData.sleep && healthData.recovery.length > 0 && healthData.sleep.length > 0) {
+        healthInsights += `CORRELATIONS & INSIGHTS:
+- Sleep-Recovery relationship: Monitor how sleep quality affects next-day recovery
+- Training-Recovery balance: Current recovery suggests ${healthData.recovery[healthData.recovery.length - 1].recovery_score >= 70 ? 'capacity for higher intensity' : 'need for active recovery'}
+- Personalized recommendations based on your unique patterns and goals
+
+`;
       }
     }
+
+    systemContext += healthInsights;
 
     console.log('Making OpenAI API request...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -77,12 +156,21 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: systemContext + "Focus on actionable recommendations for recovery, sleep optimization, training adjustments, and overall health improvements."
+            content: systemContext + `
+
+Based on this comprehensive data analysis, provide personalized recommendations that:
+1. Address current patterns and trends
+2. Suggest specific targets and metrics
+3. Include actionable steps for the next 24-48 hours
+4. Consider the interplay between recovery, sleep, training, and nutrition
+5. Provide progressive strategies for long-term improvement
+
+Always cite specific data points from their metrics when making recommendations.`
           },
           { role: 'user', content: message }
         ],
-        max_tokens: 400,
-        temperature: 0.7
+        max_tokens: 600,
+        temperature: 0.3
       }),
     });
 
