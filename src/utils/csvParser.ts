@@ -82,92 +82,166 @@ export class CSVParser {
   static parseRecoveryData(rows: string[][], headers: string[]): WhoopRecoveryData[] {
     const data: WhoopRecoveryData[] = [];
     
-    // More flexible header matching for physiological data
-    const dateIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('cycle start time') ||
-      h.toLowerCase().includes('date') || 
-      h.toLowerCase().includes('day') || 
-      h.toLowerCase().includes('time')
-    );
-    const recoveryIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('recovery score') || 
-      h.toLowerCase().includes('recovery') || 
-      h.toLowerCase().includes('readiness')
-    );
-    const hrvIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('heart rate variability') ||
-      h.toLowerCase().includes('hrv') || 
-      h.toLowerCase().includes('rmssd') ||
-      h.toLowerCase().includes('variability')
-    );
-    const rhrIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('resting heart rate') ||
-      (h.toLowerCase().includes('resting') && h.toLowerCase().includes('heart')) ||
-      h.toLowerCase().includes('rhr') ||
-      h.toLowerCase().includes('rest hr')
-    );
-    const tempIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('skin temp') ||
-      h.toLowerCase().includes('temp') && 
-      (h.toLowerCase().includes('skin') || h.toLowerCase().includes('body'))
-    );
+    console.log('🔍 Parsing recovery data with headers:', headers);
+    
+    // Match exact Whoop CSV headers (case-insensitive)
+    const dateIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('cycle start time') ||
+             lower.includes('date') || 
+             lower.includes('day') || 
+             lower.includes('time');
+    });
+    
+    const recoveryIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('recovery score %') || 
+             lower.includes('recovery score') || 
+             lower.includes('recovery') || 
+             lower.includes('readiness');
+    });
+    
+    const hrvIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('heart rate variability (ms)') ||
+             lower.includes('heart rate variability') ||
+             lower.includes('hrv') || 
+             lower.includes('rmssd') ||
+             lower.includes('variability');
+    });
+    
+    const rhrIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('resting heart rate (bpm)') ||
+             lower.includes('resting heart rate') ||
+             (lower.includes('resting') && lower.includes('heart')) ||
+             lower.includes('rhr') ||
+             lower.includes('rest hr');
+    });
+    
+    const tempIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('skin temp (celsius)') ||
+             lower.includes('skin temp') ||
+             (lower.includes('temp') && 
+              (lower.includes('skin') || lower.includes('body')));
+    });
+
+    console.log('🔍 Recovery column indices:', {
+      date: dateIndex,
+      recovery: recoveryIndex,
+      hrv: hrvIndex,
+      rhr: rhrIndex,
+      temp: tempIndex
+    });
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       if (row.length < headers.length) continue;
 
       try {
-        data.push({
+        const recoveryData = {
           date: row[dateIndex] || '',
           recovery_score: parseFloat(row[recoveryIndex]) || 0,
           hrv_rmssd_milli: parseFloat(row[hrvIndex]) || 0,
           resting_heart_rate: parseFloat(row[rhrIndex]) || 0,
           skin_temp_celsius: parseFloat(row[tempIndex]) || 0,
-        });
+        };
+        
+        console.log(`🔍 Parsed recovery row ${i}:`, recoveryData);
+        data.push(recoveryData);
       } catch (error) {
         console.warn(`Error parsing recovery row ${i}:`, error);
       }
     }
     
+    console.log(`🔍 Total recovery data parsed: ${data.length} entries`);
     return data;
   }
 
   static parseSleepData(rows: string[][], headers: string[]): WhoopSleepData[] {
     const data: WhoopSleepData[] = [];
     
-    // Match exact Whoop CSV headers
-    const dateIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('sleep onset') || 
-      h.toLowerCase().includes('cycle start time') ||
-      h.toLowerCase().includes('date') || 
-      h.toLowerCase().includes('day')
-    );
-    const totalSleepIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('asleep duration') || 
-      h.toLowerCase().includes('total sleep') ||
-      h.toLowerCase().includes('total') && h.toLowerCase().includes('sleep')
-    );
-    const efficiencyIndex = headers.findIndex(h => h.toLowerCase().includes('sleep efficiency'));
-    const slowWaveIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('deep (sws) duration') || 
-      h.toLowerCase().includes('deep') || 
-      h.toLowerCase().includes('slow') || 
-      h.toLowerCase().includes('sws')
-    );
-    const remIndex = headers.findIndex(h => h.toLowerCase().includes('rem duration') || h.toLowerCase().includes('rem'));
-    const lightIndex = headers.findIndex(h => h.toLowerCase().includes('light sleep duration') || h.toLowerCase().includes('light'));
-    const wakeIndex = headers.findIndex(h => h.toLowerCase().includes('awake duration') || h.toLowerCase().includes('wake') || h.toLowerCase().includes('awake'));
-    const scoreIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('sleep performance') || 
-      (h.toLowerCase().includes('sleep') && h.toLowerCase().includes('score'))
-    );
+    console.log('🔍 Parsing sleep data with headers:', headers);
+    
+    // Match exact Whoop CSV headers (case-insensitive)
+    const dateIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('sleep onset') || 
+             lower.includes('cycle start time') ||
+             lower.includes('date') || 
+             lower.includes('day');
+    });
+    
+    const totalSleepIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('asleep duration (min)') || 
+             lower.includes('asleep duration') ||
+             lower.includes('total sleep') ||
+             (lower.includes('total') && lower.includes('sleep'));
+    });
+    
+    const efficiencyIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('sleep efficiency %') ||
+             lower.includes('sleep efficiency');
+    });
+    
+    const slowWaveIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('deep (sws) duration (min)') ||
+             lower.includes('deep (sws) duration') || 
+             lower.includes('deep') || 
+             lower.includes('slow') || 
+             lower.includes('sws');
+    });
+    
+    const remIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('rem duration (min)') ||
+             lower.includes('rem duration') || 
+             lower.includes('rem');
+    });
+    
+    const lightIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('light sleep duration (min)') ||
+             lower.includes('light sleep duration') || 
+             lower.includes('light');
+    });
+    
+    const wakeIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('awake duration (min)') ||
+             lower.includes('awake duration') || 
+             lower.includes('wake') || 
+             lower.includes('awake');
+    });
+    
+    const scoreIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('sleep performance %') ||
+             lower.includes('sleep performance') || 
+             (lower.includes('sleep') && lower.includes('score'));
+    });
+
+    console.log('🔍 Sleep column indices:', {
+      date: dateIndex,
+      totalSleep: totalSleepIndex,
+      efficiency: efficiencyIndex,
+      slowWave: slowWaveIndex,
+      rem: remIndex,
+      light: lightIndex,
+      wake: wakeIndex,
+      score: scoreIndex
+    });
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       if (row.length < headers.length) continue;
 
       try {
-        data.push({
+        const sleepData = {
           date: row[dateIndex] || '',
           total_sleep_time_milli: this.parseTimeToMillis(row[totalSleepIndex]) || 0,
           sleep_efficiency_percentage: parseFloat(row[efficiencyIndex]) || 0,
@@ -176,12 +250,16 @@ export class CSVParser {
           light_sleep_time_milli: this.parseTimeToMillis(row[lightIndex]) || 0,
           wake_time_milli: this.parseTimeToMillis(row[wakeIndex]) || 0,
           sleep_score: parseFloat(row[scoreIndex]) || 0,
-        });
+        };
+        
+        console.log(`🔍 Parsed sleep row ${i}:`, sleepData);
+        data.push(sleepData);
       } catch (error) {
         console.warn(`Error parsing sleep row ${i}:`, error);
       }
     }
     
+    console.log(`🔍 Total sleep data parsed: ${data.length} entries`);
     return data;
   }
 
@@ -464,28 +542,33 @@ export class CSVParser {
   static parseTimeToMillis(timeStr: string): number {
     if (!timeStr) return 0;
     
+    console.log('🔍 Parsing time string:', timeStr);
+    
     // Handle different time formats
     if (timeStr.includes(':')) {
       // Format: HH:MM:SS or MM:SS
       const parts = timeStr.split(':').map(p => parseInt(p) || 0);
       if (parts.length === 3) {
-        return (parts[0] * 3600 + parts[1] * 60 + parts[2]) * 1000;
+        const millis = (parts[0] * 3600 + parts[1] * 60 + parts[2]) * 1000;
+        console.log('🔍 Converted HH:MM:SS to millis:', millis);
+        return millis;
       } else if (parts.length === 2) {
-        return (parts[0] * 60 + parts[1]) * 1000;
+        const millis = (parts[0] * 60 + parts[1]) * 1000;
+        console.log('🔍 Converted MM:SS to millis:', millis);
+        return millis;
       }
     }
     
-    // Try to parse as decimal hours or minutes
+    // Parse as number (assume minutes for Whoop data)
     const num = parseFloat(timeStr);
     if (!isNaN(num)) {
-      // Assume hours if > 24, minutes if reasonable range
-      if (num > 24) {
-        return num * 60 * 1000; // Assume minutes
-      } else {
-        return num * 3600 * 1000; // Assume hours
-      }
+      // For Whoop CSV, duration values are in minutes
+      const millis = num * 60 * 1000;
+      console.log('🔍 Converted minutes to millis:', timeStr, '->', millis);
+      return millis;
     }
     
+    console.log('🔍 Could not parse time string:', timeStr);
     return 0;
   }
 
