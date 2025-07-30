@@ -467,6 +467,11 @@ export const HealthDashboard = () => {
               </div>
             </div>
 
+            {/* Apple Health Integration */}
+            <div className="animate-fade-in-up [animation-delay:900ms]">
+              <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+            </div>
+
             {/* Body Composition Chart */}
             <div className="animate-fade-in-up [animation-delay:1000ms]">
               <BodyCompositionChart />
