@@ -43,6 +43,14 @@ interface GoalSettingProps {
 const PRESET_GOALS = [
   {
     category: 'sleep' as const,
+    title: 'Sleep 7+ Hours',
+    description: 'Get at least 7 hours of sleep per night',
+    targetValue: 7,
+    unit: 'hours',
+    timeframe: 'daily' as const
+  },
+  {
+    category: 'sleep' as const,
     title: 'Sleep 8+ Hours',
     description: 'Get at least 8 hours of sleep per night',
     targetValue: 8,
@@ -215,6 +223,7 @@ const generateSmartGoals = (whoopData: ParsedWhoopData): Array<{
 export function GoalSetting({ whoopData }: GoalSettingProps) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [smartGoals, setSmartGoals] = useState<Array<{
     category: 'recovery' | 'sleep' | 'training' | 'nutrition' | 'general';
     title: string;
@@ -230,6 +239,12 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
     unit: '',
     category: 'general' as Goal['category'],
     timeframe: 'daily' as Goal['timeframe']
+  });
+  const [editGoal, setEditGoal] = useState({
+    title: '',
+    description: '',
+    targetValue: 0,
+    unit: ''
   });
   const { toast } = useToast();
 
@@ -399,6 +414,45 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
     });
   };
 
+  const updateGoal = (goalId: string) => {
+    if (!editGoal.targetValue) {
+      toast({
+        title: "Invalid Target",
+        description: "Please enter a valid target value",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGoals(prev => prev.map(goal => 
+      goal.id === goalId 
+        ? { 
+            ...goal, 
+            title: editGoal.title || goal.title,
+            description: editGoal.description || goal.description,
+            targetValue: editGoal.targetValue,
+            unit: editGoal.unit || goal.unit
+          }
+        : goal
+    ));
+    
+    setEditingGoal(null);
+    toast({
+      title: "Goal Updated",
+      description: "Your goal has been successfully updated",
+    });
+  };
+
+  const startEditingGoal = (goal: Goal) => {
+    setEditingGoal(goal.id);
+    setEditGoal({
+      title: goal.title,
+      description: goal.description,
+      targetValue: goal.targetValue,
+      unit: goal.unit
+    });
+  };
+
   const removeGoal = (goalId: string) => {
     setGoals(prev => prev.filter(g => g.id !== goalId));
     toast({
@@ -484,51 +538,104 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
                 const progressPercentage = getProgressPercentage(goal);
                 
                 return (
-                  <div key={goal.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className={`p-2 rounded-full ${getCategoryColor(goal.category)}`}>
-                          <IconComponent className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium">{goal.title}</h3>
-                            {goal.isAchieved && (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {goal.description}
-                          </p>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span>Progress</span>
-                              <span className="font-medium">
-                                {goal.currentValue.toFixed(goal.unit === 'hours' ? 1 : 0)} / {goal.targetValue} {goal.unit}
-                              </span>
-                            </div>
-                            <Progress value={progressPercentage} className="h-2" />
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <Badge variant="outline" className="text-xs">
-                                {goal.timeframe}
-                              </Badge>
-                              {goal.isAchieved && goal.achievedAt && (
-                                <span>Achieved {goal.achievedAt.toLocaleDateString()}</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeGoal(goal.id)}
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div key={goal.id} className="border rounded-lg p-4 space-y-3 group hover:border-primary/20 transition-colors">
+                     <div className="flex items-start justify-between">
+                       <div className="flex items-start gap-3 flex-1">
+                         <div className={`p-2 rounded-full ${getCategoryColor(goal.category)}`}>
+                           <IconComponent className="h-4 w-4" />
+                         </div>
+                         <div className="flex-1">
+                           <div className="flex items-center gap-2 mb-1">
+                             <h3 className="font-medium">{goal.title}</h3>
+                             {goal.isAchieved && (
+                               <CheckCircle className="h-4 w-4 text-green-500" />
+                             )}
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               onClick={() => startEditingGoal(goal)}
+                               className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                             >
+                               <Edit className="h-3 w-3" />
+                             </Button>
+                           </div>
+                           <p className="text-sm text-muted-foreground mb-2">
+                             {goal.description}
+                           </p>
+                           
+                           {editingGoal === goal.id ? (
+                             <div className="space-y-3 p-3 bg-muted/20 rounded-lg">
+                               <div className="grid grid-cols-2 gap-3">
+                                 <div>
+                                   <Label htmlFor={`target-${goal.id}`} className="text-xs">Target Value</Label>
+                                   <Input
+                                     id={`target-${goal.id}`}
+                                     type="number"
+                                     value={editGoal.targetValue}
+                                     onChange={(e) => setEditGoal(prev => ({ ...prev, targetValue: parseFloat(e.target.value) }))}
+                                     className="h-8"
+                                     step={goal.unit === 'hours' ? '0.5' : '1'}
+                                   />
+                                 </div>
+                                 <div>
+                                   <Label htmlFor={`unit-${goal.id}`} className="text-xs">Unit</Label>
+                                   <Input
+                                     id={`unit-${goal.id}`}
+                                     value={editGoal.unit}
+                                     onChange={(e) => setEditGoal(prev => ({ ...prev, unit: e.target.value }))}
+                                     className="h-8"
+                                     placeholder="hours, %, sessions..."
+                                   />
+                                 </div>
+                               </div>
+                               <div className="flex justify-end gap-2">
+                                 <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   onClick={() => setEditingGoal(null)}
+                                   className="h-7 px-3"
+                                 >
+                                   Cancel
+                                 </Button>
+                                 <Button
+                                   size="sm"
+                                   onClick={() => updateGoal(goal.id)}
+                                   className="h-7 px-3"
+                                 >
+                                   Save
+                                 </Button>
+                               </div>
+                             </div>
+                           ) : (
+                             <div className="space-y-2">
+                               <div className="flex items-center justify-between text-sm">
+                                 <span>Progress</span>
+                                 <span className="font-medium">
+                                   {goal.currentValue.toFixed(goal.unit === 'hours' ? 1 : 0)} / {goal.targetValue} {goal.unit}
+                                 </span>
+                               </div>
+                               <Progress value={progressPercentage} className="h-2" />
+                               <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                 <Badge variant="outline" className="text-xs">
+                                   {goal.timeframe}
+                                 </Badge>
+                                 {goal.isAchieved && goal.achievedAt && (
+                                   <span>Achieved {goal.achievedAt.toLocaleDateString()}</span>
+                                 )}
+                               </div>
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => removeGoal(goal.id)}
+                         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                       >
+                         <X className="h-4 w-4" />
+                       </Button>
+                     </div>
                   </div>
                 );
               })}
