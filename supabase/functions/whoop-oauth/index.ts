@@ -20,12 +20,14 @@ serve(async (req) => {
     
     if (error) {
       console.error('OAuth error from Whoop:', error)
-      return Response.redirect(`${url.origin}/?auth=error`)
+      // Use HTTPS for redirect to avoid mixed content issues
+      return Response.redirect(`https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com/?auth=error`)
     }
     
     if (code) {
       console.log('Received authorization code, redirecting to frontend')
-      return Response.redirect(`${url.origin}/?code=${code}`)
+      // Use HTTPS for redirect to avoid mixed content issues
+      return Response.redirect(`https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com/?code=${code}`)
     }
     
     return new Response(
