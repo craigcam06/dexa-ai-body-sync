@@ -58,14 +58,21 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('🔄 Starting OAuth callback with code:', code);
       const tokenResponse = await whoopService.exchangeCodeForToken(code);
+      console.log('✅ Successfully received tokens');
       whoopService.storeTokens(tokenResponse);
       setIsAuthenticated(true);
       await fetchWhoopData();
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (err) {
-      console.error('OAuth callback failed:', err);
-      setError(err instanceof Error ? err.message : 'Authentication failed');
+      console.error('❌ OAuth callback failed:', err);
+      console.error('❌ Full error details:', {
+        message: err.message,
+        stack: err.stack,
+        error: err
+      });
+      setError(`Failed to authenticate with Whoop: ${err.message || 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
