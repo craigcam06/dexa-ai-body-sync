@@ -167,6 +167,32 @@ class NotificationService {
     }
   }
 
+  async showNotification(options: { title: string; body: string; icon?: string }): Promise<void> {
+    if (!this.isAvailable()) {
+      console.log('Would show notification:', options);
+      return;
+    }
+
+    try {
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: options.title,
+            body: options.body,
+            id: Date.now(),
+            actionTypeId: 'GENERAL',
+            extra: {
+              type: 'general',
+              icon: options.icon
+            }
+          }
+        ]
+      });
+    } catch (error) {
+      console.error('Failed to show notification:', error);
+    }
+  }
+
   private generateInsightMessage(insights: DailyInsight): string {
     const messages = [];
     
