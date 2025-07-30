@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   Activity, 
   Brain, 
@@ -57,6 +57,7 @@ const mockData = {
 export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
   const [planData, setPlanData] = useState<any>(null);
+  const [activeSection, setActiveSection] = useState<string>("dashboard");
   
   // Load data from localStorage and active plan on component mount
   useEffect(() => {
@@ -177,265 +178,213 @@ export const HealthDashboard = () => {
     }, 1000);
   };
 
-  return (
-    <div className="min-h-screen bg-background p-2 sm:p-4 space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Health Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Optimizing body composition through data-driven insights</p>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Badge variant="outline" className="text-success border-success text-xs sm:text-sm">
-            Next DEXA: {mockData.nextDexa}
-          </Badge>
-          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-            <AvatarFallback className="bg-gradient-primary text-primary-foreground text-sm">CC</AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
+  const navigationItems = [
+    { id: "dashboard", label: "Dashboard", icon: Activity },
+    { id: "connect", label: "Connect", icon: Settings },
+    { id: "optimize", label: "Optimize", icon: Brain }
+  ];
 
-      {/* Mobile Health Integration Banner */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Bell className="h-6 w-6 text-white" />
+  const renderMainContent = () => {
+    switch (activeSection) {
+      case "connect":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Connect Your Devices</h2>
+              <div className="grid gap-4">
+                <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+                <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
               </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                🚀 Recommended: Mobile-First Apple Health Integration
-              </h3>
-              <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                Since all your apps (WHOOP, MyFitnessPal, etc.) sync to Apple Health, you only need <strong>one integration</strong> to get everything automatically. 
-                Set up the mobile app for seamless sync and smart iOS notifications.
-              </p>
-              <Button 
-                onClick={() => {
-                  // This would open the mobile setup in a modal or new tab
-                  console.log('Opening mobile setup...');
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="sm"
-              >
-                Set Up Mobile App →
-              </Button>
+          </div>
+        );
+      case "optimize":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Optimize Your Health</h2>
+              <div className="grid gap-4">
+                {planData ? (
+                  <PlanDashboard whoopData={whoopData} />
+                ) : (
+                  <PlanSetup onPlanCreated={loadActivePlan} />
+                )}
+                <GoalSetting whoopData={whoopData} />
+                <AICoachPanel whoopData={whoopData} planData={planData} />
+                <VoiceInterface whoopData={whoopData} />
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Health Insights Dashboard */}
-      <HealthInsightsDashboard whoopData={whoopData} />
-
-      {/* Key Metrics - Row 1: Body Composition & Recovery */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <MetricCard
-          title="Body Fat Progress"
-          value={`${mockData.bodyComposition.bodyFat.current}%`}
-          target={`Target: ${mockData.bodyComposition.bodyFat.target}% by 9/30`}
-          trend={-mockData.bodyComposition.bodyFat.trend} // Invert: increases show as negative (red)
-          icon={Target}
-          variant="primary"
-          tooltip="Body fat percentage from latest DEXA scan. Target is 18% by September 30th for optimal physique."
-        />
-        <MetricCard
-          title="Lean Mass Progress"
-          value={`${mockData.bodyComposition.leanMass.current} lbs`}
-          target={`Target: +5 lbs by 10/30`}
-          trend={mockData.bodyComposition.leanMass.trend}
-          icon={Dumbbell}
-          variant="success"
-          tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass by October 30th."
-        />
-        <MetricCard
-          title="Recovery Score"
-          value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
-          target="Target: 70%+"
-          trend={whoopData?.recovery?.length > 1 ? 
-            Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 
-            whoopData.recovery.slice(-7).reduce((sum, r) => sum + r.recovery_score, 0) / Math.min(7, whoopData.recovery.length)) : 
-            5}
-          icon={Heart}
-          variant="accent"
-          tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
-        />
-      </div>
-
-      {/* Key Metrics - Row 2: Performance & Training */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <MetricCard
-          title="TDEE"
-          value={`${healthMetrics.tdeeData.tdee} cal`}
-          target="Target: 2400 cal"
-          trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
-          icon={Flame}
-          variant="warning"
-          tooltip="Total Daily Energy Expenditure. Target 2400 cal for fat loss (deficit of ~465 cal/day for 1 lb/week loss)."
-        />
-        <MetricCard
-          title="Weekly Volume"
-          value={healthMetrics.strengthMetrics?.weekly.volume 
-            ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
-            : "No data"
-          }
-          target="Target: 180k lbs"
-          trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
-          icon={Dumbbell}
-          variant="primary"
-          tooltip="Total weight lifted in past 7 days. Target 180k lbs weekly for progressive overload and strength gains."
-        />
-        <MetricCard
-          title="Sleep Quality"
-          value={whoopData?.sleep?.length > 0 
-            ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage || 85}%` 
-            : "85%"
-          }
-          target="Target: 85%+ & 8h"
-          trend={whoopData?.sleep?.length > 1 
-            ? Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage - 
-              whoopData.sleep.slice(-7).reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / Math.min(7, whoopData.sleep.length))
-            : 5
-          }
-          icon={Heart}
-          variant="accent"
-          tooltip="Sleep efficiency target 85%+ with 8 hours total sleep for optimal recovery and performance."
-        />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Body Composition Chart */}
-        <div className="lg:col-span-2">
-          <BodyCompositionChart />
-        </div>
-
-        {/* Right Panel with Tabs */}
-        <div className="lg:col-span-1">
-          <Tabs defaultValue={planData ? "plan" : "upload"} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
-              {planData && (
-                <TabsTrigger value="plan" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                  <Target className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Plan</span>
-                  <span className="sm:hidden">Plan</span>
-                </TabsTrigger>
-              )}
-              <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Upload</span>
-                <span className="sm:hidden">Upload</span>
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Target className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Goals</span>
-                <span className="sm:hidden">Goals</span>
-              </TabsTrigger>
-              <TabsTrigger value="coach" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">AI Coach</span>
-                <span className="sm:hidden">AI</span>
-              </TabsTrigger>
-              <TabsTrigger value="voice" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Voice</span>
-                <span className="sm:hidden">Voice</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            {planData ? (
-              <TabsContent value="plan">
-                <PlanDashboard whoopData={whoopData} />
-              </TabsContent>
-            ) : (
-              <TabsContent value="plan">
-                <PlanSetup onPlanCreated={loadActivePlan} />
-              </TabsContent>
-            )}
-            <TabsContent value="upload">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Upload className="h-5 w-5" />
-                    Upload Health Data
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <WhoopConnect 
-                    onDataUpdate={(data) => {
-                      console.log('🔄 Upload tab data update received:', data);
-                      handleWhoopDataUpdate(data);
-                    }} 
-                  />
-                  <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            
-            <TabsContent value="goals">
-              <GoalSetting whoopData={whoopData} />
-            </TabsContent>
-            
-            <TabsContent value="coach">
-              <AICoachPanel whoopData={whoopData} planData={planData} />
-            </TabsContent>
-
-            <TabsContent value="voice">
-              <VoiceInterface whoopData={whoopData} />
-            </TabsContent>
-            
-            {/* Devices moved to bottom for mobile */}
-            <div className="lg:hidden mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    Connect Devices
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
-                  <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
-                </CardContent>
-              </Card>
-            </div>
-          </Tabs>
-        </div>
-      </div>
-
-      {/* Device Integration Status - Hidden on mobile, shown on desktop */}
-      <Card className="shadow-card hidden lg:block">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            Connected Devices
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { name: "DEXA Scan", icon: Target, status: "connected", lastSync: "3 days ago" },
-              { name: "Whoop", icon: Heart, status: "connected", lastSync: "2 min ago" },
-              { name: "Apple Health", icon: Apple, status: "connected", lastSync: "1 hour ago" },
-              { name: "Lumen", icon: Zap, status: "connected", lastSync: "Morning" },
-              { name: "StrongLifts", icon: Dumbbell, status: "connected", lastSync: "Yesterday" },
-              { name: "Pedometer++", icon: Activity, status: "connected", lastSync: "5 min ago" }
-            ].map((device) => (
-              <div key={device.name} className="text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <device.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+        );
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Mobile Health Integration Banner */}
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Bell className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                      🚀 Recommended: Mobile-First Apple Health Integration
+                    </h3>
+                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                      Since all your apps (WHOOP, MyFitnessPal, etc.) sync to Apple Health, you only need <strong>one integration</strong> to get everything automatically. 
+                      Set up the mobile app for seamless sync and smart iOS notifications.
+                    </p>
+                    <Button 
+                      onClick={() => setActiveSection("connect")}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      size="sm"
+                    >
+                      Set Up Mobile App →
+                    </Button>
+                  </div>
                 </div>
-                <p className="font-medium text-xs sm:text-sm">{device.name}</p>
-                <p className="text-xs text-muted-foreground">{device.lastSync}</p>
-                <div className="w-2 h-2 bg-success rounded-full mx-auto mt-1"></div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
+
+            {/* Health Insights Dashboard */}
+            <HealthInsightsDashboard whoopData={whoopData} />
+
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <MetricCard
+                title="Body Fat Progress"
+                value={`${mockData.bodyComposition.bodyFat.current}%`}
+                target={`Target: ${mockData.bodyComposition.bodyFat.target}% by 9/30`}
+                trend={-mockData.bodyComposition.bodyFat.trend}
+                icon={Target}
+                variant="primary"
+                tooltip="Body fat percentage from latest DEXA scan. Target is 18% by September 30th for optimal physique."
+              />
+              <MetricCard
+                title="Lean Mass Progress"
+                value={`${mockData.bodyComposition.leanMass.current} lbs`}
+                target={`Target: +5 lbs by 10/30`}
+                trend={mockData.bodyComposition.leanMass.trend}
+                icon={Dumbbell}
+                variant="success"
+                tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass by October 30th."
+              />
+              <MetricCard
+                title="Recovery Score"
+                value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
+                target="Target: 70%+"
+                trend={whoopData?.recovery?.length > 1 ? 
+                  Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 
+                  whoopData.recovery.slice(-7).reduce((sum, r) => sum + r.recovery_score, 0) / Math.min(7, whoopData.recovery.length)) : 
+                  5}
+                icon={Heart}
+                variant="accent"
+                tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
+              />
+              <MetricCard
+                title="TDEE"
+                value={`${healthMetrics.tdeeData.tdee} cal`}
+                target="Target: 2400 cal"
+                trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
+                icon={Flame}
+                variant="warning"
+                tooltip="Total Daily Energy Expenditure. Target 2400 cal for fat loss (deficit of ~465 cal/day for 1 lb/week loss)."
+              />
+              <MetricCard
+                title="Weekly Volume"
+                value={healthMetrics.strengthMetrics?.weekly.volume 
+                  ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
+                  : "No data"
+                }
+                target="Target: 180k lbs"
+                trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
+                icon={Dumbbell}
+                variant="primary"
+                tooltip="Total weight lifted in past 7 days. Target 180k lbs weekly for progressive overload and strength gains."
+              />
+              <MetricCard
+                title="Sleep Quality"
+                value={whoopData?.sleep?.length > 0 
+                  ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage || 85}%` 
+                  : "85%"
+                }
+                target="Target: 85%+ & 8h"
+                trend={whoopData?.sleep?.length > 1 
+                  ? Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage - 
+                    whoopData.sleep.slice(-7).reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / Math.min(7, whoopData.sleep.length))
+                  : 5
+                }
+                icon={Heart}
+                variant="accent"
+                tooltip="Sleep efficiency target 85%+ with 8 hours total sleep for optimal recovery and performance."
+              />
+            </div>
+
+            {/* Body Composition Chart */}
+            <BodyCompositionChart />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        );
+    }
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen w-full flex">
+        <Sidebar className="w-64">
+          <SidebarContent>
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-6">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-gradient-primary text-primary-foreground text-sm">CC</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="font-semibold text-sm">Craig Campbell</h2>
+                  <Badge variant="outline" className="text-xs">
+                    Next DEXA: {mockData.nextDexa}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            
+            <SidebarGroup>
+              <SidebarGroupLabel>Health Hub</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navigationItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton 
+                        onClick={() => setActiveSection(item.id)}
+                        className={activeSection === item.id ? "bg-primary text-primary-foreground" : ""}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+
+        <main className="flex-1">
+          <div className="p-4 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="text-2xl font-bold">Health Dashboard</h1>
+                  <p className="text-muted-foreground">Optimizing body composition through data-driven insights</p>
+                </div>
+              </div>
+            </div>
+            
+            {renderMainContent()}
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
