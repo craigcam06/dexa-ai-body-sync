@@ -32,7 +32,12 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   });
 
   const handleCSVDataUpdate = (data: ParsedWhoopData) => {
-    console.log('WhoopConnect handleCSVDataUpdate received:', data);
+    console.log('🔍 WhoopConnect CSV data received:', {
+      recovery: data.recovery.map(r => ({ date: r.date, score: r.recovery_score })),
+      sleep: data.sleep.map(s => ({ date: s.date, score: s.sleep_score })),
+      workouts: data.workouts.length,
+      daily: data.daily.length
+    });
     setCsvData(data);
     onDataUpdate?.(data);
   };
