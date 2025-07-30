@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   Target, Download, TrendingUp, AlertTriangle, CheckCircle, 
-  Heart, Moon, Dumbbell, Activity, Bell, BellOff, X, BarChart3, Network
+  Heart, Moon, Dumbbell, Activity, Bell, BellOff, X, BarChart3, Network, HelpCircle
 } from 'lucide-react';
 import { ParsedWhoopData } from '@/types/whoopData';
 import { useToast } from '@/hooks/use-toast';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
   analyzeHealthCorrelations, 
   CorrelationInsight, 
@@ -410,6 +411,25 @@ export function UnifiedHealthInsights({ whoopData }: UnifiedHealthInsightsProps)
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
                 Health Score
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <div className="space-y-2">
+                        <div className="font-medium">Health Score Calculation</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Recovery: 30% weight</p>
+                          <p>• Sleep efficiency: 25% weight</p>
+                          <p>• Training balance: 20% weight</p>
+                          <p>• Workout consistency: 15% weight</p>
+                          <p>• HRV trend: 10% weight</p>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <Button
                 variant="outline"
@@ -423,9 +443,14 @@ export function UnifiedHealthInsights({ whoopData }: UnifiedHealthInsightsProps)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <div className="text-4xl font-bold text-primary">{healthScore}</div>
               <div className="text-sm text-muted-foreground">Overall Health Score</div>
+              <div className="text-xs text-muted-foreground">
+                {healthScore >= 80 ? '🟢 Excellent' : 
+                 healthScore >= 60 ? '🟡 Good' : 
+                 healthScore >= 40 ? '🟠 Fair' : '🔴 Needs Attention'}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -439,6 +464,24 @@ export function UnifiedHealthInsights({ whoopData }: UnifiedHealthInsightsProps)
                 {activeNotifications.length > 0 && (
                   <Badge variant="destructive">{activeNotifications.length}</Badge>
                 )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <div className="space-y-2">
+                        <div className="font-medium">Smart Health Alerts</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Critical: Recovery &lt;30%, Sleep efficiency &lt;65%</p>
+                          <p>• Warning: Recovery 30-50%, Sleep efficiency 65-75%</p>
+                          <p>• Auto-generated based on your personal thresholds</p>
+                          <p>• Toggle notifications on/off as needed</p>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <Button
                 variant="outline"
@@ -533,7 +576,7 @@ export function UnifiedHealthInsights({ whoopData }: UnifiedHealthInsightsProps)
                     <XAxis dataKey="day" />
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
-                    <Tooltip />
+                    <RechartsTooltip />
                     <Line yAxisId="left" type="monotone" dataKey="recovery" stroke="#8884d8" strokeWidth={2} />
                     <Line yAxisId="right" type="monotone" dataKey="hrv" stroke="#82ca9d" strokeWidth={2} />
                   </LineChart>
@@ -548,7 +591,7 @@ export function UnifiedHealthInsights({ whoopData }: UnifiedHealthInsightsProps)
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="day" />
                     <YAxis />
-                    <Tooltip />
+                    <RechartsTooltip />
                     <Bar dataKey="efficiency" fill="#8884d8" />
                     <Bar dataKey="totalSleep" fill="#82ca9d" />
                   </BarChart>

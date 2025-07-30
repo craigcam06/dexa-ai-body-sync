@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Brain, MessageSquare, Send, Heart, Moon, Dumbbell, Activity, Apple, TrendingUp, Target, Zap, Calendar, BarChart3 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Brain, MessageSquare, Send, Heart, Moon, Dumbbell, Activity, Apple, TrendingUp, Target, Zap, Calendar, BarChart3, HelpCircle } from 'lucide-react';
 import { ParsedWhoopData } from '@/types/whoopData';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -193,23 +194,64 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
       {/* AI Chat */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI Health Coach
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              AI Health Coach
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-sm">
+                    <div className="space-y-2">
+                      <div className="font-medium">AI Health Coach Features</div>
+                      <div className="text-sm space-y-1">
+                        <p>• Analyzes your personal health data (WHOOP, sleep, workouts)</p>
+                        <p>• Provides personalized recommendations</p>
+                        <p>• Answers questions about recovery, training, nutrition</p>
+                        <p>• Adapts advice based on your Craig Campbell protocol (if active)</p>
+                        <p>• Use quick actions or ask custom questions</p>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </CardTitle>
           <CardDescription>
-            Ask questions about your health data and get personalized advice
+            Get personalized insights and recommendations based on your health data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Enhanced Quick Actions */}
           {whoopData && chatMessages.length === 0 && (
             <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <p className="text-sm font-medium">🤖 {planData ? 'Craig Campbell Protocol' : 'AI Health Coach'} Ready</p>
-                <p className="text-xs text-muted-foreground">
-                  {planData ? 'Personalized coaching for your aggressive cut plan' : 'Personalized recommendations based on your data'}
-                </p>
+              <div className="text-center space-y-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">🤖 {planData ? 'Craig Campbell Protocol' : 'AI Health Coach'} Ready</p>
+                  <p className="text-xs text-muted-foreground">
+                    {planData ? 'Personalized coaching for your aggressive cut plan' : 'Personalized recommendations based on your data'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Heart className="h-3 w-3 text-red-500" />
+                    <span>Recovery</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Moon className="h-3 w-3 text-purple-500" />
+                    <span>Sleep</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Dumbbell className="h-3 w-3 text-blue-500" />
+                    <span>Training</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Apple className="h-3 w-3 text-green-500" />
+                    <span>Nutrition</span>
+                  </div>
+                </div>
               </div>
               
               {quickActionCategories.map((category) => (

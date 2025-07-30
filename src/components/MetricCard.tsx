@@ -13,7 +13,7 @@ interface MetricCardProps {
   trend?: number;
   icon: LucideIcon;
   variant?: "primary" | "success" | "accent" | "warning";
-  tooltip?: string;
+  tooltip?: string | React.ReactNode;
   isLoading?: boolean;
 }
 
@@ -175,14 +175,20 @@ export const MetricCard = ({
           </TooltipTrigger>
           <TooltipContent 
             side="top" 
-            className="max-w-xs p-3 bg-card/95 backdrop-blur-sm border border-border/60 shadow-lg"
+            className="max-w-sm p-3 bg-card/95 backdrop-blur-sm border border-border/60 shadow-lg"
           >
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
                 <span className="font-medium text-sm">{title}</span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{tooltip}</p>
+              <div className="text-sm text-muted-foreground leading-relaxed">
+                {typeof tooltip === 'string' ? (
+                  <p>{tooltip}</p>
+                ) : (
+                  tooltip
+                )}
+              </div>
             </div>
           </TooltipContent>
         </Tooltip>

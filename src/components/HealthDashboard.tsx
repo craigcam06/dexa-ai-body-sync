@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   Activity, 
@@ -21,7 +22,10 @@ import {
   Sparkles,
   Bell,
   Mic,
-  Upload
+  Upload,
+  CheckCircle,
+  Info,
+  HelpCircle
 } from "lucide-react";
 import { MetricCard } from "./MetricCard";
 import { BodyCompositionChart } from "./BodyCompositionChart";
@@ -246,14 +250,31 @@ export const HealthDashboard = () => {
                       <Bell className="h-6 w-6 text-white" />
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
-                      🚀 Recommended: Mobile-First Apple Health Integration
-                    </h3>
-                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4 leading-relaxed">
-                      Since all your apps (WHOOP, MyFitnessPal, etc.) sync to Apple Health, you only need <strong>one integration</strong> to get everything automatically. 
-                      Set up the mobile app for seamless sync and smart iOS notifications.
-                    </p>
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1 flex items-center gap-2">
+                        🚀 Recommended: Mobile-First Apple Health Integration
+                      </h3>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 opacity-90">
+                        Streamlined data collection & smart notifications
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <span><strong>One integration</strong> syncs all your apps (WHOOP, MyFitnessPal, etc.)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <span><strong>Smart iOS notifications</strong> for recovery, sleep, and training alerts</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <span><strong>Automatic background sync</strong> with real-time health insights</span>
+                      </div>
+                    </div>
+                    
                     <Button 
                       onClick={() => setActiveSection("connect")}
                       className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
@@ -273,10 +294,27 @@ export const HealthDashboard = () => {
 
             {/* Key Metrics */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold flex items-center gap-2 animate-fade-in-up [animation-delay:300ms]">
-                <Activity className="h-5 w-5 text-primary" />
-                Key Health Metrics
-              </h3>
+              <div className="flex items-center justify-between animate-fade-in-up [animation-delay:300ms]">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-primary" />
+                  <h3 className="text-xl font-semibold">Key Health Metrics</h3>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs">
+                      <div className="space-y-2">
+                        <p className="font-medium">About These Metrics</p>
+                        <p className="text-sm">Real-time insights from your connected devices. Each card shows current values, targets, trends, and progress indicators to help you optimize your health and performance.</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="animate-fade-in-up [animation-delay:400ms]">
                   <MetricCard
@@ -286,7 +324,17 @@ export const HealthDashboard = () => {
                     trend={-mockData.bodyComposition.bodyFat.trend}
                     icon={Target}
                     variant="primary"
-                    tooltip="Body fat percentage from latest DEXA scan. Target is 18% by September 30th for optimal physique."
+                    tooltip={
+                      <div className="space-y-2">
+                        <div className="font-medium">Body Fat Tracking</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Latest DEXA scan: {mockData.bodyComposition.bodyFat.current}%</p>
+                          <p>• Goal: {mockData.bodyComposition.bodyFat.target}% by September 30th</p>
+                          <p>• Progress: {mockData.bodyComposition.bodyFat.trend > 0 ? 'Increasing' : 'Decreasing'} by {Math.abs(mockData.bodyComposition.bodyFat.trend)}%</p>
+                          <p>• Method: Professional DEXA body composition analysis</p>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
                 <div className="animate-fade-in-up [animation-delay:500ms]">
@@ -297,7 +345,18 @@ export const HealthDashboard = () => {
                     trend={mockData.bodyComposition.leanMass.trend}
                     icon={Dumbbell}
                     variant="success"
-                    tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass by October 30th."
+                    tooltip={
+                      <div className="space-y-2">
+                        <div className="font-medium">Lean Body Mass</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Current: {mockData.bodyComposition.leanMass.current} lbs</p>
+                          <p>• Previous: {mockData.bodyComposition.leanMass.previous} lbs</p>
+                          <p>• Change: {mockData.bodyComposition.leanMass.trend > 0 ? '+' : ''}{mockData.bodyComposition.leanMass.trend} lbs</p>
+                          <p>• Includes: Muscle mass, bone density, organs, water</p>
+                          <p>• Goal: Build 5 lbs lean mass by October 30th</p>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
                 <div className="animate-fade-in-up [animation-delay:600ms]">
@@ -311,7 +370,19 @@ export const HealthDashboard = () => {
                       5}
                     icon={Heart}
                     variant="accent"
-                    tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
+                    tooltip={
+                      <div className="space-y-2">
+                        <div className="font-medium">WHOOP Recovery Score</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Composite score measuring training readiness</p>
+                          <p>• Based on: HRV, resting heart rate, sleep quality</p>
+                          <p>• Green (70%+): Ready for high intensity</p>
+                          <p>• Yellow (34-69%): Moderate intensity recommended</p>
+                          <p>• Red (0-33%): Focus on recovery and rest</p>
+                          <p>• Updates daily upon waking</p>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
                 <div className="animate-fade-in-up [animation-delay:700ms]">
@@ -322,7 +393,19 @@ export const HealthDashboard = () => {
                     trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
                     icon={Flame}
                     variant="warning"
-                    tooltip="Total Daily Energy Expenditure. Target 2400 cal for fat loss (deficit of ~465 cal/day for 1 lb/week loss)."
+                    tooltip={
+                      <div className="space-y-2">
+                        <div className="font-medium">Total Daily Energy Expenditure</div>
+                        <div className="text-sm space-y-1">
+                          <p>• BMR (Base): {healthMetrics.tdeeData.bmr} cal</p>
+                          <p>• Activity: +{healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr} cal</p>
+                          <p>• Total TDEE: {healthMetrics.tdeeData.tdee} cal</p>
+                          <p>• For fat loss: Eat 2400 cal (465 cal deficit)</p>
+                          <p>• Deficit = 1 lb fat loss per week</p>
+                          <p>• Based on: Age, weight, height, activity level</p>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
                 <div className="animate-fade-in-up [animation-delay:800ms]">
@@ -336,7 +419,19 @@ export const HealthDashboard = () => {
                     trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
                     icon={Dumbbell}
                     variant="primary"
-                    tooltip="Total weight lifted in past 7 days. Target 180k lbs weekly for progressive overload and strength gains."
+                    tooltip={
+                      <div className="space-y-2">
+                        <div className="font-medium">Training Volume (7 days)</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Total weight moved: {healthMetrics.strengthMetrics?.weekly.volume ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs` : 'No data'}</p>
+                          <p>• Workouts completed: {healthMetrics.strengthMetrics?.weekly.workouts || 0}</p>
+                          <p>• Target: 180k lbs weekly for growth</p>
+                          <p>• Calculation: Sets × Reps × Weight</p>
+                          <p>• Tracks: Progressive overload progress</p>
+                          <p>• Data source: StrongLifts 5x5 app</p>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
                 <div className="animate-fade-in-up [animation-delay:900ms]">
@@ -354,7 +449,19 @@ export const HealthDashboard = () => {
                     }
                     icon={Heart}
                     variant="accent"
-                    tooltip="Sleep efficiency target 85%+ with 8 hours total sleep for optimal recovery and performance."
+                    tooltip={
+                      <div className="space-y-2">
+                        <div className="font-medium">Sleep Efficiency & Quality</div>
+                        <div className="text-sm space-y-1">
+                          <p>• Efficiency: Time asleep ÷ time in bed</p>
+                          <p>• Target: 85%+ efficiency with 8+ hours total</p>
+                          <p>• Quality factors: Deep sleep, REM, wake events</p>
+                          <p>• Optimal range: 85-95% efficiency</p>
+                          <p>• Poor (&lt;80%): Review sleep environment</p>
+                          <p>• Data: WHOOP sleep tracking</p>
+                        </div>
+                      </div>
+                    }
                   />
                 </div>
               </div>
