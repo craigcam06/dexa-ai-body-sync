@@ -78,6 +78,12 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
       console.log('🔗 About to get authorization URL...');
       const authUrl = whoopService.getAuthorizationUrl();
       console.log('✅ Got auth URL, about to redirect to:', authUrl);
+      console.log('🔍 Full URL breakdown:', {
+        url: authUrl,
+        contains_client_id: authUrl.includes('641ac502-42e1-4c38-8b51-15e0c5b5cbef'),
+        contains_redirect_uri: authUrl.includes('wkuziiubjtvickimapau.supabase.co'),
+        contains_oauth_path: authUrl.includes('/oauth/oauth2/auth')
+      });
       window.location.href = authUrl;
     } catch (error) {
       console.error('❌ Failed to get authorization URL:', error);
