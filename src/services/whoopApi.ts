@@ -110,8 +110,8 @@ class WhoopService {
 
   // Get client ID from Supabase edge function
   private getClientId(): string {
-    // We'll need to get this from the backend since secrets aren't available in frontend
-    return '641ac502-42e1-4c38-8b51-15e0c5b5cbef'; // Fallback client ID
+    // Use the same client ID as in the edge function
+    return '1fGvUgdCJqb6FmJJkH7ViJNDFDL42xKh';
   }
 
   // Generate OAuth authorization URL  
