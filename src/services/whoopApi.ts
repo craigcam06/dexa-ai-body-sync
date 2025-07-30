@@ -125,6 +125,9 @@ class WhoopService {
     });
 
     const authUrl = `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
+    console.log('🚨 CRITICAL: Using Client ID:', this.authConfig.clientId);
+    console.log('🚨 If you get "invalid_client" error, this Client ID does not exist in Whoop Developer Dashboard');
+    console.log('🚨 You need to create an app at: https://developer-dashboard.whoop.com/');
     console.log('Generated Whoop OAuth URL:', authUrl);
     console.log('OAuth params:', {
       client_id: this.authConfig.clientId,
