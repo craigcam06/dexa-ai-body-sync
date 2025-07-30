@@ -95,6 +95,7 @@ interface WhoopWorkout {
 
 class WhoopService {
   private baseUrl = 'https://api.prod.whoop.com';
+  private apiBaseUrl = 'https://api.prod.whoop.com/developer';
   private authConfig: WhoopAuthConfig;
 
   constructor() {
@@ -196,7 +197,7 @@ class WhoopService {
       throw new Error('No valid access token available');
     }
 
-    const response = await fetch(`${this.baseUrl}/developer/v1${endpoint}`, {
+    const response = await fetch(`${this.apiBaseUrl}/v2${endpoint}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
