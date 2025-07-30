@@ -90,9 +90,106 @@ const PRESET_GOALS = [
   }
 ];
 
+// Smart goal generator based on user's actual data patterns
+const generateSmartGoals = (whoopData: ParsedWhoopData): Array<{
+  category: 'recovery' | 'sleep' | 'training' | 'general';
+  title: string;
+  description: string;
+  targetValue: number;
+  unit: string;
+  timeframe: 'daily' | 'weekly' | 'monthly';
+}> => {
+  const smartGoals: Array<{
+    category: 'recovery' | 'sleep' | 'training' | 'general';
+    title: string;
+    description: string;
+    targetValue: number;
+    unit: string;
+    timeframe: 'daily' | 'weekly' | 'monthly';
+  }> = [];
+  
+  if (whoopData.recovery?.length > 0) {
+    const avgRecovery = whoopData.recovery.reduce((sum, r) => sum + r.recovery_score, 0) / whoopData.recovery.length;
+    const targetRecovery = Math.min(85, Math.round(avgRecovery + 10)); // Aim 10% higher but cap at 85%
+    
+    smartGoals.push({
+      category: 'recovery',
+      title: `Improve Recovery to ${targetRecovery}%`,
+      description: `Your current average is ${Math.round(avgRecovery)}%. Let's aim higher!`,
+      targetValue: targetRecovery,
+      unit: '%',
+      timeframe: 'daily'
+    });
+  }
+
+  if (whoopData.sleep?.length > 0) {
+    const avgSleep = whoopData.sleep.reduce((sum, s) => sum + (s.total_sleep_time_milli / (1000 * 60 * 60)), 0) / whoopData.sleep.length;
+    const avgEfficiency = whoopData.sleep.reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / whoopData.sleep.length;
+    
+    if (avgSleep < 8) {
+      smartGoals.push({
+        category: 'sleep',
+        title: `Sleep ${Math.ceil(avgSleep + 0.5)} Hours`,
+        description: `You average ${avgSleep.toFixed(1)}h. Let's improve consistency!`,
+        targetValue: Math.ceil(avgSleep + 0.5),
+        unit: 'hours',
+        timeframe: 'daily'
+      });
+    }
+
+    if (avgEfficiency < 85) {
+      smartGoals.push({
+        category: 'sleep',
+        title: `Sleep Efficiency ${Math.round(avgEfficiency + 5)}%`,
+        description: `Current: ${Math.round(avgEfficiency)}%. Better sleep hygiene can help!`,
+        targetValue: Math.round(avgEfficiency + 5),
+        unit: '%',
+        timeframe: 'daily'
+      });
+    }
+  }
+
+  if (whoopData.workouts?.length > 0) {
+    const weeklyWorkouts = whoopData.workouts.length;
+    const avgStrain = whoopData.workouts.reduce((sum, w) => sum + w.strain_score, 0) / whoopData.workouts.length;
+    
+    if (weeklyWorkouts < 4) {
+      smartGoals.push({
+        category: 'training',
+        title: `${weeklyWorkouts + 1} Workouts/Week`,
+        description: `You're doing ${weeklyWorkouts}/week. Let's add one more!`,
+        targetValue: weeklyWorkouts + 1,
+        unit: 'sessions',
+        timeframe: 'weekly'
+      });
+    }
+
+    if (avgStrain < 12) {
+      smartGoals.push({
+        category: 'training',
+        title: `Target Strain ${Math.round(avgStrain + 2)}`,
+        description: `Your average strain is ${Math.round(avgStrain)}. Room to push harder!`,
+        targetValue: Math.round(avgStrain + 2),
+        unit: 'strain',
+        timeframe: 'daily'
+      });
+    }
+  }
+
+  return smartGoals;
+};
+
 export function GoalSetting({ whoopData }: GoalSettingProps) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [smartGoals, setSmartGoals] = useState<Array<{
+    category: 'recovery' | 'sleep' | 'training' | 'general';
+    title: string;
+    description: string;
+    targetValue: number;
+    unit: string;
+    timeframe: 'daily' | 'weekly' | 'monthly';
+  }>>([]);
   const [customGoal, setCustomGoal] = useState({
     title: '',
     description: '',
@@ -124,6 +221,14 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
   useEffect(() => {
     localStorage.setItem('healthGoals', JSON.stringify(goals));
   }, [goals]);
+
+  // Generate smart goals based on actual data
+  useEffect(() => {
+    if (whoopData) {
+      const generatedSmartGoals = generateSmartGoals(whoopData);
+      setSmartGoals(generatedSmartGoals);
+    }
+  }, [whoopData]);
 
   // Update goal progress when data changes
   useEffect(() => {
@@ -204,7 +309,7 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
     );
   };
 
-  const addPresetGoal = (preset: typeof PRESET_GOALS[0]) => {
+  const addPresetGoal = (preset: typeof PRESET_GOALS[0] | typeof smartGoals[0]) => {
     const newGoal: Goal = {
       id: Date.now().toString(),
       ...preset,
@@ -300,6 +405,11 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
   // Filter out preset goals that are already added
   const availablePresets = PRESET_GOALS.filter(preset => 
     !goals.some(goal => goal.title === preset.title)
+  );
+
+  // Filter smart goals that aren't already added
+  const availableSmartGoals = smartGoals.filter(smart => 
+    !goals.some(goal => goal.title === smart.title)
   );
 
   return (
@@ -409,10 +519,47 @@ export function GoalSetting({ whoopData }: GoalSettingProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Smart Goals Based on Your Data */}
+            {availableSmartGoals.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                  📊 Smart Goals (Based on Your Data)
+                </h4>
+                <div className="grid grid-cols-1 gap-2 mb-4">
+                  {availableSmartGoals.map((smart, index) => {
+                    const IconComponent = getCategoryIcon(smart.category);
+                    return (
+                      <Button
+                        key={`smart-${index}`}
+                        variant="outline"
+                        onClick={() => addPresetGoal(smart)}
+                        className="justify-start h-auto p-3 text-left border-blue-200 bg-blue-50/50 hover:bg-blue-100/50"
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <IconComponent className={`h-4 w-4 ${getCategoryColor(smart.category).split(' ')[0]}`} />
+                          <div className="flex-1">
+                            <div className="font-medium text-blue-900">{smart.title}</div>
+                            <div className="text-sm text-blue-700">{smart.description}</div>
+                          </div>
+                          <div className="text-xs text-blue-600 font-medium">
+                            {smart.targetValue} {smart.unit}
+                          </div>
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                            SMART
+                          </Badge>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Preset Goals */}
             {availablePresets.length > 0 && (
               <div>
-                <h4 className="font-medium mb-3">Quick Add (Recommended)</h4>
+                <h4 className="font-medium mb-3">Quick Add (Standard Goals)</h4>
                 <div className="grid grid-cols-1 gap-2">
                   {availablePresets.map((preset, index) => {
                     const IconComponent = getCategoryIcon(preset.category);
