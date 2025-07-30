@@ -71,22 +71,30 @@ export class HealthKitService {
   }
 
   private async checkAvailability() {
-    // Check if running on iOS
-    this.isAvailable = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
+    try {
+      // Check if running on iOS
+      this.isAvailable = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
+      console.log('HealthKit availability check:', this.isAvailable);
+    } catch (error) {
+      console.log('Error checking HealthKit availability:', error);
+      this.isAvailable = false;
+    }
   }
 
   public async requestPermissions(): Promise<boolean> {
-    if (!this.isAvailable) {
-      console.log('HealthKit not available on this platform - showing demo data');
-      this.hasPermissions = true; // Allow demo data on non-iOS platforms
-      return true;
-    }
-
     try {
+      console.log('HealthKit requestPermissions called, isAvailable:', this.isAvailable);
+      
+      if (!this.isAvailable) {
+        console.log('HealthKit not available on this platform - using demo data');
+        this.hasPermissions = true; // Allow demo data on non-iOS platforms
+        return true;
+      }
+
       console.log('Requesting HealthKit permissions...');
       
       // Check if Health plugin is available on the window object
-      if (this.isAvailable && window.Health) {
+      if (this.isAvailable && typeof window !== 'undefined' && window.Health) {
         // Request permissions for reading health data
         const permissions = [
           'workouts',
@@ -228,17 +236,22 @@ export class HealthKitService {
     }
 
     try {
+      console.log('Getting workouts, hasPermissions:', this.hasPermissions);
+      
       // Try to get real data from Health plugin if available
-      if (this.isAvailable && window.Health) {
+      if (this.isAvailable && typeof window !== 'undefined' && window.Health) {
         const endDate = new Date();
         const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
         
         try {
+          console.log('Attempting to query real health data...');
           const workoutData = await window.Health.query({
             dataType: 'workout',
             startDate,
             endDate
           });
+          
+          console.log('Real health data received:', workoutData);
           
           // Convert to our format
           return workoutData.map((workout: any, index: number) => ({

@@ -24,15 +24,24 @@ export const AppleHealthConnect: React.FC<AppleHealthConnectProps> = ({ onDataUp
   const healthService = HealthKitService.getInstance();
 
   useEffect(() => {
+    console.log('AppleHealthConnect mounted');
     getCurrentUser();
   }, []);
 
   const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
+    try {
+      console.log('Getting current user...');
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user?.email);
+      setUser(user);
+    } catch (error) {
+      console.error('Error getting current user:', error);
+    }
   };
 
   const handleConnect = async () => {
+    console.log('handleConnect called, user:', user?.email);
+    
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -44,7 +53,10 @@ export const AppleHealthConnect: React.FC<AppleHealthConnectProps> = ({ onDataUp
 
     setIsLoading(true);
     try {
+      console.log('Requesting health permissions...');
       const hasPermissions = await healthService.requestPermissions();
+      console.log('Permissions result:', hasPermissions);
+      
       if (hasPermissions) {
         setIsConnected(true);
         toast({
