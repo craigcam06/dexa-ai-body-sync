@@ -123,7 +123,15 @@ class WhoopService {
       state: this.generateState()
     });
 
-    return `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
+    const authUrl = `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
+    console.log('Generated Whoop OAuth URL:', authUrl);
+    console.log('OAuth params:', {
+      client_id: this.authConfig.clientId,
+      redirect_uri: this.authConfig.redirectUri,
+      scopes: this.authConfig.scopes
+    });
+    
+    return authUrl;
   }
 
   // Generate random state for OAuth security
