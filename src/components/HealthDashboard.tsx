@@ -36,6 +36,7 @@ import { PlanDashboard } from "./PlanDashboard";
 import { MobileHealthSync } from "./MobileHealthSync";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
 const mockData = {
@@ -187,57 +188,75 @@ export const HealthDashboard = () => {
     switch (activeSection) {
       case "connect":
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Connect Your Devices</h2>
-              <div className="grid gap-4">
-                <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
-                <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+          <div className="space-y-8">
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <Settings className="h-6 w-6 text-primary" />
+                Connect Your Devices
+              </h2>
+              <div className="grid gap-6">
+                <div className="animate-fade-in-up [animation-delay:100ms]">
+                  <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:200ms]">
+                  <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+                </div>
               </div>
             </div>
           </div>
         );
       case "optimize":
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Optimize Your Health</h2>
-              <div className="grid gap-4">
-                {planData ? (
-                  <PlanDashboard whoopData={whoopData} />
-                ) : (
-                  <PlanSetup onPlanCreated={loadActivePlan} />
-                )}
-                <GoalSetting whoopData={whoopData} />
-                <AICoachPanel whoopData={whoopData} planData={planData} />
-                <VoiceInterface whoopData={whoopData} />
+          <div className="space-y-8">
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <Brain className="h-6 w-6 text-primary" />
+                Optimize Your Health
+              </h2>
+              <div className="grid gap-6">
+                <div className="animate-fade-in-up [animation-delay:100ms]">
+                  {planData ? (
+                    <PlanDashboard whoopData={whoopData} />
+                  ) : (
+                    <PlanSetup onPlanCreated={loadActivePlan} />
+                  )}
+                </div>
+                <div className="animate-fade-in-up [animation-delay:200ms]">
+                  <GoalSetting whoopData={whoopData} />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:300ms]">
+                  <AICoachPanel whoopData={whoopData} planData={planData} />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:400ms]">
+                  <VoiceInterface whoopData={whoopData} />
+                </div>
               </div>
             </div>
           </div>
         );
       default:
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Mobile Health Integration Banner */}
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+            <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800 animate-fade-in shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
                       <Bell className="h-6 w-6 text-white" />
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
                       🚀 Recommended: Mobile-First Apple Health Integration
                     </h3>
-                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4 leading-relaxed">
                       Since all your apps (WHOOP, MyFitnessPal, etc.) sync to Apple Health, you only need <strong>one integration</strong> to get everything automatically. 
                       Set up the mobile app for seamless sync and smart iOS notifications.
                     </p>
                     <Button 
                       onClick={() => setActiveSection("connect")}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                       size="sm"
                     >
                       Set Up Mobile App →
@@ -248,81 +267,103 @@ export const HealthDashboard = () => {
             </Card>
 
             {/* Unified Health Insights */}
-            <UnifiedHealthInsights whoopData={whoopData} />
+            <div className="animate-fade-in-up [animation-delay:200ms]">
+              <UnifiedHealthInsights whoopData={whoopData} />
+            </div>
 
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <MetricCard
-                title="Body Fat Progress"
-                value={`${mockData.bodyComposition.bodyFat.current}%`}
-                target={`Target: ${mockData.bodyComposition.bodyFat.target}% by 9/30`}
-                trend={-mockData.bodyComposition.bodyFat.trend}
-                icon={Target}
-                variant="primary"
-                tooltip="Body fat percentage from latest DEXA scan. Target is 18% by September 30th for optimal physique."
-              />
-              <MetricCard
-                title="Lean Mass Progress"
-                value={`${mockData.bodyComposition.leanMass.current} lbs`}
-                target={`Target: +5 lbs by 10/30`}
-                trend={mockData.bodyComposition.leanMass.trend}
-                icon={Dumbbell}
-                variant="success"
-                tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass by October 30th."
-              />
-              <MetricCard
-                title="Recovery Score"
-                value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
-                target="Target: 70%+"
-                trend={whoopData?.recovery?.length > 1 ? 
-                  Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 
-                  whoopData.recovery.slice(-7).reduce((sum, r) => sum + r.recovery_score, 0) / Math.min(7, whoopData.recovery.length)) : 
-                  5}
-                icon={Heart}
-                variant="accent"
-                tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
-              />
-              <MetricCard
-                title="TDEE"
-                value={`${healthMetrics.tdeeData.tdee} cal`}
-                target="Target: 2400 cal"
-                trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
-                icon={Flame}
-                variant="warning"
-                tooltip="Total Daily Energy Expenditure. Target 2400 cal for fat loss (deficit of ~465 cal/day for 1 lb/week loss)."
-              />
-              <MetricCard
-                title="Weekly Volume"
-                value={healthMetrics.strengthMetrics?.weekly.volume 
-                  ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
-                  : "No data"
-                }
-                target="Target: 180k lbs"
-                trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
-                icon={Dumbbell}
-                variant="primary"
-                tooltip="Total weight lifted in past 7 days. Target 180k lbs weekly for progressive overload and strength gains."
-              />
-              <MetricCard
-                title="Sleep Quality"
-                value={whoopData?.sleep?.length > 0 
-                  ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage || 85}%` 
-                  : "85%"
-                }
-                target="Target: 85%+ & 8h"
-                trend={whoopData?.sleep?.length > 1 
-                  ? Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage - 
-                    whoopData.sleep.slice(-7).reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / Math.min(7, whoopData.sleep.length))
-                  : 5
-                }
-                icon={Heart}
-                variant="accent"
-                tooltip="Sleep efficiency target 85%+ with 8 hours total sleep for optimal recovery and performance."
-              />
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold flex items-center gap-2 animate-fade-in-up [animation-delay:300ms]">
+                <Activity className="h-5 w-5 text-primary" />
+                Key Health Metrics
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="animate-fade-in-up [animation-delay:400ms]">
+                  <MetricCard
+                    title="Body Fat Progress"
+                    value={`${mockData.bodyComposition.bodyFat.current}%`}
+                    target={`Target: ${mockData.bodyComposition.bodyFat.target}% by 9/30`}
+                    trend={-mockData.bodyComposition.bodyFat.trend}
+                    icon={Target}
+                    variant="primary"
+                    tooltip="Body fat percentage from latest DEXA scan. Target is 18% by September 30th for optimal physique."
+                  />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:500ms]">
+                  <MetricCard
+                    title="Lean Mass Progress"
+                    value={`${mockData.bodyComposition.leanMass.current} lbs`}
+                    target={`Target: +5 lbs by 10/30`}
+                    trend={mockData.bodyComposition.leanMass.trend}
+                    icon={Dumbbell}
+                    variant="success"
+                    tooltip="Lean body mass (muscle + bone) from DEXA scan. Goal is to gain 5 lbs of lean mass by October 30th."
+                  />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:600ms]">
+                  <MetricCard
+                    title="Recovery Score"
+                    value={whoopData?.recovery?.length > 0 ? `${whoopData.recovery[whoopData.recovery.length - 1].recovery_score}%` : `${mockData.devices.whoop.recovery}%`}
+                    target="Target: 70%+"
+                    trend={whoopData?.recovery?.length > 1 ? 
+                      Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score - 
+                      whoopData.recovery.slice(-7).reduce((sum, r) => sum + r.recovery_score, 0) / Math.min(7, whoopData.recovery.length)) : 
+                      5}
+                    icon={Heart}
+                    variant="accent"
+                    tooltip="Daily recovery score from Whoop. Measures readiness for training based on HRV, RHR, and sleep quality. 70%+ is optimal."
+                  />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:700ms]">
+                  <MetricCard
+                    title="TDEE"
+                    value={`${healthMetrics.tdeeData.tdee} cal`}
+                    target="Target: 2400 cal"
+                    trend={healthMetrics.tdeeData.tdee - healthMetrics.tdeeData.bmr}
+                    icon={Flame}
+                    variant="warning"
+                    tooltip="Total Daily Energy Expenditure. Target 2400 cal for fat loss (deficit of ~465 cal/day for 1 lb/week loss)."
+                  />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:800ms]">
+                  <MetricCard
+                    title="Weekly Volume"
+                    value={healthMetrics.strengthMetrics?.weekly.volume 
+                      ? `${(healthMetrics.strengthMetrics.weekly.volume / 1000).toFixed(1)}k lbs`
+                      : "No data"
+                    }
+                    target="Target: 180k lbs"
+                    trend={healthMetrics.strengthMetrics?.weekly.workouts || 0}
+                    icon={Dumbbell}
+                    variant="primary"
+                    tooltip="Total weight lifted in past 7 days. Target 180k lbs weekly for progressive overload and strength gains."
+                  />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:900ms]">
+                  <MetricCard
+                    title="Sleep Quality"
+                    value={whoopData?.sleep?.length > 0 
+                      ? `${whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage || 85}%` 
+                      : "85%"
+                    }
+                    target="Target: 85%+ & 8h"
+                    trend={whoopData?.sleep?.length > 1 
+                      ? Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage - 
+                        whoopData.sleep.slice(-7).reduce((sum, s) => sum + s.sleep_efficiency_percentage, 0) / Math.min(7, whoopData.sleep.length))
+                      : 5
+                    }
+                    icon={Heart}
+                    variant="accent"
+                    tooltip="Sleep efficiency target 85%+ with 8 hours total sleep for optimal recovery and performance."
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Body Composition Chart */}
-            <BodyCompositionChart />
+            <div className="animate-fade-in-up [animation-delay:1000ms]">
+              <BodyCompositionChart />
+            </div>
           </div>
         );
     }
@@ -330,17 +371,17 @@ export const HealthDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full flex">
-        <Sidebar className="w-64">
+      <div className="min-h-screen w-full flex bg-gradient-to-br from-background via-background to-muted/20">
+        <Sidebar className="w-64 border-r border-border/60 backdrop-blur-sm">
           <SidebarContent>
             <div className="p-4">
-              <div className="flex items-center gap-2 mb-6">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-gradient-primary text-primary-foreground text-sm">CC</AvatarFallback>
+              <div className="flex items-center gap-3 mb-6 p-3 rounded-lg bg-gradient-primary/10 border border-primary/20">
+                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                  <AvatarFallback className="bg-gradient-primary text-primary-foreground text-sm font-bold">CC</AvatarFallback>
                 </Avatar>
                 <div>
                   <h2 className="font-semibold text-sm">Craig Campbell</h2>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs mt-1 border-primary/30 text-primary">
                     Next DEXA: {mockData.nextDexa}
                   </Badge>
                 </div>
@@ -348,17 +389,26 @@ export const HealthDashboard = () => {
             </div>
             
             <SidebarGroup>
-              <SidebarGroupLabel>Health Hub</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-xs uppercase tracking-wide font-medium px-3">Health Hub</SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="space-y-1">
                   {navigationItems.map((item) => (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton 
                         onClick={() => setActiveSection(item.id)}
-                        className={activeSection === item.id ? "bg-primary text-primary-foreground" : ""}
+                        className={cn(
+                          "w-full justify-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-300",
+                          "hover:bg-sidebar-accent/60 hover:scale-[1.02]",
+                          activeSection === item.id 
+                            ? "bg-primary text-primary-foreground shadow-primary/20 shadow-md" 
+                            : "text-sidebar-foreground hover:text-sidebar-accent-foreground"
+                        )}
                       >
                         <item.icon className="h-4 w-4" />
-                        {item.label}
+                        <span className="font-medium">{item.label}</span>
+                        {activeSection === item.id && (
+                          <div className="ml-auto h-2 w-2 rounded-full bg-primary-foreground animate-pulse" />
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -368,19 +418,22 @@ export const HealthDashboard = () => {
           </SidebarContent>
         </Sidebar>
 
-        <main className="flex-1">
-          <div className="p-4 space-y-6">
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 space-y-8 max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="text-2xl font-bold">Health Dashboard</h1>
-                  <p className="text-muted-foreground">Optimizing body composition through data-driven insights</p>
+                <SidebarTrigger className="hover:bg-sidebar-accent/60 transition-colors" />
+                <div className="animate-fade-in-up">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                    Health Dashboard
+                  </h1>
+                  <p className="text-muted-foreground mt-1">Optimizing body composition through data-driven insights</p>
                 </div>
               </div>
             </div>
-            
-            {renderMainContent()}
+            <div className="animate-fade-in-up [animation-delay:200ms]">
+              {renderMainContent()}
+            </div>
           </div>
         </main>
       </div>

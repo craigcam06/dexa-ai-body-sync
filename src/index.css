@@ -63,6 +63,8 @@ All colors MUST be HSL.
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-gentle: all 0.2s ease-out;
 
     --sidebar-background: 0 0% 98%;
 
@@ -127,5 +129,69 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Enhanced Card Components */
+  .health-card {
+    @apply bg-card/50 backdrop-blur-sm border border-border/60 rounded-lg transition-all duration-300 hover:shadow-card hover:bg-card/80;
+  }
+  
+  .health-card-interactive {
+    @apply health-card hover:scale-[1.02] hover:shadow-primary/10 cursor-pointer;
+  }
+  
+  .metric-card {
+    @apply health-card p-6 space-y-4;
+  }
+  
+  .metric-card-value {
+    @apply text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent;
+  }
+  
+  /* Loading States */
+  .skeleton {
+    @apply animate-pulse bg-muted/60 rounded;
+  }
+  
+  .loading-shimmer {
+    @apply relative overflow-hidden bg-muted/40;
+  }
+  
+  .loading-shimmer::after {
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    content: '';
+    animation: shimmer 2s infinite;
+  }
+  
+  /* Interactive Elements */
+  .interactive-scale {
+    @apply transition-transform duration-200 hover:scale-105 active:scale-95;
+  }
+  
+  .interactive-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+  
+  .button-primary {
+    @apply bg-gradient-primary text-primary-foreground shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 hover:scale-[1.02];
+  }
+  
+  /* Status Indicators */
+  .status-excellent {
+    @apply bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30;
+  }
+  
+  .status-good {
+    @apply bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30;
+  }
+  
+  .status-warning {
+    @apply bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30;
+  }
+  
+  .status-critical {
+    @apply bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-500/30;
   }
 }
