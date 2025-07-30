@@ -188,30 +188,69 @@ export class CSVParser {
   static parseWorkoutData(rows: string[][], headers: string[]): WhoopWorkoutData[] {
     const data: WhoopWorkoutData[] = [];
     
-    // Match exact Whoop CSV headers
-    const dateIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('workout start time') || 
-      h.toLowerCase().includes('cycle start time') ||
-      h.toLowerCase().includes('date') || 
-      h.toLowerCase().includes('day')
-    );
-    const strainIndex = headers.findIndex(h => h.toLowerCase().includes('activity strain') || h.toLowerCase().includes('strain'));
-    const caloriesIndex = headers.findIndex(h => 
-      h.toLowerCase().includes('energy burned') || 
-      h.toLowerCase().includes('calorie') || 
-      h.toLowerCase().includes('kilojoule')
-    );
-    const avgHrIndex = headers.findIndex(h => h.toLowerCase().includes('average hr') || (h.toLowerCase().includes('average') && h.toLowerCase().includes('heart')));
-    const maxHrIndex = headers.findIndex(h => h.toLowerCase().includes('max hr') || (h.toLowerCase().includes('max') && h.toLowerCase().includes('heart')));
-    const durationIndex = headers.findIndex(h => h.toLowerCase().includes('duration') || h.toLowerCase().includes('time'));
-    const typeIndex = headers.findIndex(h => h.toLowerCase().includes('activity name') || h.toLowerCase().includes('type') || h.toLowerCase().includes('activity'));
+    console.log('🔍 Parsing workout data with headers:', headers);
+    
+    // Match exact Whoop CSV headers (case-insensitive)
+    const dateIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('workout start time') || 
+             lower.includes('cycle start time') ||
+             lower.includes('date') || 
+             lower.includes('day');
+    });
+    
+    const strainIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('activity strain') || lower.includes('strain');
+    });
+    
+    const caloriesIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('energy burned') || 
+             lower.includes('calorie') || 
+             lower.includes('kilojoule');
+    });
+    
+    const avgHrIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('average hr') || 
+             (lower.includes('average') && lower.includes('heart'));
+    });
+    
+    const maxHrIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('max hr') || 
+             (lower.includes('max') && lower.includes('heart'));
+    });
+    
+    const durationIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('duration') || lower.includes('time');
+    });
+    
+    const typeIndex = headers.findIndex(h => {
+      const lower = h.toLowerCase();
+      return lower.includes('activity name') || 
+             lower.includes('type') || 
+             lower.includes('activity');
+    });
+
+    console.log('🔍 Workout column indices:', {
+      date: dateIndex,
+      strain: strainIndex, 
+      calories: caloriesIndex,
+      avgHr: avgHrIndex,
+      maxHr: maxHrIndex,
+      duration: durationIndex,
+      type: typeIndex
+    });
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       if (row.length < headers.length) continue;
 
       try {
-        data.push({
+        const workoutData = {
           date: row[dateIndex] || '',
           strain_score: parseFloat(row[strainIndex]) || 0,
           kilojoule: parseFloat(row[caloriesIndex]) || 0,
@@ -219,12 +258,16 @@ export class CSVParser {
           max_heart_rate: parseFloat(row[maxHrIndex]) || 0,
           duration_milli: this.parseTimeToMillis(row[durationIndex]) || 0,
           workout_type: row[typeIndex] || '',
-        });
+        };
+        
+        console.log(`🔍 Parsed workout row ${i}:`, workoutData);
+        data.push(workoutData);
       } catch (error) {
         console.warn(`Error parsing workout row ${i}:`, error);
       }
     }
     
+    console.log(`🔍 Total workout data parsed: ${data.length} entries`);
     return data;
   }
 
