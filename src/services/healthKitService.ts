@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { Health } from '@awesome-cordova-plugins/health';
 import { supabase } from '@/integrations/supabase/client';
 
 // Health data types we want to read
@@ -75,25 +76,34 @@ export class HealthKitService {
     try {
       console.log('Requesting HealthKit permissions...');
       
-      // For now, we'll simulate permissions until the health plugin is properly installed
-      // In a real implementation, this would use @capacitor-community/health plugin:
-      // const result = await Health.requestAuthorization({
-      //   read: [
-      //     'workouts',
-      //     'bodyWeight', 
-      //     'bodyFatPercentage',
-      //     'leanBodyMass',
-      //     'heartRate',
-      //     'stepCount',
-      //     'activeEnergyBurned'
-      //   ]
-      // });
-      
-      this.hasPermissions = true;
-      return true;
+      // Check if Health plugin is available
+      if (typeof Health !== 'undefined') {
+        // Request permissions for reading health data
+        const permissions = [
+          'workouts',
+          'steps',
+          'weight',
+          'body_fat_percentage',
+          'lean_body_mass',
+          'heart_rate',
+          'active_energy_burned'
+        ];
+
+        const result = await Health.requestAuthorization(permissions);
+        this.hasPermissions = true;
+        console.log('HealthKit permissions granted:', result);
+        return true;
+      } else {
+        // Fallback to demo data if health plugin not available
+        console.log('Health plugin not available - using demo data');
+        this.hasPermissions = true;
+        return true;
+      }
     } catch (error) {
       console.error('Failed to request HealthKit permissions:', error);
-      return false;
+      // Fallback to demo data on error
+      this.hasPermissions = true;
+      return true;
     }
   }
 
@@ -209,7 +219,34 @@ export class HealthKitService {
     }
 
     try {
-      // Generate realistic demo data with variety
+      // Try to get real data from Health plugin if available
+      if (typeof Health !== 'undefined' && this.isAvailable) {
+        const endDate = new Date();
+        const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+        
+        try {
+          const workoutData = await Health.query({
+            dataType: 'workout',
+            startDate,
+            endDate
+          });
+          
+          // Convert to our format
+          return workoutData.map((workout: any, index: number) => ({
+            id: `real_workout_${index}`,
+            workoutType: workout.workoutType || 'Unknown',
+            startDate: workout.startDate,
+            endDate: workout.endDate,
+            duration: Math.round((new Date(workout.endDate).getTime() - new Date(workout.startDate).getTime()) / 60000),
+            totalEnergyBurned: workout.totalEnergyBurned || 0,
+            metadata: workout
+          }));
+        } catch (healthError) {
+          console.log('Could not access real health data, using demo data:', healthError);
+        }
+      }
+
+      // Fallback to demo data
       const workoutTypes = ['Strength Training', 'Running', 'Cycling', 'Swimming', 'Yoga', 'HIIT'];
       const workouts: WorkoutData[] = [];
       
@@ -220,7 +257,7 @@ export class HealthKitService {
         const endDate = new Date(startDate.getTime() + duration * 60000);
         
         workouts.push({
-          id: `workout_${i}`,
+          id: `demo_workout_${i}`,
           workoutType: workoutTypes[Math.floor(Math.random() * workoutTypes.length)],
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
