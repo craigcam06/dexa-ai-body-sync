@@ -297,6 +297,7 @@ export const HealthDashboard = () => {
                       handleWhoopDataUpdate(data);
                     }} 
                   />
+                  <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
                 </CardContent>
               </Card>
             </TabsContent>
