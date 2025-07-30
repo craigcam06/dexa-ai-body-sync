@@ -34,6 +34,7 @@ import { GoalSetting } from "./GoalSetting";
 import { VoiceInterface } from "./VoiceInterface";
 import { PlanSetup } from "./PlanSetup";
 import { PlanDashboard } from "./PlanDashboard";
+import { MobileHealthSync } from "./MobileHealthSync";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -193,6 +194,38 @@ export const HealthDashboard = () => {
           </Avatar>
         </div>
       </div>
+
+      {/* Mobile Health Integration Banner */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                <Bell className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                🚀 Recommended: Mobile-First Apple Health Integration
+              </h3>
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                Since all your apps (WHOOP, MyFitnessPal, etc.) sync to Apple Health, you only need <strong>one integration</strong> to get everything automatically. 
+                Set up the mobile app for seamless sync and smart iOS notifications.
+              </p>
+              <Button 
+                onClick={() => {
+                  // This would open the mobile setup in a modal or new tab
+                  console.log('Opening mobile setup...');
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
+              >
+                Set Up Mobile App →
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Health Insights Dashboard */}
       <HealthInsightsDashboard whoopData={whoopData} />
