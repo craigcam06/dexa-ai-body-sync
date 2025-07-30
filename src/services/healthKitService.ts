@@ -1,6 +1,15 @@
 import { Capacitor } from '@capacitor/core';
-import { Health } from '@awesome-cordova-plugins/health';
 import { supabase } from '@/integrations/supabase/client';
+
+// Define a basic Health interface for when the plugin is available
+declare global {
+  interface Window {
+    Health?: {
+      requestAuthorization: (permissions: string[]) => Promise<any>;
+      query: (options: any) => Promise<any>;
+    };
+  }
+}
 
 // Health data types we want to read
 export interface HealthData {
@@ -76,12 +85,12 @@ export class HealthKitService {
     try {
       console.log('Requesting HealthKit permissions...');
       
-      // Check if Health plugin is available
-      if (typeof Health !== 'undefined') {
+      // Check if Health plugin is available on the window object
+      if (this.isAvailable && window.Health) {
         // Request permissions for reading health data
         const permissions = [
           'workouts',
-          'steps',
+          'steps', 
           'weight',
           'body_fat_percentage',
           'lean_body_mass',
@@ -89,7 +98,7 @@ export class HealthKitService {
           'active_energy_burned'
         ];
 
-        const result = await Health.requestAuthorization(permissions);
+        const result = await window.Health.requestAuthorization(permissions);
         this.hasPermissions = true;
         console.log('HealthKit permissions granted:', result);
         return true;
@@ -220,12 +229,12 @@ export class HealthKitService {
 
     try {
       // Try to get real data from Health plugin if available
-      if (typeof Health !== 'undefined' && this.isAvailable) {
+      if (this.isAvailable && window.Health) {
         const endDate = new Date();
         const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
         
         try {
-          const workoutData = await Health.query({
+          const workoutData = await window.Health.query({
             dataType: 'workout',
             startDate,
             endDate
