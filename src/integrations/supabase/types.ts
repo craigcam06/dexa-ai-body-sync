@@ -59,6 +59,178 @@ export type Database = {
         }
         Relationships: []
       }
+      fitness_plans: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          goals: Json
+          id: string
+          is_active: boolean
+          macros: Json
+          plan_name: string
+          plan_type: string
+          schedule: Json
+          start_date: string
+          tracking_metrics: Json
+          updated_at: string
+          user_id: string
+          workout_structure: Json
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          goals: Json
+          id?: string
+          is_active?: boolean
+          macros: Json
+          plan_name: string
+          plan_type: string
+          schedule: Json
+          start_date: string
+          tracking_metrics: Json
+          updated_at?: string
+          user_id: string
+          workout_structure: Json
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          goals?: Json
+          id?: string
+          is_active?: boolean
+          macros?: Json
+          plan_name?: string
+          plan_type?: string
+          schedule?: Json
+          start_date?: string
+          tracking_metrics?: Json
+          updated_at?: string
+          user_id?: string
+          workout_structure?: Json
+        }
+        Relationships: []
+      }
+      plan_modifications: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          modification_type: string
+          original_value: Json | null
+          plan_id: string
+          reasoning: string
+          status: string
+          suggested_value: Json | null
+          updated_at: string
+          user_id: string
+          whoop_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          modification_type: string
+          original_value?: Json | null
+          plan_id: string
+          reasoning: string
+          status?: string
+          suggested_value?: Json | null
+          updated_at?: string
+          user_id: string
+          whoop_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          modification_type?: string
+          original_value?: Json | null
+          plan_id?: string
+          reasoning?: string
+          status?: string
+          suggested_value?: Json | null
+          updated_at?: string
+          user_id?: string
+          whoop_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_modifications_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "fitness_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_progress: {
+        Row: {
+          adherence_score: number | null
+          calories_consumed: number | null
+          carbs_consumed: number | null
+          created_at: string
+          date: string
+          fasted_training: boolean | null
+          fats_consumed: number | null
+          id: string
+          meal_cutoff_time: string | null
+          notes: string | null
+          plan_id: string
+          protein_consumed: number | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+          workout_completed: boolean | null
+          workout_type: string | null
+        }
+        Insert: {
+          adherence_score?: number | null
+          calories_consumed?: number | null
+          carbs_consumed?: number | null
+          created_at?: string
+          date: string
+          fasted_training?: boolean | null
+          fats_consumed?: number | null
+          id?: string
+          meal_cutoff_time?: string | null
+          notes?: string | null
+          plan_id: string
+          protein_consumed?: number | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+          workout_completed?: boolean | null
+          workout_type?: string | null
+        }
+        Update: {
+          adherence_score?: number | null
+          calories_consumed?: number | null
+          carbs_consumed?: number | null
+          created_at?: string
+          date?: string
+          fasted_training?: boolean | null
+          fats_consumed?: number | null
+          id?: string
+          meal_cutoff_time?: string | null
+          notes?: string | null
+          plan_id?: string
+          protein_consumed?: number | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+          workout_completed?: boolean | null
+          workout_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_progress_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "fitness_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
