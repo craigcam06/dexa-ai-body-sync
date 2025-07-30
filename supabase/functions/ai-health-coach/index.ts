@@ -25,28 +25,52 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured. Please check Supabase secrets.');
     }
 
-    const { message, healthData } = await req.json();
-    console.log('Request received:', { message, hasHealthData: !!healthData });
+    const { message, healthData, planData } = await req.json();
+    console.log('Request received:', { message, hasHealthData: !!healthData, hasPlanData: !!planData });
 
-    // Build comprehensive health analysis context
-    let systemContext = `You are an advanced AI Health Coach with expertise in exercise science, nutrition, sleep optimization, and recovery strategies. 
+    // Build comprehensive health analysis context with Craig Campbell plan integration
+    let systemContext = `You are an advanced AI Health Coach with expertise in exercise science, nutrition, sleep optimization, and recovery strategies, specifically trained on Craig Campbell's coaching methodologies. 
 
 You analyze comprehensive biometric data to provide highly personalized, science-based recommendations. Your responses should be:
-- Actionable and specific
-- Evidence-based
-- Tailored to the user's current data patterns
-- Include specific metrics and targets
-- Provide step-by-step guidance
+- Actionable and specific to the Craig Campbell Aggressive Cut protocol when applicable
+- Evidence-based using actual WHOOP data patterns
+- Tailored to the user's current metrics and plan adherence
+- Include specific targets based on their plan structure
+- Provide step-by-step guidance for plan modifications
 
-When creating recommendations, consider:
-1. Current trends vs baseline patterns
-2. Correlation between different metrics
-3. Recovery-training balance
-4. Sleep-performance relationships
-5. Individual progression rates
+CRAIG CAMPBELL PROTOCOL EXPERTISE:
+- Aggressive cut: 1.5-2.0 lbs/week loss while preserving muscle
+- Metabolic flexibility through Lumen tracking
+- Fasted training on Wed/Sat with reduced carbs (30g)
+- Meal cutoff at 7:30 PM for metabolic benefits
+- 230-250g protein, 150-180g carbs, 2300-2400 calories
+- StrongLifts 5x5 progression with A/B/C/D/E rotation
+- WHOOP-guided training adjustments based on recovery scores
 
-Format your responses with clear sections when appropriate (🏋️ Workout Plan, 💤 Sleep Optimization, 🥗 Nutrition, 🔄 Recovery).
+When providing recommendations, always reference:
+1. Current WHOOP metrics vs plan targets
+2. Plan adherence and suggested modifications
+3. Correlation between recovery, sleep, and performance
+4. Specific next-day action items
+5. Progressive adjustments to maintain momentum
+
+Format responses with clear sections when appropriate (🏋️ Training, 💤 Sleep, 🥗 Nutrition, 🔄 Recovery).
 `;
+
+    // Plan-specific context integration
+    if (planData) {
+      const daysSinceStart = Math.floor((new Date().getTime() - new Date(planData.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      systemContext += `
+
+ACTIVE PLAN CONTEXT:
+- Plan: ${planData.plan_name} (Day ${daysSinceStart})
+- Type: ${planData.plan_type.toUpperCase()}
+- Macros: ${planData.macros.protein_grams}g protein, ${planData.macros.carbs_grams}g carbs, ${planData.macros.calories_target} calories
+- Current phase: ${daysSinceStart <= 14 ? 'Initial adaptation' : daysSinceStart <= 42 ? 'Progressive phase' : 'Advanced optimization'}
+- Workout rotation: Currently on ${planData.workout_structure ? Object.keys(planData.workout_structure)[Math.floor(daysSinceStart % 5)] || 'Day A' : 'structured program'}
+
+`;
+    }
 
     // Advanced health data analysis
     let healthInsights = "";

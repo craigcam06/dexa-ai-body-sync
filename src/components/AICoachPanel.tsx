@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface AICoachPanelProps {
   whoopData?: ParsedWhoopData;
+  planData?: any;
 }
 
 interface ChatMessage {
@@ -17,18 +18,19 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-export function AICoachPanel({ whoopData }: AICoachPanelProps) {
+export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Generate AI response
-  const generateAIResponse = async (question: string, healthData?: ParsedWhoopData): Promise<string> => {
+  const generateAIResponse = async (question: string, healthData?: ParsedWhoopData, planInfo?: any): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('ai-health-coach', {
         body: {
           message: question,
-          healthData: healthData
+          healthData: healthData,
+          planData: planInfo
         }
       });
 
@@ -49,16 +51,20 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
       title: "🔄 Recovery & Performance",
       actions: [
         {
-          question: "Analyze my recovery trends and predict tomorrow's readiness",
+          question: planData ? 
+            "Should I train fasted today based on my plan and recovery?" :
+            "How's my recovery trending this week?",
           icon: TrendingUp,
           color: "text-red-500",
-          description: "Deep dive into HRV, RHR patterns"
+          description: planData ? "Craig Campbell protocol guidance" : "Deep dive into HRV, RHR patterns"
         },
         {
-          question: "Should I train hard today or focus on active recovery?",
+          question: planData ? 
+            "Should I modify today's workout based on my WHOOP data?" :
+            "Should I train hard today or focus on active recovery?",
           icon: Target,
           color: "text-orange-500",
-          description: "Training recommendations based on current metrics"
+          description: planData ? "Plan-specific training adjustments" : "Training recommendations based on current metrics"
         },
         {
           question: "What are the correlations between my sleep and recovery?",
@@ -72,10 +78,12 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
       title: "💤 Sleep Optimization",
       actions: [
         {
-          question: "Create a personalized sleep optimization plan based on my data",
+          question: planData ? 
+            "Optimize my sleep for the Craig Campbell protocol" :
+            "Create a personalized sleep optimization plan based on my data",
           icon: Moon,
           color: "text-purple-500",
-          description: "Bedtime, wake time, environment tips"
+          description: planData ? "7:30 PM cutoff & recovery optimization" : "Bedtime, wake time, environment tips"
         },
         {
           question: "Why is my sleep efficiency low and how can I improve it?",
@@ -95,10 +103,12 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
       title: "🏋️ Training & Strength",
       actions: [
         {
-          question: "Design a week of workouts based on my current fitness level",
+          question: planData ? 
+            "Design my workout schedule around my Craig Campbell plan" :
+            "Design a week of workouts based on my current fitness level",
           icon: Dumbbell,
           color: "text-blue-500",
-          description: "Personalized workout programming"
+          description: planData ? "A/B/C/D/E rotation optimization" : "Personalized workout programming"
         },
         {
           question: "Analyze my strength progression and suggest next steps",
@@ -118,10 +128,12 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
       title: "🥗 Nutrition & Lifestyle",
       actions: [
         {
-          question: "Create a nutrition plan to support my training goals",
+          question: planData ? 
+            "Optimize my macros for today based on my plan and WHOOP data" :
+            "Create a nutrition plan to support my training goals",
           icon: Apple,
           color: "text-green-600",
-          description: "Macro targets, meal timing, supplements"
+          description: planData ? "230-250g protein, carb cycling" : "Macro targets, meal timing, supplements"
         },
         {
           question: "What lifestyle factors are impacting my recovery?",
@@ -159,7 +171,7 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
     setIsAnalyzing(true);
 
     try {
-      const response = await generateAIResponse(messageToSend, whoopData);
+      const response = await generateAIResponse(messageToSend, whoopData, planData);
       
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -194,8 +206,10 @@ export function AICoachPanel({ whoopData }: AICoachPanelProps) {
           {whoopData && chatMessages.length === 0 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <p className="text-sm font-medium">🤖 AI Health Coach Ready</p>
-                <p className="text-xs text-muted-foreground">Personalized recommendations based on your data</p>
+                <p className="text-sm font-medium">🤖 {planData ? 'Craig Campbell Protocol' : 'AI Health Coach'} Ready</p>
+                <p className="text-xs text-muted-foreground">
+                  {planData ? 'Personalized coaching for your aggressive cut plan' : 'Personalized recommendations based on your data'}
+                </p>
               </div>
               
               {quickActionCategories.map((category) => (

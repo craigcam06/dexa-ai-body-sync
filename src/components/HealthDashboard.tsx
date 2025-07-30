@@ -32,7 +32,10 @@ import { AppleHealthConnect } from "./AppleHealthConnect";
 import { HealthInsightsDashboard } from "./HealthInsightsDashboard";
 import { GoalSetting } from "./GoalSetting";
 import { VoiceInterface } from "./VoiceInterface";
+import { PlanSetup } from "./PlanSetup";
+import { PlanDashboard } from "./PlanDashboard";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
+import { supabase } from "@/integrations/supabase/client";
 
 // Real data from BodySpec DEXA report (Craig Campbell)
 const mockData = {
@@ -52,9 +55,11 @@ const mockData = {
 
 export const HealthDashboard = () => {
   const [whoopData, setWhoopData] = useState<any>(null);
+  const [planData, setPlanData] = useState<any>(null);
   
-  // Load data from localStorage on component mount
+  // Load data from localStorage and active plan on component mount
   useEffect(() => {
+    // Load health data from localStorage
     const savedData = localStorage.getItem('healthDashboardData');
     if (savedData) {
       try {
@@ -66,7 +71,25 @@ export const HealthDashboard = () => {
         localStorage.removeItem('healthDashboardData'); // Clear corrupted data
       }
     }
+
+    // Load active plan
+    loadActivePlan();
   }, []);
+
+  const loadActivePlan = async () => {
+    try {
+      const { data: plan, error } = await supabase
+        .from('fitness_plans')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setPlanData(plan);
+    } catch (error) {
+      console.error('Error loading active plan:', error);
+    }
+  };
   
   console.log('🏠 HealthDashboard render - current whoopData state:', whoopData);
   console.log('🏋️ StrongLifts data check:', {
@@ -258,8 +281,15 @@ export const HealthDashboard = () => {
 
         {/* Right Panel with Tabs */}
         <div className="lg:col-span-1">
-          <Tabs defaultValue="upload" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <Tabs defaultValue={planData ? "plan" : "upload"} className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+              {planData && (
+                <TabsTrigger value="plan" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Plan</span>
+                  <span className="sm:hidden">Plan</span>
+                </TabsTrigger>
+              )}
               <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Upload</span>
@@ -282,6 +312,15 @@ export const HealthDashboard = () => {
               </TabsTrigger>
             </TabsList>
             
+            {planData ? (
+              <TabsContent value="plan">
+                <PlanDashboard whoopData={whoopData} />
+              </TabsContent>
+            ) : (
+              <TabsContent value="plan">
+                <PlanSetup onPlanCreated={loadActivePlan} />
+              </TabsContent>
+            )}
             <TabsContent value="upload">
               <Card>
                 <CardHeader>
@@ -308,7 +347,7 @@ export const HealthDashboard = () => {
             </TabsContent>
             
             <TabsContent value="coach">
-              <AICoachPanel whoopData={whoopData} />
+              <AICoachPanel whoopData={whoopData} planData={planData} />
             </TabsContent>
 
             <TabsContent value="voice">
