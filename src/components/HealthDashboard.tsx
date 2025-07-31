@@ -202,12 +202,22 @@ export const HealthDashboard = () => {
                 <Settings className="h-6 w-6 text-primary" />
                 Connect Your Devices
               </h2>
-              <div className="grid gap-6">
-                <div className="animate-fade-in-up [animation-delay:100ms]">
-                  <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+              
+              {/* Apple Health - Primary Integration */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-3 text-primary">🍎 Recommended: Apple Health</h3>
+                  <div className="animate-fade-in-up [animation-delay:100ms]">
+                    <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+                  </div>
                 </div>
-                <div className="animate-fade-in-up [animation-delay:200ms]">
-                  <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+
+                {/* Alternative Data Sources */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3 text-muted-foreground">Alternative Data Sources</h3>
+                  <div className="animate-fade-in-up [animation-delay:200ms]">
+                    <WhoopConnect onDataUpdate={handleWhoopDataUpdate} />
+                  </div>
                 </div>
               </div>
             </div>
