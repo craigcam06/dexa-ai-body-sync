@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'dexa-ai-body-sync',
   webDir: 'dist',
   server: {
-    url: 'https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com?forceHideBadge=true',
+    url: 'http://localhost:8080',
     cleartext: true
   },
   plugins: {
