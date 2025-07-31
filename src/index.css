@@ -246,7 +246,57 @@ All colors MUST be HSL.
   transform: translateY(0);
 }
 
-/* Typography & Base Styles */
+/* Card Hover Animations */
+.card-interactive {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px hsl(var(--primary) / 0.05);
+}
+
+.card-interactive:active {
+  transform: translateY(-1px) scale(1.002);
+}
+
+/* Pulse Animation for Loading States */
+.pulse-data {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Loading State Indicators */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    hsl(var(--muted)) 0%, 
+    hsl(var(--muted)/0.8) 50%, 
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
 * {
   border-color: hsl(var(--border));
 }
