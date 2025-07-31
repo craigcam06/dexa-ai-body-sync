@@ -111,7 +111,7 @@ class WhoopService {
   // Get client ID from Supabase edge function
   private getClientId(): string {
     // Use your real Whoop app client ID
-    return '641ac502-42e1-4c38-8b51-15e0c5b5cbef';
+    return 'f9d3c092-6311-4108-a97d-3df0ee0b2b05';
   }
 
   // Generate OAuth authorization URL  
