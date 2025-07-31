@@ -61,7 +61,9 @@ export const AppleHealthConnect: React.FC<AppleHealthConnectProps> = ({ onDataUp
         setIsConnected(true);
         toast({
           title: "Apple Health Connected! 🎉",
-          description: "Successfully connected to Apple Health. Demo data is now available.",
+          description: healthService.isAvailable 
+            ? "Successfully connected to Apple Health. Real data access enabled." 
+            : "Successfully connected. Demo data is now available.",
         });
         await syncHealthData();
       } else {

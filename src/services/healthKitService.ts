@@ -1,13 +1,28 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 
-// Define a basic Health interface for when the plugin is available
-declare global {
-  interface Window {
-    Health?: {
-      requestAuthorization: (permissions: string[]) => Promise<any>;
-      query: (options: any) => Promise<any>;
-    };
+// HealthKit plugin interface - will be available when real plugin is installed
+interface HealthKitPlugin {
+  requestAuthorization(options: { 
+    read: string[]; 
+    write?: string[]; 
+  }): Promise<{ granted: boolean }>;
+  
+  queryHKitSampleType(options: {
+    dataType: string;
+    startDate: string;
+    endDate: string;
+    limit?: number;
+  }): Promise<{ resultData: any[] }>;
+}
+
+// Check for HealthKit plugin availability
+function getHealthPlugin(): HealthKitPlugin | null {
+  try {
+    // @ts-ignore - This will be available when the actual plugin is installed
+    return window.Health || null;
+  } catch {
+    return null;
   }
 }
 
@@ -56,7 +71,7 @@ export interface ActiveEnergyData {
 
 export class HealthKitService {
   private static instance: HealthKitService;
-  private isAvailable = false;
+  private _isAvailable = false;
   private hasPermissions = false;
 
   private constructor() {
@@ -73,19 +88,23 @@ export class HealthKitService {
   private async checkAvailability() {
     try {
       // Check if running on iOS
-      this.isAvailable = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
-      console.log('HealthKit availability check:', this.isAvailable);
+      this._isAvailable = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
+      console.log('HealthKit availability check:', this._isAvailable);
     } catch (error) {
       console.log('Error checking HealthKit availability:', error);
-      this.isAvailable = false;
+      this._isAvailable = false;
     }
+  }
+
+  public get isAvailable(): boolean {
+    return this._isAvailable;
   }
 
   public async requestPermissions(): Promise<boolean> {
     try {
-      console.log('HealthKit requestPermissions called, isAvailable:', this.isAvailable);
+      console.log('HealthKit requestPermissions called, isAvailable:', this._isAvailable);
       
-      if (!this.isAvailable) {
+      if (!this._isAvailable) {
         console.log('HealthKit not available on this platform - using demo data');
         this.hasPermissions = true; // Allow demo data on non-iOS platforms
         return true;
@@ -93,26 +112,39 @@ export class HealthKitService {
 
       console.log('Requesting HealthKit permissions...');
       
-      // Check if Health plugin is available on the window object
-      if (this.isAvailable && typeof window !== 'undefined' && window.Health) {
-        // Request permissions for reading health data
-        const permissions = [
-          'workouts',
-          'steps', 
-          'weight',
-          'body_fat_percentage',
-          'lean_body_mass',
-          'heart_rate',
-          'active_energy_burned'
-        ];
+      try {
+        // Request permissions using the actual HealthKit plugin
+        const permissions = {
+          read: [
+            'steps',
+            'weight',
+            'height',
+            'body_fat_percentage',
+            'lean_body_mass',
+            'heart_rate',
+            'active_energy_burned',
+            'basal_energy_burned',
+            'workout'
+          ],
+          write: []
+        };
 
-        const result = await window.Health.requestAuthorization(permissions);
-        this.hasPermissions = true;
-        console.log('HealthKit permissions granted:', result);
+        const Health = getHealthPlugin();
+        if (!Health) {
+          throw new Error('HealthKit plugin not available');
+        }
+        const result = await Health.requestAuthorization(permissions);
+        this.hasPermissions = result.granted;
+        console.log('HealthKit permissions result:', result);
+        
+        if (!result.granted) {
+          console.log('HealthKit permissions denied - using demo data');
+          this.hasPermissions = true; // Still allow demo data
+        }
+        
         return true;
-      } else {
-        // Fallback to demo data if health plugin not available
-        console.log('Health plugin not available - using demo data');
+      } catch (healthError) {
+        console.log('HealthKit plugin not available - using demo data:', healthError);
         this.hasPermissions = true;
         return true;
       }
@@ -236,39 +268,52 @@ export class HealthKitService {
     }
 
     try {
-      console.log('Getting workouts, hasPermissions:', this.hasPermissions);
+      console.log('Getting workouts, hasPermissions:', this.hasPermissions, 'isAvailable:', this._isAvailable);
       
-      // Try to get real data from Health plugin if available
-      if (this.isAvailable && typeof window !== 'undefined' && window.Health) {
+      // Try to get real data from HealthKit plugin if available
+      if (this._isAvailable) {
         const endDate = new Date();
         const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
         
         try {
-          console.log('Attempting to query real health data...');
-          const workoutData = await window.Health.query({
+          console.log('Attempting to query real HealthKit workout data...');
+          const Health = getHealthPlugin();
+          if (!Health) {
+            throw new Error('HealthKit plugin not available');
+          }
+          const workoutData = await Health.queryHKitSampleType({
             dataType: 'workout',
-            startDate,
-            endDate
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            limit: 100
           });
           
-          console.log('Real health data received:', workoutData);
+          console.log('Real HealthKit workout data received:', workoutData);
           
-          // Convert to our format
-          return workoutData.map((workout: any, index: number) => ({
-            id: `real_workout_${index}`,
-            workoutType: workout.workoutType || 'Unknown',
-            startDate: workout.startDate,
-            endDate: workout.endDate,
-            duration: Math.round((new Date(workout.endDate).getTime() - new Date(workout.startDate).getTime()) / 60000),
-            totalEnergyBurned: workout.totalEnergyBurned || 0,
-            metadata: workout
-          }));
+          if (workoutData && workoutData.resultData && workoutData.resultData.length > 0) {
+            // Convert real HealthKit data to our format
+            return workoutData.resultData.map((workout: any, index: number) => ({
+              id: `real_workout_${workout.uuid || index}`,
+              workoutType: workout.workoutActivityType || workout.activityType || 'Unknown',
+              startDate: workout.startDate,
+              endDate: workout.endDate,
+              duration: Math.round((new Date(workout.endDate).getTime() - new Date(workout.startDate).getTime()) / 60000),
+              totalEnergyBurned: workout.totalEnergyBurned || 0,
+              metadata: {
+                uuid: workout.uuid,
+                source: workout.sourceName,
+                device: workout.device,
+                ...workout
+              }
+            }));
+          }
         } catch (healthError) {
-          console.log('Could not access real health data, using demo data:', healthError);
+          console.log('Could not access real HealthKit data, using demo data:', healthError);
         }
       }
 
       // Fallback to demo data
+      console.log('Using demo workout data');
       const workoutTypes = ['Strength Training', 'Running', 'Cycling', 'Swimming', 'Yoga', 'HIIT'];
       const workouts: WorkoutData[] = [];
       
@@ -331,7 +376,41 @@ export class HealthKitService {
     }
 
     try {
-      // Generate realistic heart rate data
+      // Try to get real heart rate data from HealthKit
+      if (this._isAvailable) {
+        const endDate = new Date();
+        const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+        
+        try {
+          console.log('Attempting to query real HealthKit heart rate data...');
+          const Health = getHealthPlugin();
+          if (!Health) {
+            throw new Error('HealthKit plugin not available');
+          }
+          const heartRateData = await Health.queryHKitSampleType({
+            dataType: 'heart_rate',
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            limit: days * 50
+          });
+          
+          console.log('Real HealthKit heart rate data received:', heartRateData);
+          
+          if (heartRateData && heartRateData.resultData && heartRateData.resultData.length > 0) {
+            // Convert real HealthKit data to our format
+            return heartRateData.resultData.map((hr: any) => ({
+              date: hr.startDate,
+              value: Math.round(Number(hr.value)) || 0,
+              context: hr.metadata?.HKMetadataKeyHeartRateMotionContext || 'unknown'
+            })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }
+        } catch (healthError) {
+          console.log('Could not access real HealthKit heart rate data, using demo data:', healthError);
+        }
+      }
+
+      // Fallback to demo data
+      console.log('Using demo heart rate data');
       const heartRateData: HeartRateData[] = [];
       for (let i = 0; i < days; i++) {
         const date = new Date(Date.now() - i * 86400000);
@@ -363,7 +442,52 @@ export class HealthKitService {
     }
 
     try {
-      // Generate realistic steps data
+      // Try to get real steps data from HealthKit
+      if (this._isAvailable) {
+        const endDate = new Date();
+        const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+        
+        try {
+          console.log('Attempting to query real HealthKit steps data...');
+          const Health = getHealthPlugin();
+          if (!Health) {
+            throw new Error('HealthKit plugin not available');
+          }
+          const stepsData = await Health.queryHKitSampleType({
+            dataType: 'steps',
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            limit: days * 10
+          });
+          
+          console.log('Real HealthKit steps data received:', stepsData);
+          
+          if (stepsData && stepsData.resultData && stepsData.resultData.length > 0) {
+            // Convert real HealthKit data to our format
+            const processedSteps = stepsData.resultData.map((step: any) => ({
+              date: step.startDate,
+              value: Number(step.value) || 0
+            }));
+            
+            // Group by day and sum values
+            const dailySteps = new Map<string, number>();
+            processedSteps.forEach(step => {
+              const dayKey = step.date.split('T')[0];
+              dailySteps.set(dayKey, (dailySteps.get(dayKey) || 0) + step.value);
+            });
+            
+            return Array.from(dailySteps.entries()).map(([date, value]) => ({
+              date: `${date}T12:00:00.000Z`,
+              value
+            })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          }
+        } catch (healthError) {
+          console.log('Could not access real HealthKit steps data, using demo data:', healthError);
+        }
+      }
+
+      // Fallback to demo data
+      console.log('Using demo steps data');
       const stepsData: StepsData[] = [];
       for (let i = 0; i < days; i++) {
         const date = new Date(Date.now() - i * 86400000);

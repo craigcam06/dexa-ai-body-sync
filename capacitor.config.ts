@@ -21,6 +21,12 @@ const config: CapacitorConfig = {
       sound: "beep.wav"
     }
   },
+  ios: {
+    entitlements: {
+      'com.apple.developer.healthkit': true,
+      'com.apple.developer.healthkit.access': []
+    }
+  }
 };
 
 export default config;
