@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Heart, 
@@ -15,7 +16,9 @@ import {
   Calendar,
   BarChart3,
   Settings,
-  Moon
+  Moon,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
@@ -23,6 +26,14 @@ import { WhoopConnect } from '@/components/WhoopConnect';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+
+  const toggleCard = (cardId: string) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [cardId]: !prev[cardId]
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -82,52 +93,6 @@ const Index = () => {
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {/* Quick Stats */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Recovery Score</CardTitle>
-                  <Heart className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">85%</div>
-                  <p className="text-xs text-muted-foreground">+5% from yesterday</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Sleep Score</CardTitle>
-                  <Activity className="h-4 w-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">7.5h</div>
-                  <p className="text-xs text-muted-foreground">Target: 8h</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Today's Steps</CardTitle>
-                  <Target className="h-4 w-4 text-purple-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-purple-600">8,247</div>
-                  <p className="text-xs text-muted-foreground">Goal: 10,000</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Workout Streak</CardTitle>
-                  <Calendar className="h-4 w-4 text-orange-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">12 days</div>
-                  <p className="text-xs text-muted-foreground">Personal best!</p>
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Essential Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -154,92 +119,185 @@ const Index = () => {
               </Card>
 
               {/* Recovery Health */}
-              <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-blue-800 dark:text-blue-200">
-                    <Moon className="w-5 h-5" />
-                    <span>Recovery Health</span>
-                  </CardTitle>
-                  <CardDescription className="text-blue-600 dark:text-blue-400">
-                    Sleep quality + recovery readiness
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
-                      <span className="text-lg font-semibold text-blue-600">85%</span>
+              <Collapsible open={expandedCards.recovery} onOpenChange={() => toggleCard('recovery')}>
+                <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors">
+                      <CardTitle className="flex items-center justify-between text-blue-800 dark:text-blue-200">
+                        <div className="flex items-center space-x-2">
+                          <Moon className="w-5 h-5" />
+                          <span>Recovery Health</span>
+                        </div>
+                        {expandedCards.recovery ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </CardTitle>
+                      <CardDescription className="text-blue-600 dark:text-blue-400">
+                        Sleep quality + recovery readiness
+                      </CardDescription>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
+                        <span className="text-lg font-semibold text-blue-600">85%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-blue-700 dark:text-blue-300">Recovery Score</span>
+                        <span className="text-lg font-semibold text-blue-600">78%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Duration</span>
+                        <span className="text-lg font-semibold text-blue-600">7.5h</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-blue-700 dark:text-blue-300">Recovery Score</span>
-                      <span className="text-lg font-semibold text-blue-600">78%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Duration</span>
-                      <span className="text-lg font-semibold text-blue-600">7.5h</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    
+                    <CollapsibleContent className="space-y-3 mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">HRV (RMSSD)</div>
+                          <div className="text-sm font-medium text-blue-700 dark:text-blue-300">42ms ↑</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">Resting HR</div>
+                          <div className="text-sm font-medium text-blue-700 dark:text-blue-300">52 bpm</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">Deep Sleep</div>
+                          <div className="text-sm font-medium text-blue-700 dark:text-blue-300">1h 48m</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">REM Sleep</div>
+                          <div className="text-sm font-medium text-blue-700 dark:text-blue-300">1h 32m</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 mt-3">
+                        7-day trend: Recovery improving, maintain current sleep routine
+                      </div>
+                    </CollapsibleContent>
+                  </CardContent>
+                </Card>
+              </Collapsible>
 
               {/* Energy Balance */}
-              <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-orange-800 dark:text-orange-200">
-                    <Zap className="w-5 h-5" />
-                    <span>Energy Balance</span>
-                  </CardTitle>
-                  <CardDescription className="text-orange-600 dark:text-orange-400">
-                    TDEE vs intake • Daily deficit tracking
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-orange-700 dark:text-orange-300">TDEE</span>
-                      <span className="text-lg font-semibold text-orange-600">2,847 cal</span>
+              <Collapsible open={expandedCards.energy} onOpenChange={() => toggleCard('energy')}>
+                <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="cursor-pointer hover:bg-orange-100/50 dark:hover:bg-orange-900/30 transition-colors">
+                      <CardTitle className="flex items-center justify-between text-orange-800 dark:text-orange-200">
+                        <div className="flex items-center space-x-2">
+                          <Zap className="w-5 h-5" />
+                          <span>Energy Balance</span>
+                        </div>
+                        {expandedCards.energy ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </CardTitle>
+                      <CardDescription className="text-orange-600 dark:text-orange-400">
+                        TDEE vs intake • Daily deficit tracking
+                      </CardDescription>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-orange-700 dark:text-orange-300">TDEE</span>
+                        <span className="text-lg font-semibold text-orange-600">2,847 cal</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-orange-700 dark:text-orange-300">Intake</span>
+                        <span className="text-lg font-semibold text-orange-600">2,547 cal</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-orange-700 dark:text-orange-300">Daily Deficit</span>
+                        <span className="text-lg font-semibold text-green-600">-300 cal</span>
+                      </div>
+                      <Badge variant="secondary" className="mt-2">Connect MyFitnessPal</Badge>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-orange-700 dark:text-orange-300">Intake</span>
-                      <span className="text-lg font-semibold text-orange-600">2,547 cal</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-orange-700 dark:text-orange-300">Daily Deficit</span>
-                      <span className="text-lg font-semibold text-green-600">-300 cal</span>
-                    </div>
-                    <Badge variant="secondary" className="mt-2">Connect MyFitnessPal</Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                    
+                    <CollapsibleContent className="space-y-3 mt-4 pt-4 border-t border-orange-200 dark:border-orange-700">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mb-1">Today's Steps</div>
+                          <div className="text-sm font-medium text-orange-700 dark:text-orange-300">8,247 / 10,000</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mb-1">Workout Calories</div>
+                          <div className="text-sm font-medium text-orange-700 dark:text-orange-300">347 cal</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mb-1">Weekly Deficit</div>
+                          <div className="text-sm font-medium text-orange-700 dark:text-orange-300">-2,100 cal</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mb-1">Goal Progress</div>
+                          <div className="text-sm font-medium text-orange-700 dark:text-orange-300">On track</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-orange-600 dark:text-orange-400 mt-3">
+                        Deficit target: -300 cal/day for 0.6 lbs/week fat loss
+                      </div>
+                    </CollapsibleContent>
+                  </CardContent>
+                </Card>
+              </Collapsible>
 
               {/* Body Composition Progress */}
-              <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-purple-800 dark:text-purple-200">
-                    <Target className="w-5 h-5" />
-                    <span>Body Composition</span>
-                  </CardTitle>
-                  <CardDescription className="text-purple-600 dark:text-purple-400">
-                    Monthly DEXA trends • Fat loss & muscle gain
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700 dark:text-purple-300">Body Fat</span>
-                      <span className="text-lg font-semibold text-purple-600">18.2% ↓</span>
+              <Collapsible open={expandedCards.body} onOpenChange={() => toggleCard('body')}>
+                <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="cursor-pointer hover:bg-purple-100/50 dark:hover:bg-purple-900/30 transition-colors">
+                      <CardTitle className="flex items-center justify-between text-purple-800 dark:text-purple-200">
+                        <div className="flex items-center space-x-2">
+                          <Target className="w-5 h-5" />
+                          <span>Body Composition</span>
+                        </div>
+                        {expandedCards.body ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </CardTitle>
+                      <CardDescription className="text-purple-600 dark:text-purple-400">
+                        Monthly DEXA trends • Fat loss & muscle gain
+                      </CardDescription>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-purple-700 dark:text-purple-300">Body Fat</span>
+                        <span className="text-lg font-semibold text-purple-600">18.2% ↓</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-purple-700 dark:text-purple-300">Lean Mass</span>
+                        <span className="text-lg font-semibold text-purple-600">155.3 lbs ↑</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-purple-700 dark:text-purple-300">Next DEXA</span>
+                        <span className="text-lg font-semibold text-purple-600">12 days</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700 dark:text-purple-300">Lean Mass</span>
-                      <span className="text-lg font-semibold text-purple-600">155.3 lbs ↑</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700 dark:text-purple-300">Next DEXA</span>
-                      <span className="text-lg font-semibold text-purple-600">12 days</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    
+                    <CollapsibleContent className="space-y-3 mt-4 pt-4 border-t border-purple-200 dark:border-purple-700">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-xs text-purple-600 dark:text-purple-400 mb-1">Workout Streak</div>
+                          <div className="text-sm font-medium text-purple-700 dark:text-purple-300">12 days</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-purple-600 dark:text-purple-400 mb-1">Weekly Volume</div>
+                          <div className="text-sm font-medium text-purple-700 dark:text-purple-300">42,300 lbs</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-purple-600 dark:text-purple-400 mb-1">Last Squat PR</div>
+                          <div className="text-sm font-medium text-purple-700 dark:text-purple-300">315 lbs</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-purple-600 dark:text-purple-400 mb-1">Lean Mass Target</div>
+                          <div className="text-sm font-medium text-purple-700 dark:text-purple-300">160 lbs</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-purple-600 dark:text-purple-400 mt-3">
+                        Progress: -0.8% body fat, +2.1 lbs lean mass since last DEXA
+                      </div>
+                    </CollapsibleContent>
+                  </CardContent>
+                </Card>
+              </Collapsible>
             </div>
           </TabsContent>
 
