@@ -24,6 +24,7 @@ import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
 import { WhoopConnect } from '@/components/WhoopConnect';
 import { NutritionLogger } from '@/components/NutritionLogger';
+import { ProgressTracker } from '@/components/ProgressTracker';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
 import { calculateTDEE, DEFAULT_USER_PROFILE } from '@/utils/healthMetrics';
 import { ParsedWhoopData } from '@/types/whoopData';
@@ -373,6 +374,7 @@ const Index = () => {
 
           {/* Plan Tab */}
           <TabsContent value="plan" className="space-y-6">
+            <ProgressTracker />
             <NutritionLogger />
             <PlanDashboard />
           </TabsContent>
