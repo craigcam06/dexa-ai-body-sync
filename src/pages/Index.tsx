@@ -636,7 +636,11 @@ const Index = () => {
                       <div>• Strain & workout detection</div>
                       <div>• Heart rate zones</div>
                     </div>
-                    <WhoopConnect />
+                    <WhoopConnect onDataUpdate={(data) => {
+                      console.log('WhoopConnect data update:', data);
+                      localStorage.setItem('whoopData', JSON.stringify(data));
+                      setWhoopData(data);
+                    }} />
                   </CardContent>
                 </Card>
               </div>
