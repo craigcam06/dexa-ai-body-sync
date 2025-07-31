@@ -3,10 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Star, StarOff } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,7 +15,6 @@ interface FavoriteMeal {
   protein: number;
   carbs: number;
   fats: number;
-  meal_type?: string;
 }
 
 export function NutritionLogger() {
@@ -28,8 +25,7 @@ export function NutritionLogger() {
     calories: "",
     protein: "",
     carbs: "",
-    fats: "",
-    meal_type: ""
+    fats: ""
   });
   const { toast } = useToast();
 
@@ -60,32 +56,21 @@ export function NutritionLogger() {
         calories: parseInt(formData.calories),
         protein: parseInt(formData.protein) || 0,
         carbs: parseInt(formData.carbs) || 0,
-        fats: parseInt(formData.fats) || 0,
-        meal_type: formData.meal_type || null
+        fats: parseInt(formData.fats) || 0
       });
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save favorite meal",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Meal saved to favorites"
-      });
+    if (!error) {
+      toast({ title: "Meal saved to favorites" });
       loadFavorites();
     }
   };
 
-  const logNutrition = async (mealData = formData) => {
-    // For now, we'll just show a success toast since nutrition_logs table will be created next
+  const logMeal = (mealData = formData) => {
     toast({
-      title: "Success", 
-      description: `Logged: ${typeof mealData.name === 'string' ? mealData.name : 'Meal'} - ${typeof mealData.calories === 'string' ? mealData.calories : mealData.calories} calories`
+      title: "Meal logged", 
+      description: `${typeof mealData.name === 'string' ? mealData.name : 'Meal'}: ${typeof mealData.calories === 'string' ? mealData.calories : mealData.calories} cal`
     });
-    setFormData({ name: "", calories: "", protein: "", carbs: "", fats: "", meal_type: "" });
+    setFormData({ name: "", calories: "", protein: "", carbs: "", fats: "" });
     setIsOpen(false);
   };
 
@@ -95,17 +80,16 @@ export function NutritionLogger() {
       calories: favorite.calories.toString(),
       protein: favorite.protein.toString(),
       carbs: favorite.carbs.toString(),
-      fats: favorite.fats.toString(),
-      meal_type: favorite.meal_type || ""
+      fats: favorite.fats.toString()
     };
-    logNutrition(favoriteAsFormData);
+    logMeal(favoriteAsFormData);
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Nutrition Logging
+          Nutrition
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
@@ -115,20 +99,20 @@ export function NutritionLogger() {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Log Nutrition</DialogTitle>
+                <DialogTitle>Log Meal</DialogTitle>
               </DialogHeader>
               
               {favorites.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Quick Add Favorites</Label>
-                  <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                  <Label>Favorites</Label>
+                  <div className="grid gap-2 max-h-32 overflow-y-auto">
                     {favorites.map((favorite) => (
                       <div
                         key={favorite.id}
-                        className="flex items-center justify-between p-2 bg-muted rounded-lg cursor-pointer hover:bg-muted/80"
+                        className="flex items-center justify-between p-2 bg-muted rounded cursor-pointer hover:bg-muted/80"
                         onClick={() => useFavorite(favorite)}
                       >
-                        <div className="flex-1">
+                        <div>
                           <p className="font-medium text-sm">{favorite.name}</p>
                           <p className="text-xs text-muted-foreground">
                             {favorite.calories} cal • P{favorite.protein} C{favorite.carbs} F{favorite.fats}
@@ -141,20 +125,20 @@ export function NutritionLogger() {
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
                   <Label htmlFor="name">Meal Name</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., Chicken breast with rice"
+                    placeholder="Chicken & rice"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label htmlFor="calories">Calories *</Label>
+                    <Label htmlFor="calories">Calories</Label>
                     <Input
                       id="calories"
                       type="number"
@@ -163,23 +147,6 @@ export function NutritionLogger() {
                       placeholder="500"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="meal_type">Meal Type</Label>
-                    <Select value={formData.meal_type} onValueChange={(value) => setFormData(prev => ({ ...prev, meal_type: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Optional" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="breakfast">Breakfast</SelectItem>
-                        <SelectItem value="lunch">Lunch</SelectItem>
-                        <SelectItem value="dinner">Dinner</SelectItem>
-                        <SelectItem value="snack">Snack</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
                   <div>
                     <Label htmlFor="protein">Protein (g)</Label>
                     <Input
@@ -190,6 +157,9 @@ export function NutritionLogger() {
                       placeholder="30"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label htmlFor="carbs">Carbs (g)</Label>
                     <Input
@@ -214,19 +184,18 @@ export function NutritionLogger() {
 
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => logNutrition()}
+                    onClick={() => logMeal()}
                     disabled={!formData.calories}
                     className="flex-1"
                   >
-                    Log Meal
+                    Log
                   </Button>
                   {formData.name && formData.calories && (
                     <Button 
                       variant="outline"
                       onClick={saveFavorite}
-                      className="flex items-center"
                     >
-                      <StarOff className="w-4 h-4" />
+                      <Star className="w-4 h-4" />
                     </Button>
                   )}
                 </div>
@@ -237,7 +206,7 @@ export function NutritionLogger() {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Track your daily nutrition intake. Save frequently eaten meals as favorites for quick logging.
+          Quick meal logging with favorites for your go-to meals.
         </p>
       </CardContent>
     </Card>
