@@ -72,11 +72,32 @@ export class HealthKitService {
 
   private async checkAvailability() {
     try {
+      console.log('🔍 Checking HealthKit availability...');
+      console.log('🔍 Capacitor platform:', Capacitor.getPlatform());
+      console.log('🔍 Is native platform:', Capacitor.isNativePlatform());
+      
       // Check if running on iOS
-      this._isAvailable = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
-      console.log('HealthKit availability check:', this._isAvailable);
+      const isIOS = Capacitor.getPlatform() === 'ios';
+      const isNative = Capacitor.isNativePlatform();
+      
+      console.log('🔍 Is iOS:', isIOS);
+      console.log('🔍 Is Native:', isNative);
+      
+      // For now, assume available if we're on iOS or if the plugin exists
+      this._isAvailable = isIOS && isNative;
+      
+      // Also check if HealthKit plugin is available
+      const Health = getHealthPlugin();
+      if (Health) {
+        console.log('✅ HealthKit plugin found!');
+        this._isAvailable = true;
+      } else {
+        console.log('❌ HealthKit plugin not found');
+      }
+      
+      console.log('🔍 Final availability:', this._isAvailable);
     } catch (error) {
-      console.log('Error checking HealthKit availability:', error);
+      console.log('❌ Error checking HealthKit availability:', error);
       this._isAvailable = false;
     }
   }
