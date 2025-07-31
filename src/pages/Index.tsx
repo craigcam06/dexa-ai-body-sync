@@ -29,6 +29,7 @@ import { WhoopConnect } from '@/components/WhoopConnect';
 import { NutritionLogger } from '@/components/NutritionLogger';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { SmartLoading } from '@/components/ui/smart-loading';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
 import { calculateTDEE, DEFAULT_USER_PROFILE } from '@/utils/healthMetrics';
 import { ParsedWhoopData } from '@/types/whoopData';
@@ -127,72 +128,106 @@ const Index = () => {
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            {/* Navigation Tabs */}
-            <TabsList className="grid w-full grid-cols-5 lg:w-fit lg:grid-cols-5">
+            {/* Navigation Tabs - Enhanced with Visual Hierarchy */}
+            <TabsList className="grid w-full grid-cols-5 lg:w-fit lg:grid-cols-5 bg-card/50 backdrop-blur-sm border">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+                  <TabsTrigger value="dashboard" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200">
                     <BarChart3 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
+                    <span className="hidden sm:inline font-medium">Dashboard</span>
+                    {activeTab === "dashboard" && <div className="w-1 h-1 bg-current rounded-full ml-1" />}
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>View your health metrics and overall score</p>
+                <TooltipContent side="bottom">
+                  <p className="font-medium">Health Overview</p>
+                  <p className="text-xs text-muted-foreground">View your health metrics and overall score</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="plan" className="flex items-center space-x-2">
+                  <TabsTrigger value="plan" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200">
                     <Target className="w-4 h-4" />
-                    <span className="hidden sm:inline">Plan</span>
+                    <span className="hidden sm:inline font-medium">Plan</span>
+                    {activeTab === "plan" && <div className="w-1 h-1 bg-current rounded-full ml-1" />}
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Track progress and log nutrition</p>
+                <TooltipContent side="bottom">
+                  <p className="font-medium">Goal Tracking</p>
+                  <p className="text-xs text-muted-foreground">Track progress and log nutrition</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="coach" className="flex items-center space-x-2">
+                  <TabsTrigger value="coach" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200">
                     <Brain className="w-4 h-4" />
-                    <span className="hidden sm:inline">AI Coach</span>
+                    <span className="hidden sm:inline font-medium">AI Coach</span>
+                    {activeTab === "coach" && <div className="w-1 h-1 bg-current rounded-full ml-1" />}
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Get personalized health advice</p>
+                <TooltipContent side="bottom">
+                  <p className="font-medium">Personal Assistant</p>
+                  <p className="text-xs text-muted-foreground">Get personalized health advice</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="devices" className="flex items-center space-x-2">
+                  <TabsTrigger value="devices" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200">
                     <Zap className="w-4 h-4" />
-                    <span className="hidden sm:inline">Devices</span>
+                    <span className="hidden sm:inline font-medium">Devices</span>
+                    {activeTab === "devices" && <div className="w-1 h-1 bg-current rounded-full ml-1" />}
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Connect health tracking devices</p>
+                <TooltipContent side="bottom">
+                  <p className="font-medium">Device Integration</p>
+                  <p className="text-xs text-muted-foreground">Connect health tracking devices</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="insights" className="flex items-center space-x-2">
+                  <TabsTrigger value="insights" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200">
                     <TrendingUp className="w-4 h-4" />
-                    <span className="hidden sm:inline">Insights</span>
+                    <span className="hidden sm:inline font-medium">Insights</span>
+                    {activeTab === "insights" && <div className="w-1 h-1 bg-current rounded-full ml-1" />}
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>View AI-powered health insights</p>
+                <TooltipContent side="bottom">
+                  <p className="font-medium">AI Analysis</p>
+                  <p className="text-xs text-muted-foreground">View AI-powered health insights</p>
                 </TooltipContent>
               </Tooltip>
             </TabsList>
 
-            {/* Dashboard Tab */}
+            {/* Dashboard Tab - Enhanced with Smart Onboarding */}
             <TabsContent value="dashboard" className="space-y-6">
+              
+              {/* Smart Help Banner for New Users */}
+              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200 dark:border-blue-800">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Info className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-blue-800 dark:text-blue-200 text-sm">Quick Start Guide</h4>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 leading-relaxed">
+                        Connect your devices in the <strong>Devices</strong> tab → Set goals in <strong>Plan</strong> → Get insights from your <strong>AI Coach</strong>
+                      </p>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 px-2">
+                      <span className="text-xs">Got it</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Essential Metrics Grid */}
+              {/* Essential Metrics Grid - Enhanced with Smart Indicators */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ gridAutoRows: '1fr' }}>
-                {/* Overall Health Score */}
-                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 h-full flex flex-col card-interactive animate-fade-in-stagger" style={{ animationDelay: '0ms' }}>
+                {/* Overall Health Score - Enhanced */}
+                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 h-full flex flex-col card-interactive animate-fade-in-stagger relative" style={{ animationDelay: '0ms' }}>
+                  {/* Smart Status Indicator */}
+                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  </div>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
                       <Heart className="w-5 h-5" />
@@ -201,28 +236,85 @@ const Index = () => {
                         <TooltipTrigger asChild>
                           <Info className="w-4 h-4 text-green-600 hover:text-green-500 cursor-help" />
                         </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Weighted average of recovery health (40%), energy balance (35%), and body composition progress (25%)</p>
+                        <TooltipContent className="max-w-xs">
+                          <div className="space-y-2">
+                            <p className="font-medium">How it's calculated:</p>
+                            <div className="text-xs space-y-1">
+                              <div>• Recovery health (40%)</div>
+                              <div>• Energy balance (35%)</div>
+                              <div>• Body composition (25%)</div>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">Higher scores indicate better overall health trends</p>
+                          </div>
                         </TooltipContent>
                       </Tooltip>
                     </CardTitle>
                     <CardDescription className="text-green-600 dark:text-green-400">
-                      Computed from recovery, energy balance & body composition
+                      Your comprehensive wellness indicator
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col justify-between">
-                    <div className="text-4xl font-bold text-green-600 mb-2">
-                      {healthMetrics.healthScore.totalScore}/100
-                    </div>
-                    <Progress value={healthMetrics.healthScore.totalScore} className="mt-3 transition-all duration-700 ease-out" />
-                    <div className="flex items-center justify-between mt-3 text-sm text-green-700 dark:text-green-300">
-                      <span>Recovery: {healthMetrics.healthScore.components.recovery.score}%</span>
-                      <span>Energy: {healthMetrics.energyData.actualDeficit} cal</span>
-                      <span>{healthMetrics.healthScore.totalScore >= 85 ? 'Excellent' : healthMetrics.healthScore.totalScore >= 70 ? 'Good' : 'Needs attention'}</span>
+                    <div className="space-y-3">
+                      <div className="flex items-baseline gap-2">
+                        <div className="text-4xl font-bold text-green-600">
+                          {healthMetrics.healthScore.totalScore}
+                        </div>
+                        <div className="text-sm text-green-600/70 font-medium">/100</div>
+                        <div className={`text-xs px-2 py-1 rounded-full font-medium ml-auto ${
+                          healthMetrics.healthScore.totalScore >= 85 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
+                            : healthMetrics.healthScore.totalScore >= 70 
+                            ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' 
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                        }`}>
+                          {healthMetrics.healthScore.totalScore >= 85 ? 'Excellent' : healthMetrics.healthScore.totalScore >= 70 ? 'Good' : 'Needs attention'}
+                        </div>
+                      </div>
+                      <Progress value={healthMetrics.healthScore.totalScore} className="mt-3 transition-all duration-700 ease-out h-3" />
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-center p-2 bg-green-100/50 dark:bg-green-900/20 rounded cursor-help">
+                              <div className="font-medium text-green-700 dark:text-green-300">{healthMetrics.healthScore.components.recovery.score}%</div>
+                              <div className="text-green-600 dark:text-green-400">Recovery</div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Sleep quality and recovery readiness</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-center p-2 bg-green-100/50 dark:bg-green-900/20 rounded cursor-help">
+                              <div className="font-medium text-green-700 dark:text-green-300">{Math.abs(healthMetrics.energyData.actualDeficit)}</div>
+                              <div className="text-green-600 dark:text-green-400">Cal Balance</div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Daily calorie deficit/surplus</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-center p-2 bg-green-100/50 dark:bg-green-900/20 rounded cursor-help">
+                              <div className="font-medium text-green-700 dark:text-green-300">{healthMetrics.healthScore.components.bodyComposition.score}%</div>
+                              <div className="text-green-600 dark:text-green-400">Body Comp</div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Body composition progress</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
                     {healthMetrics.healthScore.insights.length > 0 && (
-                      <div className="mt-3 text-xs text-green-600 dark:text-green-400">
-                        💡 {healthMetrics.healthScore.insights[0]}
+                      <div className="mt-4 p-3 bg-green-100/50 dark:bg-green-900/20 rounded-lg border border-green-200/50 dark:border-green-800/50">
+                        <div className="flex items-start gap-2">
+                          <div className="text-sm">💡</div>
+                          <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed">
+                            {healthMetrics.healthScore.insights[0]}
+                          </p>
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -468,17 +560,31 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                {/* WHOOP Integration - Enhanced */}
+                <Card className="hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Zap className="w-5 h-5" />
-                      <span>WHOOP Integration</span>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Zap className="w-5 h-5 text-primary" />
+                        <span>WHOOP</span>
+                      </div>
+                      <Badge variant="outline" className="text-primary border-primary">Premium</Badge>
                     </CardTitle>
                     <CardDescription>
-                      Sync your WHOOP data for advanced recovery insights
+                      Advanced recovery & performance insights
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
+                        <span className="text-xs text-muted-foreground">Ready to connect</span>
+                      </div>
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-3">
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <div>• Recovery score & HRV trends</div>
+                      <div>• Sleep stages & efficiency</div>
+                      <div>• Strain & workout detection</div>
+                      <div>• Heart rate zones</div>
+                    </div>
                     <WhoopConnect />
                   </CardContent>
                 </Card>
