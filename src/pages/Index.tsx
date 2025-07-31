@@ -23,6 +23,7 @@ import {
 import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
 import { WhoopConnect } from '@/components/WhoopConnect';
+import { NutritionLogger } from '@/components/NutritionLogger';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
 import { calculateTDEE, DEFAULT_USER_PROFILE } from '@/utils/healthMetrics';
 import { ParsedWhoopData } from '@/types/whoopData';
@@ -279,8 +280,12 @@ const Index = () => {
                           {healthMetrics.tdeeData.activityLevel}
                         </span>
                       </div>
-                      <Badge variant="secondary" className="mt-2">Connect MyFitnessPal</Badge>
-                    </div>
+                     </div>
+                     
+                     {/* Nutrition Logger */}
+                     <div className="mt-4">
+                       <NutritionLogger />
+                     </div>
                     
                     <CollapsibleContent className="space-y-3 mt-4 pt-4 border-t border-orange-200 dark:border-orange-700">
                       <div className="grid grid-cols-2 gap-4">
