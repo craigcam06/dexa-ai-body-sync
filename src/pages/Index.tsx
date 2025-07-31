@@ -240,7 +240,7 @@ const Index = () => {
                         </CardDescription>
                       </CardHeader>
                     </CollapsibleTrigger>
-                    <CardContent>
+                    <CardContent className="flex-1">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
