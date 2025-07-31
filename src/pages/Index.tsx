@@ -14,7 +14,8 @@ import {
   Brain,
   Calendar,
   BarChart3,
-  Settings
+  Settings,
+  Moon
 } from 'lucide-react';
 import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
@@ -128,26 +129,118 @@ const Index = () => {
               </Card>
             </div>
 
-            {/* Health Score at the top */}
-            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
-                  <Heart className="w-5 h-5" />
-                  <span>Overall Health Score</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold text-green-600 mb-2">87/100</div>
-                <div className="flex items-center space-x-4 text-sm text-green-700 dark:text-green-300">
-                  <span>Recovery: 85%</span>
-                  <span>•</span>
-                  <span>Sleep: 7.5h</span>
-                  <span>•</span>
-                  <span>Activity: 12 day streak</span>
-                </div>
-                <Progress value={87} className="mt-3" />
-              </CardContent>
-            </Card>
+            {/* Essential Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Overall Health Score */}
+              <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
+                    <Heart className="w-5 h-5" />
+                    <span>Overall Health Score</span>
+                  </CardTitle>
+                  <CardDescription className="text-green-600 dark:text-green-400">
+                    Computed from recovery, energy balance & body composition
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold text-green-600 mb-2">87/100</div>
+                  <Progress value={87} className="mt-3" />
+                  <div className="flex items-center justify-between mt-3 text-sm text-green-700 dark:text-green-300">
+                    <span>Recovery: 85%</span>
+                    <span>Energy: -300 cal</span>
+                    <span>On track</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recovery Health */}
+              <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-blue-800 dark:text-blue-200">
+                    <Moon className="w-5 h-5" />
+                    <span>Recovery Health</span>
+                  </CardTitle>
+                  <CardDescription className="text-blue-600 dark:text-blue-400">
+                    Sleep quality + recovery readiness
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
+                      <span className="text-lg font-semibold text-blue-600">85%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-blue-700 dark:text-blue-300">Recovery Score</span>
+                      <span className="text-lg font-semibold text-blue-600">78%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Duration</span>
+                      <span className="text-lg font-semibold text-blue-600">7.5h</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Energy Balance */}
+              <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-orange-800 dark:text-orange-200">
+                    <Zap className="w-5 h-5" />
+                    <span>Energy Balance</span>
+                  </CardTitle>
+                  <CardDescription className="text-orange-600 dark:text-orange-400">
+                    TDEE vs intake • Daily deficit tracking
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-orange-700 dark:text-orange-300">TDEE</span>
+                      <span className="text-lg font-semibold text-orange-600">2,847 cal</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-orange-700 dark:text-orange-300">Intake</span>
+                      <span className="text-lg font-semibold text-orange-600">2,547 cal</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-orange-700 dark:text-orange-300">Daily Deficit</span>
+                      <span className="text-lg font-semibold text-green-600">-300 cal</span>
+                    </div>
+                    <Badge variant="secondary" className="mt-2">Connect MyFitnessPal</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Body Composition Progress */}
+              <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-purple-800 dark:text-purple-200">
+                    <Target className="w-5 h-5" />
+                    <span>Body Composition</span>
+                  </CardTitle>
+                  <CardDescription className="text-purple-600 dark:text-purple-400">
+                    Monthly DEXA trends • Fat loss & muscle gain
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700 dark:text-purple-300">Body Fat</span>
+                      <span className="text-lg font-semibold text-purple-600">18.2% ↓</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700 dark:text-purple-300">Lean Mass</span>
+                      <span className="text-lg font-semibold text-purple-600">155.3 lbs ↑</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700 dark:text-purple-300">Next DEXA</span>
+                      <span className="text-lg font-semibold text-purple-600">12 days</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Plan Tab */}
