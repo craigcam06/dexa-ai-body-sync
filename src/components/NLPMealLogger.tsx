@@ -67,7 +67,8 @@ export const NLPMealLogger = () => {
       if (data.foods?.length === 0) {
         toast({
           title: "No foods detected",
-          description: "Try describing your foods more specifically (e.g., 'a medium apple' instead of 'fruit')",
+          description: "NLP requires FatSecret Premier subscription. Try the regular food search instead.",
+          variant: "destructive",
         });
       } else {
         toast({
