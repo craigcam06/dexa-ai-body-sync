@@ -20,7 +20,10 @@ import {
   ChevronDown,
   ChevronUp,
   Info,
-  ChevronDownIcon
+  ChevronDownIcon,
+  LogIn,
+  LogOut,
+  User
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AICoachPanel } from '@/components/AICoachPanel';
@@ -33,11 +36,30 @@ import { SmartLoading } from '@/components/ui/smart-loading';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
 import { calculateTDEE, DEFAULT_USER_PROFILE } from '@/utils/healthMetrics';
 import { ParsedWhoopData } from '@/types/whoopData';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const [whoopData, setWhoopData] = useState<ParsedWhoopData | undefined>();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  // Check authentication status
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Load Whoop data from localStorage
   useEffect(() => {
@@ -102,6 +124,31 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="secondary" className="hidden sm:flex items-center">
+                      <User className="w-3 h-3 mr-1" />
+                      {user.email?.substring(0, 12)}...
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Sign Out</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Link to="/auth">
+                    <Button variant="outline" size="sm">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Sign In</span>
+                    </Button>
+                  </Link>
+                )}
                 <Badge variant="secondary" className="hidden sm:flex items-center">
                   <Activity className="w-3 h-3 mr-1" />
                   Connected
