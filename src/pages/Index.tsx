@@ -1,30 +1,219 @@
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Heart, 
+  Activity, 
+  Target, 
+  TrendingUp, 
+  Apple, 
+  Zap,
+  Brain,
+  Calendar,
+  BarChart3,
+  Settings
+} from 'lucide-react';
+import { HealthDashboard } from '@/components/HealthDashboard';
+import { AICoachPanel } from '@/components/AICoachPanel';
+import { PlanDashboard } from '@/components/PlanDashboard';
+import { WhoopConnect } from '@/components/WhoopConnect';
+
 const Index = () => {
-  console.log('Index component is rendering!');
-  
+  const [activeTab, setActiveTab] = useState("dashboard");
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: 'red', // Changed to red to make it obvious
-      color: 'white',
-      padding: '20px',
-      fontSize: '30px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <h1>MOBILE APP TEST</h1>
-      <p>If you see this, the app is working!</p>
-      <div style={{ 
-        backgroundColor: 'blue', 
-        color: 'white', 
-        padding: '20px', 
-        borderRadius: '10px',
-        marginTop: '20px',
-        fontSize: '20px'
-      }}>
-        SUCCESS - Connection established!
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                <Heart className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">HealthSync AI</h1>
+                <p className="text-sm text-muted-foreground">Your Personal Health Coach</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className="hidden sm:flex">
+                <Activity className="w-3 h-3 mr-1" />
+                Connected
+              </Badge>
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Navigation Tabs */}
+          <TabsList className="grid w-full grid-cols-5 lg:w-fit lg:grid-cols-5">
+            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger value="plan" className="flex items-center space-x-2">
+              <Target className="w-4 h-4" />
+              <span className="hidden sm:inline">Plan</span>
+            </TabsTrigger>
+            <TabsTrigger value="coach" className="flex items-center space-x-2">
+              <Brain className="w-4 h-4" />
+              <span className="hidden sm:inline">AI Coach</span>
+            </TabsTrigger>
+            <TabsTrigger value="devices" className="flex items-center space-x-2">
+              <Zap className="w-4 h-4" />
+              <span className="hidden sm:inline">Devices</span>
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4" />
+              <span className="hidden sm:inline">Insights</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Recovery Score</CardTitle>
+                  <Heart className="h-4 w-4 text-red-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">85%</div>
+                  <p className="text-xs text-muted-foreground">+5% from yesterday</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Sleep Score</CardTitle>
+                  <Activity className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">7.5h</div>
+                  <p className="text-xs text-muted-foreground">Target: 8h</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Today's Steps</CardTitle>
+                  <Target className="h-4 w-4 text-purple-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-600">8,247</div>
+                  <p className="text-xs text-muted-foreground">Goal: 10,000</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Workout Streak</CardTitle>
+                  <Calendar className="h-4 w-4 text-orange-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">12 days</div>
+                  <p className="text-xs text-muted-foreground">Personal best!</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <HealthDashboard />
+          </TabsContent>
+
+          {/* Plan Tab */}
+          <TabsContent value="plan" className="space-y-6">
+            <PlanDashboard />
+          </TabsContent>
+
+          {/* AI Coach Tab */}
+          <TabsContent value="coach" className="space-y-6">
+            <AICoachPanel />
+          </TabsContent>
+
+          {/* Devices Tab */}
+          <TabsContent value="devices" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Apple className="w-5 h-5" />
+                    <span>Apple HealthKit</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Connect your iPhone to sync health data automatically
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full">
+                    <Apple className="w-4 h-4 mr-2" />
+                    Connect HealthKit
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5" />
+                    <span>WHOOP Integration</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Sync your WHOOP data for advanced recovery insights
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <WhoopConnect />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Insights Tab */}
+          <TabsContent value="insights" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Health Insights</CardTitle>
+                <CardDescription>
+                  AI-powered analysis of your health trends and patterns
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-medium mb-2">Recovery Trend</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Your recovery has improved 15% this week. Consider maintaining your current sleep schedule.
+                    </p>
+                  </div>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-medium mb-2">Training Load</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Your training load is optimal. You can safely increase intensity by 10% next week.
+                    </p>
+                  </div>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-medium mb-2">Sleep Quality</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Your deep sleep has increased 20% since reducing screen time before bed.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
