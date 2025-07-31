@@ -185,9 +185,9 @@ const Index = () => {
             <TabsContent value="dashboard" className="space-y-6">
 
               {/* Essential Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>*]:min-h-[400px] [&>*]:flex [&>*]:flex-col">
                 {/* Overall Health Score */}
-                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 flex flex-col h-full">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
                       <Heart className="w-5 h-5" />
@@ -205,7 +205,7 @@ const Index = () => {
                       Computed from recovery, energy balance & body composition
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-1 flex flex-col justify-between">
                     <div className="text-4xl font-bold text-green-600 mb-2">
                       {healthMetrics.healthScore.totalScore}/100
                     </div>
