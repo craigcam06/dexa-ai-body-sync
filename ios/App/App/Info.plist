@@ -44,6 +44,13 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	
+	<!-- App Transport Security Settings for Development -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	
 	<!-- HealthKit Configuration -->
 	<key>NSHealthShareUsageDescription</key>
 	<string>This app needs access to your health data to provide personalized fitness insights and track your progress.</string>

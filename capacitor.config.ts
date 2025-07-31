@@ -4,10 +4,10 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.ca5e6ad90815453cb8feca7faca99c8d',
   appName: 'dexa-ai-body-sync',
   webDir: 'dist',
-  // server: {
-  //   url: 'http://10.0.0.85:8080',
-  //   cleartext: true
-  // },
+  server: {
+    url: 'http://10.0.0.85:8080',
+    cleartext: true
+  },
   plugins: {
     CapacitorHttp: {
       enabled: true
