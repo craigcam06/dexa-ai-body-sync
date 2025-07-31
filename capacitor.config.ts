@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     url: 'http://10.0.0.85:8080',
-    cleartext: true
+    cleartext: true,
+    hostname: '10.0.0.85'
   },
   plugins: {
     CapacitorHttp: {
