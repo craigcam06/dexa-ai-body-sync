@@ -149,6 +149,69 @@ export type Database = {
         }
         Relationships: []
       }
+      food_items: {
+        Row: {
+          api_source: string
+          barcode: string | null
+          brand: string | null
+          calories_per_100g: number
+          carbs_per_100g: number
+          created_at: string
+          external_id: string
+          fats_per_100g: number
+          fiber_per_100g: number | null
+          id: string
+          name: string
+          protein_per_100g: number
+          search_terms: string[] | null
+          serving_description: string | null
+          serving_size_g: number | null
+          sodium_per_100g: number | null
+          sugar_per_100g: number | null
+          updated_at: string
+        }
+        Insert: {
+          api_source: string
+          barcode?: string | null
+          brand?: string | null
+          calories_per_100g: number
+          carbs_per_100g?: number
+          created_at?: string
+          external_id: string
+          fats_per_100g?: number
+          fiber_per_100g?: number | null
+          id?: string
+          name: string
+          protein_per_100g?: number
+          search_terms?: string[] | null
+          serving_description?: string | null
+          serving_size_g?: number | null
+          sodium_per_100g?: number | null
+          sugar_per_100g?: number | null
+          updated_at?: string
+        }
+        Update: {
+          api_source?: string
+          barcode?: string | null
+          brand?: string | null
+          calories_per_100g?: number
+          carbs_per_100g?: number
+          created_at?: string
+          external_id?: string
+          fats_per_100g?: number
+          fiber_per_100g?: number | null
+          id?: string
+          name?: string
+          protein_per_100g?: number
+          search_terms?: string[] | null
+          serving_description?: string | null
+          serving_size_g?: number | null
+          sodium_per_100g?: number | null
+          sugar_per_100g?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plan_modifications: {
         Row: {
           created_at: string
@@ -266,6 +329,65 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "fitness_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_food_logs: {
+        Row: {
+          calories: number
+          carbs: number
+          created_at: string
+          custom_food_name: string | null
+          date: string
+          fats: number
+          food_item_id: string | null
+          id: string
+          meal_type: string | null
+          protein: number
+          serving_amount: number
+          serving_unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calories: number
+          carbs?: number
+          created_at?: string
+          custom_food_name?: string | null
+          date?: string
+          fats?: number
+          food_item_id?: string | null
+          id?: string
+          meal_type?: string | null
+          protein?: number
+          serving_amount?: number
+          serving_unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs?: number
+          created_at?: string
+          custom_food_name?: string | null
+          date?: string
+          fats?: number
+          food_item_id?: string | null
+          id?: string
+          meal_type?: string | null
+          protein?: number
+          serving_amount?: number
+          serving_unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_food_logs_food_item_id_fkey"
+            columns: ["food_item_id"]
+            isOneToOne: false
+            referencedRelation: "food_items"
             referencedColumns: ["id"]
           },
         ]
