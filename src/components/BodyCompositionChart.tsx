@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { TrendingUp, Target, Calendar, ChevronDownIcon } from "lucide-react";
 
 // Real DEXA scan data from BodySpec report (Craig Campbell)
 const mockDexaData = [
@@ -35,8 +37,8 @@ export const BodyCompositionChart = () => {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Progress Bars */}
+      <CardContent className="space-y-4">
+        {/* Essential Progress Overview */}
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
@@ -73,37 +75,52 @@ export const BodyCompositionChart = () => {
           </div>
         </div>
 
-        {/* Recent DEXA History */}
-        <div className="space-y-3">
-          <h4 className="font-medium text-sm flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            Recent DEXA Scans
-          </h4>
-          <div className="space-y-2">
-            {mockDexaData.slice(-3).reverse().map((scan, index) => (
-              <div key={scan.date} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-primary' : 'bg-muted-foreground'}`} />
-                  <span className="text-sm font-medium">{new Date(scan.date).toLocaleDateString()}</span>
-                </div>
-                <div className="flex gap-4 text-sm">
-                  <span>{scan.bodyFat}% BF</span>
-                  <span>{scan.leanMass} LM</span>
-                  <span className="text-muted-foreground">{scan.totalWeight} lbs</span>
-                </div>
+        {/* Progressive Disclosure for Detailed Data */}
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="w-full group text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>View scan history & detailed insights</span>
+              <ChevronDownIcon className="h-3 w-3 ml-2 transition-transform group-data-[state=open]:rotate-180" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 animate-fade-in">
+            {/* Recent DEXA History */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Recent DEXA Scans
+              </h4>
+              <div className="space-y-2">
+                {mockDexaData.slice(-3).reverse().map((scan, index) => (
+                  <div key={scan.date} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-primary' : 'bg-muted-foreground'}`} />
+                      <span className="text-sm font-medium">{new Date(scan.date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex gap-4 text-sm">
+                      <span>{scan.bodyFat}% BF</span>
+                      <span>{scan.leanMass} LM</span>
+                      <span className="text-muted-foreground">{scan.totalWeight} lbs</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Key Insights */}
-        <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-primary/10">
-          <h4 className="font-medium text-sm mb-2 text-primary">Body Recomposition Progress</h4>
-          <p className="text-sm text-muted-foreground">
-            Body fat increased by {bodyFatChange.toFixed(1)}% and lean mass decreased by {Math.abs(leanMassChange).toFixed(1)} lbs since last scan. 
-            Focus on consistent training and nutrition to reverse this trend.
-          </p>
-        </div>
+            {/* Key Insights */}
+            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-primary/10">
+              <h4 className="font-medium text-sm mb-2 text-primary">Body Recomposition Progress</h4>
+              <p className="text-sm text-muted-foreground">
+                Body fat increased by {bodyFatChange.toFixed(1)}% and lean mass decreased by {Math.abs(leanMassChange).toFixed(1)} lbs since last scan. 
+                Focus on consistent training and nutrition to reverse this trend.
+              </p>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );

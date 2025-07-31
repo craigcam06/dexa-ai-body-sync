@@ -19,7 +19,8 @@ import {
   Moon,
   ChevronDown,
   ChevronUp,
-  Info
+  Info,
+  ChevronDownIcon
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AICoachPanel } from '@/components/AICoachPanel';
@@ -490,29 +491,53 @@ const Index = () => {
                 <CardHeader>
                   <CardTitle>Health Insights</CardTitle>
                   <CardDescription>
-                    AI-powered analysis of your health trends and patterns
+                    Key recommendations based on your data
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">Recovery Trend</h4>
-                      <p className="text-sm text-muted-foreground">
+                    {/* Essential Insight - Always Visible */}
+                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <h4 className="font-medium mb-2 text-green-700 dark:text-green-300">📈 Key Trend</h4>
+                      <p className="text-sm text-green-600 dark:text-green-400">
                         Your recovery has improved 15% this week. Consider maintaining your current sleep schedule.
                       </p>
                     </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">Training Load</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Your training load is optimal. You can safely increase intensity by 10% next week.
-                      </p>
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">Sleep Quality</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Your deep sleep has increased 20% since reducing screen time before bed.
-                      </p>
-                    </div>
+                    
+                    {/* Progressive Disclosure for Additional Insights */}
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full group transition-all duration-200 hover:bg-card/50"
+                        >
+                          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                            View detailed insights & recommendations
+                          </span>
+                          <ChevronDownIcon className="h-4 w-4 ml-2 transition-transform group-data-[state=open]:rotate-180" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-4 animate-fade-in">
+                        <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                          <h4 className="font-medium mb-2 text-blue-700 dark:text-blue-300">💪 Training Load</h4>
+                          <p className="text-sm text-blue-600 dark:text-blue-400">
+                            Your training load is optimal. You can safely increase intensity by 10% next week.
+                          </p>
+                        </div>
+                        <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                          <h4 className="font-medium mb-2 text-purple-700 dark:text-purple-300">😴 Sleep Quality</h4>
+                          <p className="text-sm text-purple-600 dark:text-purple-400">
+                            Your deep sleep has increased 20% since reducing screen time before bed.
+                          </p>
+                        </div>
+                        <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                          <h4 className="font-medium mb-2 text-orange-700 dark:text-orange-300">🎯 Nutrition</h4>
+                          <p className="text-sm text-orange-600 dark:text-orange-400">
+                            Consider increasing protein intake to 1.2g/lb to optimize lean mass gains.
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 </CardContent>
               </Card>
