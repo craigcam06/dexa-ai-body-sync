@@ -281,11 +281,6 @@ const Index = () => {
                         </span>
                       </div>
                      </div>
-                     
-                     {/* Nutrition Logger */}
-                     <div className="mt-4">
-                       <NutritionLogger />
-                     </div>
                     
                     <CollapsibleContent className="space-y-3 mt-4 pt-4 border-t border-orange-200 dark:border-orange-700">
                       <div className="grid grid-cols-2 gap-4">
@@ -378,6 +373,7 @@ const Index = () => {
 
           {/* Plan Tab */}
           <TabsContent value="plan" className="space-y-6">
+            <NutritionLogger />
             <PlanDashboard />
           </TabsContent>
 
