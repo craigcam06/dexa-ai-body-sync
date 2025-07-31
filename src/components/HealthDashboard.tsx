@@ -38,6 +38,7 @@ import { VoiceInterface } from "./VoiceInterface";
 import { PlanSetup } from "./PlanSetup";
 import { PlanDashboard } from "./PlanDashboard";
 import { MobileHealthSync } from "./MobileHealthSync";
+import { MobileFeatures } from "./MobileFeatures";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -185,6 +186,7 @@ export const HealthDashboard = () => {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Activity },
     { id: "connect", label: "Connect", icon: Settings },
+    { id: "mobile", label: "Mobile", icon: Bell },
     { id: "optimize", label: "Optimize", icon: Brain }
   ];
 
@@ -204,6 +206,25 @@ export const HealthDashboard = () => {
                 </div>
                 <div className="animate-fade-in-up [animation-delay:200ms]">
                   <AppleHealthConnect onDataUpdate={(data) => console.log('Apple Health data:', data)} />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case "mobile":
+        return (
+          <div className="space-y-8">
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <Bell className="h-6 w-6 text-primary" />
+                Mobile Features
+              </h2>
+              <div className="grid gap-6">
+                <div className="animate-fade-in-up [animation-delay:100ms]">
+                  <MobileFeatures />
+                </div>
+                <div className="animate-fade-in-up [animation-delay:200ms]">
+                  <MobileHealthSync />
                 </div>
               </div>
             </div>
