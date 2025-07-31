@@ -1,23 +1,29 @@
 const Index = () => {
-  console.log('Index component rendering...');
+  console.log('Index component is rendering!');
+  
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#ffffff',
-      color: '#000000',
+      backgroundColor: 'red', // Changed to red to make it obvious
+      color: 'white',
       padding: '20px',
-      fontSize: '24px'
+      fontSize: '30px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
     }}>
-      <h1>Health Sync - Mobile App</h1>
-      <p>App is working correctly!</p>
+      <h1>MOBILE APP TEST</h1>
+      <p>If you see this, the app is working!</p>
       <div style={{ 
-        backgroundColor: '#0066cc', 
+        backgroundColor: 'blue', 
         color: 'white', 
-        padding: '15px', 
-        borderRadius: '8px',
-        marginTop: '20px'
+        padding: '20px', 
+        borderRadius: '10px',
+        marginTop: '20px',
+        fontSize: '20px'
       }}>
-        Connection successful
+        SUCCESS - Connection established!
       </div>
     </div>
   );
