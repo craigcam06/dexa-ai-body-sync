@@ -39,13 +39,14 @@ const Index = () => {
   };
 
   if (loading) {
+    console.log("App is in loading state");
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-white">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading...
+            <CardTitle className="flex items-center gap-2 text-black">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+              Loading Health Dashboard...
             </CardTitle>
           </CardHeader>
         </Card>
