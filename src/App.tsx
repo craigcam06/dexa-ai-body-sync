@@ -12,22 +12,17 @@ import Auth from "./pages/Auth";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/auth/whoop/callback" element={<AuthCallback />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <div style={{ 
+    backgroundColor: 'white', 
+    color: 'black', 
+    padding: '20px', 
+    fontSize: '24px',
+    minHeight: '100vh'
+  }}>
+    <h1>MOBILE TEST - App Loading...</h1>
+    <p>If you can see this, React is working!</p>
+    <p>Debugging the black screen issue...</p>
+  </div>
 );
 
 export default App;
