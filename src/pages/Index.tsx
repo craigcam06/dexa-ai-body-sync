@@ -27,6 +27,7 @@ import { PlanDashboard } from '@/components/PlanDashboard';
 import { WhoopConnect } from '@/components/WhoopConnect';
 import { NutritionLogger } from '@/components/NutritionLogger';
 import { ProgressTracker } from '@/components/ProgressTracker';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
 import { calculateTDEE, DEFAULT_USER_PROFILE } from '@/utils/healthMetrics';
 import { ParsedWhoopData } from '@/types/whoopData';
@@ -94,26 +95,29 @@ const Index = () => {
                   <Heart className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold">HealthSync AI</h1>
-                  <p className="text-sm text-muted-foreground">Your Personal Health Coach</p>
+                  <h1 className="text-xl font-display tracking-tight">HealthSync AI</h1>
+                  <p className="text-sm text-muted-foreground font-medium">Your Personal Health Coach</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="hidden sm:flex">
+              <div className="flex items-center space-x-3">
+                <Badge variant="secondary" className="hidden sm:flex items-center">
                   <Activity className="w-3 h-3 mr-1" />
                   Connected
                 </Badge>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => alert('Settings panel coming soon!')}>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Configure app preferences and data sources</p>
-                  </TooltipContent>
-                </Tooltip>
+                <div className="flex items-center space-x-2">
+                  <ThemeToggle />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" className="btn-interactive" onClick={() => alert('Settings panel coming soon!')}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Settings</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Configure app preferences and data sources</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </div>

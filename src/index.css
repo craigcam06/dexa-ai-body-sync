@@ -8,44 +8,52 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Health Dashboard Color System */
-    --background: 210 17% 98%;
-    --foreground: 215 25% 27%;
+    /* Enhanced Health Dashboard Color System */
+    --background: 0 0% 100%;
+    --foreground: 210 24% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 210 24% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 210 24% 16%;
 
-    /* Primary - Health Blue */
-    --primary: 210 100% 50%;
+    /* Primary - Sophisticated Health Blue */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 100% 75%;
+    --primary-glow: 217 91% 75%;
 
-    /* Secondary - Fitness Green */
-    --secondary: 142 76% 36%;
+    /* Secondary - Recovery Green */
+    --secondary: 158 64% 52%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Muted - Professional Gray */
-    --muted: 210 16% 93%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted - Professional Neutrals */
+    --muted: 210 40% 98%;
+    --muted-foreground: 210 16% 46%;
 
-    /* Accent - Success Green */
-    --accent: 142 76% 36%;
+    /* Accent - Energy Orange */
+    --accent: 25 95% 53%;
     --accent-foreground: 0 0% 100%;
 
     /* Health Metrics Colors */
-    --success: 142 76% 36%;
+    --success: 158 64% 52%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 43 96% 56%;
     --warning-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 210 100% 50%;
+    /* Enhanced Semantic Colors */
+    --recovery: 217 91% 60%;
+    --recovery-foreground: 0 0% 100%;
+    --energy: 25 95% 53%;
+    --energy-foreground: 0 0% 100%;
+    --body-comp: 271 81% 56%;
+    --body-comp-foreground: 0 0% 100%;
+
+    --border: 210 40% 88%;
+    --input: 210 40% 88%;
+    --ring: 217 91% 60%;
 
     /* Design System Variables */
     --radius: 0.75rem;
@@ -84,42 +92,50 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 209 50% 5%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 209 50% 6%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 209 50% 6%;
     --popover-foreground: 210 40% 98%;
 
-    /* Primary - Keep Health Blue but darker for dark mode */
-    --primary: 210 100% 60%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 210 100% 75%;
+    /* Primary - Enhanced Health Blue for dark mode */
+    --primary: 217 91% 65%;
+    --primary-foreground: 209 50% 5%;
+    --primary-glow: 217 91% 75%;
 
-    /* Secondary - Fitness Green for dark mode */
-    --secondary: 142 76% 45%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - Recovery Green for dark mode */
+    --secondary: 158 64% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 209 30% 15%;
+    --muted-foreground: 210 20% 65%;
 
-    /* Accent - Success Green for dark mode */
-    --accent: 142 76% 45%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent - Energy Orange for dark mode */
+    --accent: 25 95% 58%;
+    --accent-foreground: 209 50% 5%;
 
     /* Health Metrics Colors for dark mode */
-    --success: 142 76% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 60%;
-    --warning-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84% 70%;
-    --destructive-foreground: 210 40% 98%;
+    --success: 158 64% 52%;
+    --success-foreground: 0 0% 100%;
+    --warning: 43 96% 60%;
+    --warning-foreground: 209 50% 5%;
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 210 100% 60%;
+    /* Enhanced Semantic Colors for dark */
+    --recovery: 217 91% 65%;
+    --recovery-foreground: 0 0% 100%;
+    --energy: 25 95% 58%;
+    --energy-foreground: 209 50% 5%;
+    --body-comp: 271 81% 65%;
+    --body-comp-foreground: 0 0% 100%;
+
+    --border: 209 30% 18%;
+    --input: 209 30% 18%;
+    --ring: 217 91% 65%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -203,4 +219,40 @@ All colors MUST be HSL.
   .status-critical {
     @apply bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-500/30;
   }
+}
+
+/* Enhanced Typography System with Inter */
+.font-display {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Enhanced Interactive Elements */
+.btn-interactive {
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-interactive:active {
+  transform: translateY(0);
+}
+
+/* Typography & Base Styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  line-height: 1.6;
 }
