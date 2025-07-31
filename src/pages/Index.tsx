@@ -393,19 +393,31 @@ const Index = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
                           <span className="text-lg font-semibold text-blue-600">
-                            {whoopData?.sleep?.length > 0 ? `${Math.round(whoopData.sleep[whoopData.sleep.length - 1].sleep_efficiency_percentage)}` : 'N/A'}%
+                            {(() => {
+                              const latestSleep = whoopData?.sleep?.length > 0 ? whoopData.sleep[whoopData.sleep.length - 1] : null;
+                              console.log('Latest sleep data:', latestSleep);
+                              return latestSleep?.sleep_efficiency_percentage ? `${Math.round(latestSleep.sleep_efficiency_percentage)}` : 'N/A';
+                            })()}%
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Recovery Score</span>
                           <span className="text-lg font-semibold text-blue-600">
-                            {whoopData?.recovery?.length > 0 ? `${Math.round(whoopData.recovery[whoopData.recovery.length - 1].recovery_score)}` : 'N/A'}%
+                            {(() => {
+                              const latestRecovery = whoopData?.recovery?.length > 0 ? whoopData.recovery[whoopData.recovery.length - 1] : null;
+                              console.log('Latest recovery data:', latestRecovery);
+                              return latestRecovery?.recovery_score ? `${Math.round(latestRecovery.recovery_score)}` : 'N/A';
+                            })()}%
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Duration</span>
                           <span className="text-lg font-semibold text-blue-600">
-                            {whoopData?.sleep?.length > 0 ? `${(whoopData.sleep[whoopData.sleep.length - 1].total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1)}` : '7.5'}h
+                            {(() => {
+                              const latestSleep = whoopData?.sleep?.length > 0 ? whoopData.sleep[whoopData.sleep.length - 1] : null;
+                              console.log('Sleep duration calculation:', latestSleep?.total_sleep_time_milli);
+                              return latestSleep?.total_sleep_time_milli ? `${(latestSleep.total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1)}` : '7.5';
+                            })()}h
                           </span>
                         </div>
                       </div>
