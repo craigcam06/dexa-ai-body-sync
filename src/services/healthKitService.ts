@@ -1,14 +1,9 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
-import { CapacitorHealthkit } from '@perfood/capacitor-healthkit';
 
-// Check for HealthKit plugin availability
+// Simple demo mode for now - real HealthKit integration needs proper native setup
 function getHealthPlugin() {
-  try {
-    return CapacitorHealthkit;
-  } catch {
-    return null;
-  }
+  return null; // Simplified for stability
 }
 
 // Health data types we want to read
@@ -71,35 +66,9 @@ export class HealthKitService {
   }
 
   private async checkAvailability() {
-    try {
-      console.log('🔍 Checking HealthKit availability...');
-      console.log('🔍 Capacitor platform:', Capacitor.getPlatform());
-      console.log('🔍 Is native platform:', Capacitor.isNativePlatform());
-      
-      // Check if running on iOS
-      const isIOS = Capacitor.getPlatform() === 'ios';
-      const isNative = Capacitor.isNativePlatform();
-      
-      console.log('🔍 Is iOS:', isIOS);
-      console.log('🔍 Is Native:', isNative);
-      
-      // For now, assume available if we're on iOS or if the plugin exists
-      this._isAvailable = isIOS && isNative;
-      
-      // Also check if HealthKit plugin is available
-      const Health = getHealthPlugin();
-      if (Health) {
-        console.log('✅ HealthKit plugin found!');
-        this._isAvailable = true;
-      } else {
-        console.log('❌ HealthKit plugin not found');
-      }
-      
-      console.log('🔍 Final availability:', this._isAvailable);
-    } catch (error) {
-      console.log('❌ Error checking HealthKit availability:', error);
-      this._isAvailable = false;
-    }
+    // Simplified for now - always use demo data until proper setup
+    this._isAvailable = false;
+    console.log('HealthKit: Using demo mode for stability');
   }
 
   public get isAvailable(): boolean {
