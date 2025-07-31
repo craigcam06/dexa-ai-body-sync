@@ -10,7 +10,7 @@ const TARGETS = {
   protein: { min: 230, max: 250 },
   carbs: { min: 150, max: 180, fastedDays: { min: 120, max: 150 } },
   fats: { min: 60, max: 70 },
-  calories: { target: 2300, cutTarget: 2200 },
+  calories: { target: 2400, cutTarget: 2200 }, // 2,400 kcal on training days
   weight: { goal: "Lose 1.5-2.0 lbs/week" },
   sleep: { target: 7 }
 };
@@ -34,7 +34,7 @@ export function ProgressTracker() {
 
   // Mock today's progress - in real app this would come from nutrition logs
   const todayProgress = {
-    calories: 1850,
+    calories: 1950, // Current intake vs 2,400 target
     protein: 180,
     carbs: 125,
     fats: 45,
