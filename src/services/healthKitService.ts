@@ -1,26 +1,11 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
-
-// HealthKit plugin interface - will be available when real plugin is installed
-interface HealthKitPlugin {
-  requestAuthorization(options: { 
-    read: string[]; 
-    write?: string[]; 
-  }): Promise<{ granted: boolean }>;
-  
-  queryHKitSampleType(options: {
-    dataType: string;
-    startDate: string;
-    endDate: string;
-    limit?: number;
-  }): Promise<{ resultData: any[] }>;
-}
+import { CapacitorHealthkit } from '@perfood/capacitor-healthkit';
 
 // Check for HealthKit plugin availability
-function getHealthPlugin(): HealthKitPlugin | null {
+function getHealthPlugin() {
   try {
-    // @ts-ignore - This will be available when the actual plugin is installed
-    return window.Health || null;
+    return CapacitorHealthkit;
   } catch {
     return null;
   }
@@ -116,31 +101,27 @@ export class HealthKitService {
         // Request permissions using the actual HealthKit plugin
         const permissions = {
           read: [
-            'steps',
-            'weight',
-            'height',
-            'body_fat_percentage',
-            'lean_body_mass',
-            'heart_rate',
-            'active_energy_burned',
-            'basal_energy_burned',
-            'workout'
+            'HKQuantityTypeIdentifierStepCount',
+            'HKQuantityTypeIdentifierBodyMass',
+            'HKQuantityTypeIdentifierHeight',
+            'HKQuantityTypeIdentifierBodyFatPercentage',
+            'HKQuantityTypeIdentifierLeanBodyMass',
+            'HKQuantityTypeIdentifierHeartRate',
+            'HKQuantityTypeIdentifierActiveEnergyBurned',
+            'HKQuantityTypeIdentifierBasalEnergyBurned',
+            'HKWorkoutTypeIdentifier'
           ],
-          write: []
+          write: [],
+          all: []
         };
 
         const Health = getHealthPlugin();
         if (!Health) {
           throw new Error('HealthKit plugin not available');
         }
-        const result = await Health.requestAuthorization(permissions);
-        this.hasPermissions = result.granted;
-        console.log('HealthKit permissions result:', result);
-        
-        if (!result.granted) {
-          console.log('HealthKit permissions denied - using demo data');
-          this.hasPermissions = true; // Still allow demo data
-        }
+        await Health.requestAuthorization(permissions);
+        this.hasPermissions = true;
+        console.log('HealthKit permissions granted');
         
         return true;
       } catch (healthError) {
@@ -282,7 +263,7 @@ export class HealthKitService {
             throw new Error('HealthKit plugin not available');
           }
           const workoutData = await Health.queryHKitSampleType({
-            dataType: 'workout',
+            sampleName: 'HKWorkoutTypeIdentifier',
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
             limit: 100
@@ -388,7 +369,7 @@ export class HealthKitService {
             throw new Error('HealthKit plugin not available');
           }
           const heartRateData = await Health.queryHKitSampleType({
-            dataType: 'heart_rate',
+            sampleName: 'HKQuantityTypeIdentifierHeartRate',
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
             limit: days * 50
@@ -454,7 +435,7 @@ export class HealthKitService {
             throw new Error('HealthKit plugin not available');
           }
           const stepsData = await Health.queryHKitSampleType({
-            dataType: 'steps',
+            sampleName: 'HKQuantityTypeIdentifierStepCount',
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
             limit: days * 10
