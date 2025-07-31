@@ -185,67 +185,71 @@ export function PlanDashboard({ whoopData }: PlanDashboardProps) {
   const calorieProgress = todayProgress.calories_consumed ? (todayProgress.calories_consumed / plan.macros.calories_target) * 100 : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Plan Header */}
-      <Card>
-        <CardHeader>
+    <div className="space-y-4">
+      {/* Simplified Plan Header */}
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              {plan.plan_name}
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Target className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-display">{plan.plan_name}</span>
             </div>
-            <Badge variant="secondary">{plan.plan_type.toUpperCase()}</Badge>
+            <Badge variant="secondary" className="text-xs">{plan.plan_type.toUpperCase()}</Badge>
           </CardTitle>
-          <CardDescription>
-            Started {new Date(plan.start_date).toLocaleDateString()} • Day {Math.floor((new Date().getTime() - new Date(plan.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1}
+          <CardDescription className="text-sm">
+            Day {Math.floor((new Date().getTime() - new Date(plan.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1} • Started {new Date(plan.start_date).toLocaleDateString()}
           </CardDescription>
         </CardHeader>
       </Card>
 
-      {/* WHOOP Integration */}
+      {/* Streamlined WHOOP Integration */}
       {whoopInsights && (
-        <Card>
-          <CardHeader>
+        <Card className="shadow-card">
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Brain className="h-4 w-4" />
-              AI Coach Recommendations
+              <div className="w-6 h-6 bg-primary/10 rounded flex items-center justify-center">
+                <Brain className="h-3 w-3 text-primary" />
+              </div>
+              <span>Smart Recommendations</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="bg-muted/30 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+              <div className="bg-muted/20 rounded-lg p-3 space-y-1">
+                <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${
                     whoopInsights.recovery >= 70 ? 'bg-green-500' : 
                     whoopInsights.recovery >= 50 ? 'bg-yellow-500' : 'bg-red-500'
                   }`} />
-                  <span className="font-medium">Recovery: {whoopInsights.recovery}%</span>
+                  <span className="font-medium">Recovery {whoopInsights.recovery}%</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {whoopInsights.recovery >= 70 ? 'Ready for full intensity' : 
-                   whoopInsights.recovery >= 50 ? 'Moderate intensity recommended' : 'Consider active recovery'}
+                  {whoopInsights.recovery >= 70 ? 'Full intensity ready' : 
+                   whoopInsights.recovery >= 50 ? 'Moderate intensity' : 'Active recovery'}
                 </p>
               </div>
               
               {whoopInsights.sleepHours && (
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="h-3 w-3" />
-                    <span className="font-medium">Sleep: {whoopInsights.sleepHours}h</span>
+                <div className="bg-muted/20 rounded-lg p-3 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <span className="font-medium">Sleep {whoopInsights.sleepHours}h</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {parseFloat(whoopInsights.sleepHours) >= 7 ? 'Optimal recovery window' : 'May impact performance'}
+                    {parseFloat(whoopInsights.sleepHours) >= 7 ? 'Optimal recovery' : 'May impact performance'}
                   </p>
                 </div>
               )}
 
-              <div className="bg-muted/30 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Dumbbell className="h-3 w-3" />
+              <div className="bg-muted/20 rounded-lg p-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Dumbbell className="h-3 w-3 text-muted-foreground" />
                   <span className="font-medium">Today: {todayWorkout}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {whoopInsights.shouldTrainFasted ? 'Fasted training day' : 'Regular training window'}
+                  {whoopInsights.shouldTrainFasted ? 'Fasted training' : 'Regular window'}
                 </p>
               </div>
             </div>

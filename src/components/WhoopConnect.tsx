@@ -145,22 +145,24 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   if (!isAuthenticated && !csvData) {
     return (
       <Card className="shadow-card">
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-primary" />
-            🚀 WHOOP DATA CONNECTION V3
+            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Heart className="h-4 w-4 text-primary" />
+            </div>
+            <span className="font-display">Connect Health Data</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="csv" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="csv" className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
+            <TabsList className="grid w-full grid-cols-2 h-10">
+              <TabsTrigger value="csv" className="flex items-center gap-2 text-sm">
+                <Upload className="h-3 w-3" />
                 CSV Upload
               </TabsTrigger>
-              <TabsTrigger value="api" className="flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                API Connect
+              <TabsTrigger value="api" className="flex items-center gap-2 text-sm">
+                <Activity className="h-3 w-3" />
+                Live API
               </TabsTrigger>
             </TabsList>
             
@@ -168,12 +170,12 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
               <CSVUploader onDataUpdate={handleCSVDataUpdate} />
               
               {csvData && (
-                <div className="p-4 bg-success/10 rounded-lg border border-success/20">
-                  <p className="text-sm text-success font-medium flex items-center gap-2">
+                <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <p className="text-sm text-green-700 dark:text-green-300 font-medium flex items-center gap-2">
                     <CheckCircle className="h-4 w-4" />
-                    CSV Data Loaded Successfully!
+                    Data Loaded Successfully
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                     Sleep: {csvData.sleep.length} • Recovery: {csvData.recovery.length} • 
                     Workouts: {csvData.workouts.length} • Daily: {csvData.daily.length}
                   </p>
@@ -183,27 +185,25 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
             
             <TabsContent value="api" className="space-y-4">
               <div className="text-center py-6">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <Activity className="h-8 w-8 text-primary-foreground" />
+                <div className="w-12 h-12 mx-auto mb-3 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="font-semibold mb-2">✨ AUTHENTIC WHOOP API CONNECTION</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Connect directly to your Whoop account for live data sync
+                <h3 className="font-medium mb-2 text-sm">Live WHOOP Connection</h3>
+                <p className="text-xs text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Connect directly to your WHOOP account for real-time data sync
                 </p>
                 
-                <div className="mt-4 space-y-3">
-                  <Button 
-                    onClick={connectWhoop}
-                    disabled={isLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {isLoading ? '🔄 Connecting...' : buttonText}
-                  </Button>
-                  
-                  <p className="text-xs text-muted-foreground">
-                    Secure OAuth authentication - no passwords stored
-                  </p>
-                </div>
+                <Button 
+                  onClick={connectWhoop}
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10 btn-interactive"
+                >
+                  {isLoading ? '🔄 Connecting...' : '🔗 Connect WHOOP'}
+                </Button>
+                
+                <p className="text-xs text-muted-foreground mt-3">
+                  Secure OAuth • No passwords stored
+                </p>
               </div>
             </TabsContent>
           </Tabs>

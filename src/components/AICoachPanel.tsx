@@ -191,27 +191,28 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
 
   return (
     <div className="space-y-6">
-      {/* AI Chat */}
-      <Card>
-        <CardHeader>
+      {/* AI Chat - Ultra-Clean */}
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              AI Health Coach
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Brain className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-display">AI Health Coach</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help hover:text-foreground transition-colors" />
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-sm">
+                  <TooltipContent side="bottom" className="max-w-xs">
                     <div className="space-y-2">
-                      <div className="font-medium">AI Health Coach Features</div>
-                      <div className="text-sm space-y-1">
-                        <p>• Analyzes your personal health data (WHOOP, sleep, workouts)</p>
+                      <div className="font-medium text-sm">Personal Health Intelligence</div>
+                      <div className="text-xs space-y-1 text-muted-foreground">
+                        <p>• Analyzes your health data patterns</p>
                         <p>• Provides personalized recommendations</p>
-                        <p>• Answers questions about recovery, training, nutrition</p>
-                        <p>• Adapts advice based on your Craig Campbell protocol (if active)</p>
-                        <p>• Use quick actions or ask custom questions</p>
+                        <p>• Adapts to your specific protocols</p>
+                        <p>• Available 24/7 for health questions</p>
                       </div>
                     </div>
                   </TooltipContent>
@@ -219,22 +220,19 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
               </TooltipProvider>
             </div>
           </CardTitle>
-          <CardDescription>
-            Get personalized insights and recommendations based on your health data
+          <CardDescription className="text-sm">
+            Personalized insights from your health data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Enhanced Quick Actions */}
+          {/* Streamlined Quick Actions */}
           {whoopData && chatMessages.length === 0 && (
-            <div className="space-y-6">
-              <div className="text-center space-y-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">🤖 {planData ? 'Craig Campbell Protocol' : 'AI Health Coach'} Ready</p>
-                  <p className="text-xs text-muted-foreground">
-                    {planData ? 'Personalized coaching for your aggressive cut plan' : 'Personalized recommendations based on your data'}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            <div className="space-y-4">
+              <div className="text-center space-y-2">
+                <p className="text-sm font-medium">
+                  {planData ? '🎯 Protocol Coaching Ready' : '🤖 Health Intelligence Ready'}
+                </p>
+                <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Heart className="h-3 w-3 text-red-500" />
                     <span>Recovery</span>
@@ -255,23 +253,23 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
               </div>
               
               {quickActionCategories.map((category) => (
-                <div key={category.title} className="space-y-3">
-                  <h3 className="text-sm font-medium text-muted-foreground">{category.title}</h3>
-                  <div className="grid grid-cols-1 gap-2">
+                <div key={category.title} className="space-y-2">
+                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{category.title}</h3>
+                  <div className="grid grid-cols-1 gap-1">
                     {category.actions.map((action) => (
                       <Button
                         key={action.question}
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleQuickAction(action.question)}
-                        className="text-left justify-start h-auto p-3 space-y-1"
+                        className="text-left justify-start h-auto p-3 hover:bg-muted/50 transition-colors"
                         disabled={isAnalyzing}
                       >
-                        <div className="flex items-center gap-2 w-full">
-                          <action.icon className={`h-4 w-4 ${action.color} flex-shrink-0`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{action.question}</p>
-                            <p className="text-xs text-muted-foreground">{action.description}</p>
+                        <div className="flex items-start gap-3 w-full">
+                          <action.icon className={`h-4 w-4 ${action.color} flex-shrink-0 mt-0.5`} />
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <p className="text-sm font-medium leading-tight">{action.question}</p>
+                            <p className="text-xs text-muted-foreground leading-tight">{action.description}</p>
                           </div>
                         </div>
                       </Button>
@@ -279,12 +277,6 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
                   </div>
                 </div>
               ))}
-              
-              <div className="border-t pt-3">
-                <p className="text-xs text-muted-foreground text-center">
-                  💡 Or ask any specific question about your health data below
-                </p>
-              </div>
             </div>
           )}
 
