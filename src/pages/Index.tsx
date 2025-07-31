@@ -1,4 +1,5 @@
 const Index = () => {
+  console.log('Index component rendering...');
   return (
     <div style={{
       minHeight: '100vh',
