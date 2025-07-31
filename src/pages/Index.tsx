@@ -66,7 +66,11 @@ const Index = () => {
     const savedData = localStorage.getItem('whoopData');
     if (savedData) {
       try {
-        setWhoopData(JSON.parse(savedData));
+        const parsed = JSON.parse(savedData);
+        console.log('Loaded whoopData:', parsed);
+        console.log('Sleep data:', parsed?.sleep);
+        console.log('Recovery data:', parsed?.recovery);
+        setWhoopData(parsed);
       } catch (error) {
         console.error('Error parsing Whoop data:', error);
       }
