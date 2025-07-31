@@ -245,21 +245,19 @@ const Index = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
                           <span className="text-lg font-semibold text-blue-600">
-                            {whoopData?.sleep?.[whoopData.sleep.length - 1]?.sleep_efficiency_percentage?.toFixed(0) || 'N/A'}%
+                            {(whoopData as any)?.sleep?.[0]?.efficiency || 'N/A'}%
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Recovery Score</span>
                           <span className="text-lg font-semibold text-blue-600">
-                            {whoopData?.recovery?.[whoopData.recovery.length - 1]?.recovery_score?.toFixed(0) || 'N/A'}%
+                            {(whoopData as any)?.recovery?.[0]?.score || 'N/A'}%
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Duration</span>
                           <span className="text-lg font-semibold text-blue-600">
-                            {whoopData?.sleep?.[whoopData.sleep.length - 1]?.total_sleep_time_milli 
-                              ? `${(whoopData.sleep[whoopData.sleep.length - 1].total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1)}h`
-                              : '7.5h'}
+                            {(whoopData as any)?.sleep?.[0]?.duration_hours?.toFixed(1) || '7.5'}h
                           </span>
                         </div>
                       </div>
