@@ -20,14 +20,14 @@ serve(async (req) => {
     
     if (error) {
       console.error('OAuth error from Whoop:', error)
-      // Use HTTPS for redirect to avoid mixed content issues
-      return Response.redirect(`https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com/?auth=error`)
+      // Redirect to current project URL
+      return Response.redirect(`${req.headers.get('origin') || 'https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com'}/?auth=error`)
     }
     
     if (code) {
       console.log('Received authorization code, redirecting to frontend')
-      // Use HTTPS for redirect to avoid mixed content issues
-      return Response.redirect(`https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com/?code=${code}`)
+      // Redirect to current project URL with the code
+      return Response.redirect(`${req.headers.get('origin') || 'https://ca5e6ad9-0815-453c-b8fe-ca7faca99c8d.lovableproject.com'}/?code=${code}`)
     }
     
     return new Response(

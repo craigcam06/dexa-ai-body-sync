@@ -125,15 +125,17 @@ class WhoopService {
     });
 
     const authUrl = `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
-    console.log('🚨 CRITICAL: Using Client ID:', this.authConfig.clientId);
-    console.log('🚨 If you get "invalid_client" error, this Client ID does not exist in Whoop Developer Dashboard');
-    console.log('🚨 You need to create an app at: https://developer-dashboard.whoop.com/');
-    console.log('Generated Whoop OAuth URL:', authUrl);
-    console.log('OAuth params:', {
+    console.log('🔗 Generated WHOOP OAuth URL:', authUrl);
+    console.log('📋 OAuth Configuration:', {
       client_id: this.authConfig.clientId,
       redirect_uri: this.authConfig.redirectUri,
-      scopes: this.authConfig.scopes
+      scopes: this.authConfig.scopes,
+      response_type: 'code'
     });
+    console.log('⚠️ If redirecting to WHOOP login instead of OAuth consent:');
+    console.log('   1. Check that Client ID exists in WHOOP Developer Dashboard');
+    console.log('   2. Verify redirect URI matches exactly in WHOOP app settings');
+    console.log('   3. Ensure app is configured for the correct environment');
     
     return authUrl;
   }
