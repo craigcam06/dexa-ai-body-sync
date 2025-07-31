@@ -289,66 +289,18 @@ export function PlanDashboard({ whoopData }: PlanDashboardProps) {
             </div>
           </div>
 
-          {/* Quick Log Inputs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div>
-              <Label className="text-xs">Weight (lbs)</Label>
-              <Input
-                type="number"
-                value={todayProgress.weight || ''}
-                onChange={(e) => setTodayProgress({...todayProgress, weight: parseFloat(e.target.value)})}
-                placeholder="185"
-                className="h-8 text-sm"
-              />
+          {/* Auto-tracked via integrations - no manual inputs needed */}
+          <div className="bg-muted/10 rounded-lg p-3 border border-dashed">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span>Auto-syncing from integrations</span>
+              </div>
             </div>
-            
-            <div>
-              <Label className="text-xs">Protein (g)</Label>
-              <Input
-                type="number"
-                value={todayProgress.protein_consumed || ''}
-                onChange={(e) => setTodayProgress({...todayProgress, protein_consumed: parseInt(e.target.value)})}
-                placeholder="240"
-                className="h-8 text-sm"
-              />
-            </div>
-            
-            <div>
-              <Label className="text-xs">Calories</Label>
-              <Input
-                type="number"
-                value={todayProgress.calories_consumed || ''}
-                onChange={(e) => setTodayProgress({...todayProgress, calories_consumed: parseInt(e.target.value)})}
-                placeholder="2300"
-                className="h-8 text-sm"
-              />
-            </div>
-
-            <div className="flex items-end">
-              <Button
-                variant={todayProgress.workout_completed ? "default" : "outline"}
-                size="sm"
-                onClick={() => setTodayProgress({
-                  ...todayProgress, 
-                  workout_completed: !todayProgress.workout_completed,
-                  workout_type: todayWorkout
-                })}
-                className="h-8 text-xs"
-              >
-                {todayProgress.workout_completed ? <CheckCircle className="h-3 w-3 mr-1" /> : <Dumbbell className="h-3 w-3 mr-1" />}
-                Workout
-              </Button>
-            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Weight & workouts from Apple Health/Whoop • Nutrition from food logging
+            </p>
           </div>
-
-          <Button 
-            onClick={saveTodayProgress}
-            disabled={isSaving}
-            size="sm"
-            className="w-full"
-          >
-            {isSaving ? 'Saving...' : 'Save Progress'}
-          </Button>
         </CardContent>
       </Card>
 
