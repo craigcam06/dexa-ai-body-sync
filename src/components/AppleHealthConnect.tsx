@@ -6,6 +6,7 @@ import { Heart, Activity, Scale, Footprints, RefreshCw, Database, TrendingUp, Ch
 import { HealthKitService, HealthData } from '@/services/healthKitService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { HealthKitDemo } from './HealthKitDemo';
 
 interface AppleHealthConnectProps {
   onDataUpdate?: (data: HealthData) => void;
@@ -168,6 +169,8 @@ export const AppleHealthConnect: React.FC<AppleHealthConnectProps> = ({ onDataUp
 
   return (
     <div className="space-y-6">
+      <HealthKitDemo />
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

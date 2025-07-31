@@ -39,6 +39,7 @@ import { PlanSetup } from "./PlanSetup";
 import { PlanDashboard } from "./PlanDashboard";
 import { MobileHealthSync } from "./MobileHealthSync";
 import { MobileFeatures } from "./MobileFeatures";
+import { DevelopmentProgress } from "./DevelopmentProgress";
 import { calculateTDEE, calculateStrengthMetrics, DEFAULT_USER_PROFILE } from "@/utils/healthMetrics";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -187,6 +188,7 @@ export const HealthDashboard = () => {
     { id: "dashboard", label: "Dashboard", icon: Activity },
     { id: "connect", label: "Connect", icon: Settings },
     { id: "mobile", label: "Mobile", icon: Bell },
+    { id: "progress", label: "Progress", icon: TrendingUp },
     { id: "optimize", label: "Optimize", icon: Brain }
   ];
 
@@ -226,6 +228,20 @@ export const HealthDashboard = () => {
                 <div className="animate-fade-in-up [animation-delay:200ms]">
                   <MobileHealthSync />
                 </div>
+              </div>
+            </div>
+          </div>
+        );
+      case "progress":
+        return (
+          <div className="space-y-8">
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-primary" />
+                Development Progress
+              </h2>
+              <div className="animate-fade-in-up [animation-delay:100ms]">
+                <DevelopmentProgress />
               </div>
             </div>
           </div>
