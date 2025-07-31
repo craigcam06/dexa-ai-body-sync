@@ -29,7 +29,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
 import { WhoopConnect } from '@/components/WhoopConnect';
-import { NutritionLogger } from '@/components/NutritionLogger';
+import { EnhancedNutritionLogger } from '@/components/EnhancedNutritionLogger';
+import { NLPMealLogger } from '@/components/NLPMealLogger';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SmartLoading } from '@/components/ui/smart-loading';
@@ -586,7 +587,10 @@ const Index = () => {
             {/* Plan Tab */}
             <TabsContent value="plan" className="space-y-6">
               <ProgressTracker />
-              <NutritionLogger />
+              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                <EnhancedNutritionLogger />
+                <NLPMealLogger />
+              </div>
               <PlanDashboard />
             </TabsContent>
 
