@@ -185,9 +185,9 @@ const Index = () => {
             <TabsContent value="dashboard" className="space-y-6">
 
               {/* Essential Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>*]:min-h-[400px] [&>*]:flex [&>*]:flex-col">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ gridAutoRows: '1fr' }}>
                 {/* Overall Health Score */}
-                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 flex flex-col h-full">
+                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 h-full flex flex-col">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
                       <Heart className="w-5 h-5" />
@@ -225,7 +225,7 @@ const Index = () => {
 
                 {/* Recovery Health */}
                 <Collapsible open={expandedCards.recovery} onOpenChange={() => toggleCard('recovery')}>
-                  <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800">
+                  <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800 h-full flex flex-col">
                     <CollapsibleTrigger asChild>
                       <CardHeader className="cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors">
                         <CardTitle className="flex items-center justify-between text-blue-800 dark:text-blue-200">
@@ -293,7 +293,7 @@ const Index = () => {
 
                 {/* Energy Balance */}
                 <Collapsible open={expandedCards.energy} onOpenChange={() => toggleCard('energy')}>
-                  <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800">
+                  <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800 h-full flex flex-col">
                     <CollapsibleTrigger asChild>
                       <CardHeader className="cursor-pointer hover:bg-orange-100/50 dark:hover:bg-orange-900/30 transition-colors">
                         <CardTitle className="flex items-center justify-between text-orange-800 dark:text-orange-200">
@@ -365,7 +365,7 @@ const Index = () => {
 
                 {/* Body Composition Progress */}
                 <Collapsible open={expandedCards.body} onOpenChange={() => toggleCard('body')}>
-                  <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
+                  <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800 h-full flex flex-col">
                     <CollapsibleTrigger asChild>
                       <CardHeader className="cursor-pointer hover:bg-purple-100/50 dark:hover:bg-purple-900/30 transition-colors">
                         <CardTitle className="flex items-center justify-between text-purple-800 dark:text-purple-200">
