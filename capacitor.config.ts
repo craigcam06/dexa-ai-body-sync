@@ -21,6 +21,9 @@ const config: CapacitorConfig = {
       sound: "beep.wav"
     }
   },
+  ios: {
+    scheme: "App"
+  }
 };
 
 export default config;
