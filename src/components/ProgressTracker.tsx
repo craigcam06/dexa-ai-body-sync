@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Target, TrendingUp, Zap, CheckCircle, Clock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Calendar, Target, TrendingUp, Zap, CheckCircle, Clock, Info } from "lucide-react";
 
 // Your specific targets from the plan
 const TARGETS = {
@@ -59,19 +60,41 @@ export function ProgressTracker() {
         <CardTitle className="flex items-center space-x-2">
           <Target className="w-5 h-5" />
           <span>Progress Tracking</span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Track daily macros and weekly progress against your specific targets</p>
+            </TooltipContent>
+          </Tooltip>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="daily" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="daily" className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4" />
-              <span>Daily</span>
-            </TabsTrigger>
-            <TabsTrigger value="weekly" className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4" />
-              <span>Weekly</span>
-            </TabsTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="daily" className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Daily</span>
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Today's macro progress and workout completion</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="weekly" className="flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>Weekly</span>
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Weekly averages and goal progress overview</p>
+              </TooltipContent>
+            </Tooltip>
           </TabsList>
 
           {/* Daily Progress */}
