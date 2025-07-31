@@ -9,6 +9,7 @@ import { Heart, Activity, Moon, Zap, AlertCircle, CheckCircle, Upload, ExternalL
 import { whoopService, WhoopRecovery, WhoopSleep, WhoopWorkout } from "@/services/whoopApi";
 import { CSVUploader } from "./CSVUploader";
 import { ParsedWhoopData } from "@/types/whoopData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WhoopConnectProps {
   onDataUpdate?: (data: any) => void;
@@ -31,7 +32,95 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     workouts: []
   });
 
-  const handleCSVDataUpdate = (data: ParsedWhoopData) => {
+  // Save CSV data to database
+  const saveCSVDataToDatabase = async (data: ParsedWhoopData) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user found');
+        return;
+      }
+
+      // Save recovery data
+      for (const recovery of data.recovery) {
+        await supabase.from('whoop_data').upsert({
+          user_id: user.id,
+          data_type: 'recovery',
+          date: recovery.date,
+          data: recovery as any
+        });
+      }
+
+      // Save sleep data
+      for (const sleep of data.sleep) {
+        await supabase.from('whoop_data').upsert({
+          user_id: user.id,
+          data_type: 'sleep',
+          date: sleep.date,
+          data: sleep as any
+        });
+      }
+
+      // Save workout data
+      for (const workout of data.workouts) {
+        await supabase.from('whoop_data').upsert({
+          user_id: user.id,
+          data_type: 'workout',
+          date: workout.date,
+          data: workout as any
+        });
+      }
+
+      console.log('✅ CSV data saved to database successfully');
+    } catch (error) {
+      console.error('❌ Failed to save CSV data to database:', error);
+    }
+  };
+
+  // Load CSV data from database
+  const loadCSVDataFromDatabase = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: whoopRecords, error } = await supabase
+        .from('whoop_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Failed to load CSV data from database:', error);
+        return;
+      }
+
+      if (whoopRecords && whoopRecords.length > 0) {
+        // Group data by type with proper type casting
+        const recovery = whoopRecords.filter(r => r.data_type === 'recovery').map(r => r.data as any);
+        const sleep = whoopRecords.filter(r => r.data_type === 'sleep').map(r => r.data as any);
+        const workouts = whoopRecords.filter(r => r.data_type === 'workout').map(r => r.data as any);
+        const daily = whoopRecords.filter(r => r.data_type === 'daily').map(r => r.data as any);
+        const journal = whoopRecords.filter(r => r.data_type === 'journal').map(r => r.data as any);
+
+        const loadedData: ParsedWhoopData = {
+          recovery,
+          sleep,
+          workouts,
+          daily,
+          journal,
+          stronglifts: []
+        };
+
+        console.log('✅ Loaded CSV data from database:', loadedData);
+        setCsvData(loadedData);
+        onDataUpdate?.(loadedData);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load CSV data from database:', error);
+    }
+  };
+
+  const handleCSVDataUpdate = async (data: ParsedWhoopData) => {
     console.log('🔍 WhoopConnect CSV data received:', {
       recovery: data.recovery.map(r => ({ date: r.date, score: r.recovery_score })),
       sleep: data.sleep.map(s => ({ date: s.date, score: s.sleep_score })),
@@ -40,6 +129,9 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     });
     setCsvData(data);
     onDataUpdate?.(data);
+    
+    // Save to database for persistence
+    await saveCSVDataToDatabase(data);
   };
 
   useEffect(() => {
@@ -47,6 +139,9 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     const isAuth = whoopService.isAuthenticated();
     console.log('Is authenticated:', isAuth);
     setIsAuthenticated(isAuth);
+    
+    // Load any saved CSV data from database
+    loadCSVDataFromDatabase();
     
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
