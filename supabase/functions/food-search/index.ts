@@ -128,13 +128,99 @@ async function searchFatSecretFoods(query: string, fatSecretApiKey?: string): Pr
   console.log(`Searching FatSecret for: ${query}`);
   
   try {
-    // Note: FatSecret requires OAuth 1.0 authentication which is complex
-    // For now, we'll return empty array and focus on USDA
-    // In production, you'd implement proper OAuth signing
-    console.log('FatSecret integration pending OAuth implementation');
-    return [];
+    // FatSecret regular search endpoint (simpler than OAuth for basic search)
+    const response = await fetch('https://platform.fatsecret.com/rest/foods/search/v1', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${fatSecretApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        search_expression: query,
+        format: 'json',
+        max_results: 10
+      })
+    });
+
+    if (!response.ok) {
+      console.error('FatSecret API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    console.log(`FatSecret returned ${data.foods?.food?.length || 0} results`);
+    
+    return (data.foods?.food || []).map((food: any) => ({
+      external_id: food.food_id.toString(),
+      api_source: 'fatsecret' as const,
+      name: food.food_name,
+      brand: food.brand_name,
+      calories_per_100g: parseFloat(food.food_description?.match(/Calories: (\d+)/)?.[1] || '0'),
+      protein_per_100g: parseFloat(food.food_description?.match(/Protein: ([\d.]+)/)?.[1] || '0'),
+      carbs_per_100g: parseFloat(food.food_description?.match(/Carbs: ([\d.]+)/)?.[1] || '0'),
+      fats_per_100g: parseFloat(food.food_description?.match(/Fat: ([\d.]+)/)?.[1] || '0'),
+      serving_size_g: 100, // Default, would need detailed API call for actual serving
+      search_terms: [food.food_name.toLowerCase(), ...(food.brand_name ? [food.brand_name.toLowerCase()] : [])]
+    }));
   } catch (error) {
     console.error('Error searching FatSecret:', error);
+    return [];
+  }
+}
+
+async function parseFatSecretNLP(userInput: string, fatSecretApiKey?: string): Promise<ProcessedFoodItem[]> {
+  if (!fatSecretApiKey) {
+    console.log('FatSecret API key not provided, skipping NLP');
+    return [];
+  }
+  
+  console.log(`Using FatSecret NLP for: ${userInput}`);
+  
+  try {
+    const response = await fetch('https://platform.fatsecret.com/rest/natural-language-processing/v1', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${fatSecretApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_input: userInput,
+        region: 'US',
+        language: 'en',
+        include_food_data: true
+      })
+    });
+
+    if (!response.ok) {
+      console.error('FatSecret NLP API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    console.log(`FatSecret NLP parsed ${data.food_response?.length || 0} food items`);
+    
+    return (data.food_response || []).map((item: any) => {
+      const nutrition = item.eaten?.total_nutritional_content || {};
+      const suggestedServing = item.suggested_serving || {};
+      
+      return {
+        external_id: item.food_id.toString(),
+        api_source: 'fatsecret' as const,
+        name: item.food_entry_name,
+        calories_per_100g: parseFloat(nutrition.calories || '0') * (100 / (suggestedServing.metric_measure_amount || 100)),
+        protein_per_100g: parseFloat(nutrition.protein || '0') * (100 / (suggestedServing.metric_measure_amount || 100)),
+        carbs_per_100g: parseFloat(nutrition.carbohydrate || '0') * (100 / (suggestedServing.metric_measure_amount || 100)),
+        fats_per_100g: parseFloat(nutrition.fat || '0') * (100 / (suggestedServing.metric_measure_amount || 100)),
+        fiber_per_100g: parseFloat(nutrition.fiber || '0') * (100 / (suggestedServing.metric_measure_amount || 100)),
+        sugar_per_100g: parseFloat(nutrition.sugar || '0') * (100 / (suggestedServing.metric_measure_amount || 100)),
+        sodium_per_100g: parseFloat(nutrition.sodium || '0') / 1000 * (100 / (suggestedServing.metric_measure_amount || 100)), // Convert mg to g
+        serving_size_g: suggestedServing.metric_measure_amount || 100,
+        serving_description: suggestedServing.serving_description || suggestedServing.custom_serving_description,
+        search_terms: [item.food_entry_name.toLowerCase()]
+      };
+    });
+  } catch (error) {
+    console.error('Error with FatSecret NLP:', error);
     return [];
   }
 }
@@ -155,7 +241,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query, barcode, cache = true } = await req.json();
+    const { query, barcode, nlp_mode = false, cache = true } = await req.json();
     
     if (!query && !barcode) {
       return new Response(
@@ -214,13 +300,18 @@ serve(async (req) => {
         }
       }
 
-      // Search APIs in parallel
-      const [usdaResults, fatSecretResults] = await Promise.all([
-        searchUSDAFoods(query),
-        searchFatSecretFoods(query, fatSecretApiKey)
-      ]);
-      
-      results = [...usdaResults, ...fatSecretResults];
+      if (nlp_mode) {
+        // Use FatSecret NLP for natural language parsing
+        results = await parseFatSecretNLP(query, fatSecretApiKey);
+      } else {
+        // Search APIs in parallel
+        const [usdaResults, fatSecretResults] = await Promise.all([
+          searchUSDAFoods(query),
+          searchFatSecretFoods(query, fatSecretApiKey)
+        ]);
+        
+        results = [...usdaResults, ...fatSecretResults];
+      }
     }
 
     // Cache results if enabled
