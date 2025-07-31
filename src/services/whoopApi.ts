@@ -125,17 +125,30 @@ class WhoopService {
     });
 
     const authUrl = `${this.baseUrl}/oauth/oauth2/auth?${params.toString()}`;
-    console.log('🔗 Generated WHOOP OAuth URL:', authUrl);
-    console.log('📋 OAuth Configuration:', {
-      client_id: this.authConfig.clientId,
-      redirect_uri: this.authConfig.redirectUri,
-      scopes: this.authConfig.scopes,
-      response_type: 'code'
+    
+    // Detailed debugging for OAuth flow
+    console.log('🚨 WHOOP OAuth Debug Information:');
+    console.log('Generated URL:', authUrl);
+    console.log('URL Breakdown:');
+    console.log('  - Base URL:', this.baseUrl);
+    console.log('  - Client ID:', this.authConfig.clientId);
+    console.log('  - Redirect URI:', this.authConfig.redirectUri);
+    console.log('  - Scope:', this.authConfig.scopes.join(' '));
+    console.log('  - Response Type:', 'code');
+    console.log('  - State:', params.get('state'));
+    
+    // Check each URL parameter
+    console.log('🔍 URL Parameters:');
+    params.forEach((value, key) => {
+      console.log(`  ${key}: ${value}`);
     });
-    console.log('⚠️ If redirecting to WHOOP login instead of OAuth consent:');
-    console.log('   1. Check that Client ID exists in WHOOP Developer Dashboard');
-    console.log('   2. Verify redirect URI matches exactly in WHOOP app settings');
-    console.log('   3. Ensure app is configured for the correct environment');
+    
+    console.log('⚠️ Expected behavior: Should show OAuth consent screen with scopes');
+    console.log('⚠️ If you see WHOOP login page instead, possible issues:');
+    console.log('   1. WHOOP app might not be in correct mode (Development vs Production)');
+    console.log('   2. Client ID might not match exactly');
+    console.log('   3. App might need production approval');
+    console.log('   4. User might need to be added as test user');
     
     return authUrl;
   }
