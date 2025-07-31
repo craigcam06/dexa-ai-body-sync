@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,10 +23,53 @@ import {
 import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
 import { WhoopConnect } from '@/components/WhoopConnect';
+import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
+import { calculateTDEE, DEFAULT_USER_PROFILE } from '@/utils/healthMetrics';
+import { ParsedWhoopData } from '@/types/whoopData';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  const [whoopData, setWhoopData] = useState<ParsedWhoopData | undefined>();
+
+  // Load Whoop data from localStorage
+  useEffect(() => {
+    const savedData = localStorage.getItem('whoopData');
+    if (savedData) {
+      try {
+        setWhoopData(JSON.parse(savedData));
+      } catch (error) {
+        console.error('Error parsing Whoop data:', error);
+      }
+    }
+  }, []);
+
+  // Calculate health metrics
+  const healthMetrics = useMemo(() => {
+    // Calculate TDEE
+    const tdeeData = calculateTDEE(
+      DEFAULT_USER_PROFILE.weight,
+      DEFAULT_USER_PROFILE.height,
+      DEFAULT_USER_PROFILE.age,
+      DEFAULT_USER_PROFILE.gender,
+      whoopData?.daily,
+      whoopData?.stronglifts
+    );
+
+    // Get energy and body composition data
+    const energyData = getMockEnergyData(tdeeData);
+    const bodyData = getMockBodyCompositionData();
+
+    // Calculate overall health score
+    const healthScore = calculateOverallHealthScore(whoopData, energyData, bodyData);
+
+    return {
+      tdeeData,
+      energyData,
+      bodyData,
+      healthScore
+    };
+  }, [whoopData]);
 
   const toggleCard = (cardId: string) => {
     setExpandedCards(prev => ({
@@ -108,13 +151,20 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold text-green-600 mb-2">87/100</div>
-                  <Progress value={87} className="mt-3" />
-                  <div className="flex items-center justify-between mt-3 text-sm text-green-700 dark:text-green-300">
-                    <span>Recovery: 85%</span>
-                    <span>Energy: -300 cal</span>
-                    <span>On track</span>
+                  <div className="text-4xl font-bold text-green-600 mb-2">
+                    {healthMetrics.healthScore.totalScore}/100
                   </div>
+                  <Progress value={healthMetrics.healthScore.totalScore} className="mt-3" />
+                  <div className="flex items-center justify-between mt-3 text-sm text-green-700 dark:text-green-300">
+                    <span>Recovery: {healthMetrics.healthScore.components.recovery.score}%</span>
+                    <span>Energy: {healthMetrics.energyData.actualDeficit} cal</span>
+                    <span>{healthMetrics.healthScore.totalScore >= 85 ? 'Excellent' : healthMetrics.healthScore.totalScore >= 70 ? 'Good' : 'Needs attention'}</span>
+                  </div>
+                  {healthMetrics.healthScore.insights.length > 0 && (
+                    <div className="mt-3 text-xs text-green-600 dark:text-green-400">
+                      💡 {healthMetrics.healthScore.insights[0]}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -139,15 +189,23 @@ const Index = () => {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Score</span>
-                        <span className="text-lg font-semibold text-blue-600">85%</span>
+                        <span className="text-lg font-semibold text-blue-600">
+                          {whoopData?.sleep?.[whoopData.sleep.length - 1]?.sleep_efficiency_percentage?.toFixed(0) || 'N/A'}%
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-blue-700 dark:text-blue-300">Recovery Score</span>
-                        <span className="text-lg font-semibold text-blue-600">78%</span>
+                        <span className="text-lg font-semibold text-blue-600">
+                          {whoopData?.recovery?.[whoopData.recovery.length - 1]?.recovery_score?.toFixed(0) || 'N/A'}%
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-blue-700 dark:text-blue-300">Sleep Duration</span>
-                        <span className="text-lg font-semibold text-blue-600">7.5h</span>
+                        <span className="text-lg font-semibold text-blue-600">
+                          {whoopData?.sleep?.[whoopData.sleep.length - 1]?.total_sleep_time_milli 
+                            ? `${(whoopData.sleep[whoopData.sleep.length - 1].total_sleep_time_milli / (1000 * 60 * 60)).toFixed(1)}h`
+                            : '7.5h'}
+                        </span>
                       </div>
                     </div>
                     
@@ -199,15 +257,27 @@ const Index = () => {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-orange-700 dark:text-orange-300">TDEE</span>
-                        <span className="text-lg font-semibold text-orange-600">2,847 cal</span>
+                        <span className="text-lg font-semibold text-orange-600">
+                          {healthMetrics.tdeeData.tdee.toLocaleString()} cal
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-orange-700 dark:text-orange-300">Intake</span>
-                        <span className="text-lg font-semibold text-orange-600">2,547 cal</span>
+                        <span className="text-lg font-semibold text-orange-600">
+                          {healthMetrics.energyData.intake.toLocaleString()} cal
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-orange-700 dark:text-orange-300">Daily Deficit</span>
-                        <span className="text-lg font-semibold text-green-600">-300 cal</span>
+                        <span className={`text-lg font-semibold ${healthMetrics.energyData.actualDeficit < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {healthMetrics.energyData.actualDeficit > 0 ? '+' : ''}{healthMetrics.energyData.actualDeficit} cal
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-orange-700 dark:text-orange-300">Activity Level</span>
+                        <span className="text-sm font-medium text-orange-600">
+                          {healthMetrics.tdeeData.activityLevel}
+                        </span>
                       </div>
                       <Badge variant="secondary" className="mt-2">Connect MyFitnessPal</Badge>
                     </div>
