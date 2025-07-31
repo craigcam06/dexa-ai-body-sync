@@ -306,33 +306,75 @@ export const MobileFeatures: React.FC = () => {
                   <div className="flex items-center gap-4 ml-4">
                     <Label>Time:</Label>
                     <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min="0"
-                        max="23"
-                        value={notificationSettings.insightTime.hour}
-                        onChange={(e) => updateNotificationSettings({
+                      <Select
+                        value={notificationSettings.insightTime.hour.toString()}
+                        onValueChange={(value) => updateNotificationSettings({
                           insightTime: {
                             ...notificationSettings.insightTime,
-                            hour: parseInt(e.target.value)
+                            hour: parseInt(value)
                           }
                         })}
-                        className="w-16"
-                      />
+                      >
+                        <SelectTrigger className="w-16">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
+                            <SelectItem key={hour} value={hour.toString()}>
+                              {hour}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <span>:</span>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={notificationSettings.insightTime.minute}
-                        onChange={(e) => updateNotificationSettings({
+                      <Select
+                        value={notificationSettings.insightTime.minute.toString().padStart(2, '0')}
+                        onValueChange={(value) => updateNotificationSettings({
                           insightTime: {
                             ...notificationSettings.insightTime,
-                            minute: parseInt(e.target.value)
+                            minute: parseInt(value)
                           }
                         })}
-                        className="w-16"
-                      />
+                      >
+                        <SelectTrigger className="w-16">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['00', '15', '30', '45'].map((minute) => (
+                            <SelectItem key={minute} value={minute}>
+                              {minute}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={notificationSettings.insightTime.hour >= 12 ? 'PM' : 'AM'}
+                        onValueChange={(value) => {
+                          const currentHour = notificationSettings.insightTime.hour;
+                          let newHour = currentHour;
+                          
+                          if (value === 'AM' && currentHour >= 12) {
+                            newHour = currentHour - 12;
+                          } else if (value === 'PM' && currentHour < 12) {
+                            newHour = currentHour + 12;
+                          }
+                          
+                          updateNotificationSettings({
+                            insightTime: {
+                              ...notificationSettings.insightTime,
+                              hour: newHour
+                            }
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="w-16">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="AM">AM</SelectItem>
+                          <SelectItem value="PM">PM</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 )}
