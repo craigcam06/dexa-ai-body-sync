@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'dexa-ai-body-sync',
   webDir: 'dist',
   server: {
-    url: 'http://localhost:8080',
+    url: 'http://192.168.1.245:8080',
     cleartext: true
   },
   plugins: {
