@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Heart, 
@@ -15,7 +16,6 @@ import {
   BarChart3,
   Settings
 } from 'lucide-react';
-import { HealthDashboard } from '@/components/HealthDashboard';
 import { AICoachPanel } from '@/components/AICoachPanel';
 import { PlanDashboard } from '@/components/PlanDashboard';
 import { WhoopConnect } from '@/components/WhoopConnect';
@@ -128,7 +128,26 @@ const Index = () => {
               </Card>
             </div>
 
-            <HealthDashboard />
+            {/* Health Score at the top */}
+            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-green-800 dark:text-green-200">
+                  <Heart className="w-5 h-5" />
+                  <span>Overall Health Score</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-green-600 mb-2">87/100</div>
+                <div className="flex items-center space-x-4 text-sm text-green-700 dark:text-green-300">
+                  <span>Recovery: 85%</span>
+                  <span>•</span>
+                  <span>Sleep: 7.5h</span>
+                  <span>•</span>
+                  <span>Activity: 12 day streak</span>
+                </div>
+                <Progress value={87} className="mt-3" />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Plan Tab */}
