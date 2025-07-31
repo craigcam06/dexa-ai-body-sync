@@ -265,7 +265,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
         </CardContent>
       </Card>
 
-      {whoopData.recovery && (
+      {(whoopData.recovery || (csvData && csvData.recovery.length > 0)) && (
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -274,58 +274,102 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-primary">
-                  {whoopData.recovery.score.recovery_score}%
+            {whoopData.recovery ? (
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-primary">
+                    {whoopData.recovery.score.recovery_score}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Recovery</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Recovery</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-500">
-                  {whoopData.recovery.score.hrv_rmssd_milli}ms
+                <div>
+                  <div className="text-2xl font-bold text-red-500">
+                    {whoopData.recovery.score.hrv_rmssd_milli}ms
+                  </div>
+                  <div className="text-xs text-muted-foreground">HRV</div>
                 </div>
-                <div className="text-xs text-muted-foreground">HRV</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-500">
-                  {whoopData.recovery.score.resting_heart_rate}
+                <div>
+                  <div className="text-2xl font-bold text-blue-500">
+                    {whoopData.recovery.score.resting_heart_rate}
+                  </div>
+                  <div className="text-xs text-muted-foreground">RHR</div>
                 </div>
-                <div className="text-xs text-muted-foreground">RHR</div>
               </div>
-            </div>
+            ) : csvData && csvData.recovery.length > 0 && (
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-primary">
+                    {csvData.recovery[0].recovery_score}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Recovery</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-red-500">
+                    {csvData.recovery[0].hrv_rmssd_milli}ms
+                  </div>
+                  <div className="text-xs text-muted-foreground">HRV</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-500">
+                    {csvData.recovery[0].resting_heart_rate}
+                  </div>
+                  <div className="text-xs text-muted-foreground">RHR</div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {whoopData.sleep.length > 0 && (
+      {(whoopData.sleep.length > 0 || (csvData && csvData.sleep.length > 0)) && (
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Moon className="h-5 w-5 text-blue-500" />
-              Recent Sleep ({whoopData.sleep.length} nights)
+              Recent Sleep ({whoopData.sleep.length > 0 ? whoopData.sleep.length : csvData.sleep.length} nights)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {whoopData.sleep.slice(0, 3).map((sleep, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
-                  <div>
-                    <div className="font-medium">
-                      {new Date(sleep.start).toLocaleDateString()}
+              {whoopData.sleep.length > 0 ? (
+                whoopData.sleep.slice(0, 3).map((sleep, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
+                    <div>
+                      <div className="font-medium">
+                        {new Date(sleep.start).toLocaleDateString()}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDuration(sleep.score.stage_summary.total_in_bed_time_milli)}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDuration(sleep.score.stage_summary.total_in_bed_time_milli)}
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-primary">
+                        {sleep.score.sleep_performance_percentage}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Performance</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-primary">
-                      {sleep.score.sleep_performance_percentage}%
+                ))
+              ) : csvData && csvData.sleep.length > 0 && (
+                csvData.sleep.slice(0, 3).map((sleep, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
+                    <div>
+                      <div className="font-medium">
+                        {sleep.date}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDuration(sleep.total_sleep_time_milli)}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">Performance</div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-primary">
+                        {sleep.sleep_score}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Score</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
