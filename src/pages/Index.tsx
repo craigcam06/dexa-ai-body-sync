@@ -185,7 +185,7 @@ const Index = () => {
             <TabsContent value="dashboard" className="space-y-6">
 
               {/* Essential Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
                 {/* Overall Health Score */}
                 <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
                   <CardHeader>
