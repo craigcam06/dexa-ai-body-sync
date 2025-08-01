@@ -294,6 +294,14 @@ serve(async (req) => {
       clientIdLength: fatSecretClientId?.length || 0,
       clientSecretLength: fatSecretClientSecret?.length || 0
     });
+    
+    console.log('Available environment variables:');
+    const envObject = Deno.env.toObject();
+    for (const [key, value] of Object.entries(envObject)) {
+      if (key.startsWith('FATSECRET')) {
+        console.log(`${key}: ${value ? 'SET' : 'NOT SET'}`);
+      }
+    }
 
     let results: ProcessedFoodItem[] = [];
 
