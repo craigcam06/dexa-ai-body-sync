@@ -32,19 +32,13 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
 }) => {
   const [foodLogs, setFoodLogs] = useState<FoodLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(false); // Prevent duplicate requests
 
   useEffect(() => {
-    if (!isLoading) {
-      loadFoodLogs();
-    }
+    loadFoodLogs();
   }, [selectedDate]);
 
   const loadFoodLogs = async () => {
-    if (isLoading) return; // Prevent duplicate requests
-    
     try {
-      setIsLoading(true);
       setLoading(true);
       console.log('Loading food logs for date:', format(selectedDate, 'yyyy-MM-dd'));
       
@@ -82,7 +76,6 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
       console.error('Error loading food logs:', error);
     } finally {
       setLoading(false);
-      setIsLoading(false);
     }
   };
 
