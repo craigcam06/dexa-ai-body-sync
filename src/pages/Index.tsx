@@ -32,6 +32,7 @@ import { WhoopConnect } from '@/components/WhoopConnect';
 import { EnhancedNutritionLogger } from '@/components/EnhancedNutritionLogger';
 import { NLPMealLogger } from '@/components/NLPMealLogger';
 import { ProgressTracker } from '@/components/ProgressTracker';
+import { DailyFoodLog } from '@/components/DailyFoodLog';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SmartLoading } from '@/components/ui/smart-loading';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
@@ -271,6 +272,9 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Daily Food Log */}
+              <DailyFoodLog />
 
               {/* Essential Metrics Grid - Enhanced with Smart Indicators */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ gridAutoRows: '1fr' }}>
