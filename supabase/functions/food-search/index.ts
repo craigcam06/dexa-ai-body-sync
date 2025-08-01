@@ -347,11 +347,22 @@ serve(async (req) => {
         console.log('NLP mode requested but requires FatSecret Premier subscription');
         results = [];
       } else {
+        console.log('Starting parallel API searches for query:', query);
+        console.log('Using FatSecret credentials:', { 
+          hasClientId: !!fatSecretClientId, 
+          hasClientSecret: !!fatSecretClientSecret 
+        });
+        
         // Search APIs in parallel
         const [usdaResults, fatSecretResults] = await Promise.all([
           searchUSDAFoods(query),
           searchFatSecretFoods(query, fatSecretClientId, fatSecretClientSecret)
         ]);
+        
+        console.log('API Results:', { 
+          usda: usdaResults.length, 
+          fatsecret: fatSecretResults.length 
+        });
         
         results = [...usdaResults, ...fatSecretResults];
       }
