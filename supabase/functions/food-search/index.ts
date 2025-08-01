@@ -1,132 +1,32 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface USDAFoodItem {
-  fdcId: number;
-  description: string;
-  brandOwner?: string;
-  brandName?: string;
-  ingredients?: string;
-  foodNutrients: Array<{
-    nutrientId: number;
-    nutrientName: string;
-    value: number;
-    unitName: string;
-  }>;
-  servingSize?: number;
-  servingSizeUnit?: string;
-}
-
+// Data structures for API responses
 interface FatSecretFoodItem {
   food_id: string;
   food_name: string;
   brand_name?: string;
-  food_type: string;
+  food_description: string;
   food_url: string;
-  servings: {
-    serving: Array<{
-      calcium?: string;
-      calories?: string;
-      carbohydrate?: string;
-      cholesterol?: string;
-      fat?: string;
-      fiber?: string;
-      iron?: string;
-      protein?: string;
-      sodium?: string;
-      sugar?: string;
-      serving_description?: string;
-      metric_serving_amount?: string;
-      metric_serving_unit?: string;
-    }>;
-  };
 }
 
 interface ProcessedFoodItem {
   external_id: string;
-  api_source: 'usda' | 'fatsecret';
+  api_source: string;
   name: string;
-  brand?: string;
-  barcode?: string;
+  brand: string | null;
   calories_per_100g: number;
   protein_per_100g: number;
   carbs_per_100g: number;
   fats_per_100g: number;
-  fiber_per_100g?: number;
-  sugar_per_100g?: number;
-  sodium_per_100g?: number;
   serving_size_g: number;
-  serving_description?: string;
-  search_terms: string[];
+  serving_description: string | null;
 }
 
-async function searchUSDAFoods(query: string): Promise<ProcessedFoodItem[]> {
-  console.log(`Searching USDA for: ${query}`);
-  
-  try {
-    // For now, skip USDA due to rate limits with DEMO_KEY
-    console.log('Skipping USDA search - DEMO_KEY has rate limits');
-    return [];
-    
-    /* 
-    const response = await fetch(
-      `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=10&api_key=DEMO_KEY`
-    );
-    */
-    
-    if (!response.ok) {
-      console.error('USDA API error:', response.status, response.statusText);
-      return [];
-    }
-    
-    const data = await response.json();
-    console.log(`USDA returned ${data.foods?.length || 0} results`);
-    
-    return (data.foods || []).map((food: USDAFoodItem) => {
-      // Extract nutrients
-      const nutrients = food.foodNutrients.reduce((acc, nutrient) => {
-        switch (nutrient.nutrientId) {
-          case 1008: acc.calories = nutrient.value; break;
-          case 1003: acc.protein = nutrient.value; break;
-          case 1005: acc.carbs = nutrient.value; break;
-          case 1004: acc.fats = nutrient.value; break;
-          case 1079: acc.fiber = nutrient.value; break;
-          case 2000: acc.sugar = nutrient.value; break;
-          case 1093: acc.sodium = nutrient.value; break;
-        }
-        return acc;
-      }, { calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, sodium: 0 });
-      
-      return {
-        external_id: food.fdcId.toString(),
-        api_source: 'usda' as const,
-        name: food.description,
-        brand: food.brandOwner || food.brandName,
-        calories_per_100g: nutrients.calories,
-        protein_per_100g: nutrients.protein,
-        carbs_per_100g: nutrients.carbs,
-        fats_per_100g: nutrients.fats,
-        fiber_per_100g: nutrients.fiber,
-        sugar_per_100g: nutrients.sugar,
-        sodium_per_100g: nutrients.sodium / 1000, // Convert mg to g
-        serving_size_g: food.servingSize || 100,
-        serving_description: food.servingSizeUnit ? `${food.servingSize} ${food.servingSizeUnit}` : undefined,
-        search_terms: [food.description.toLowerCase(), ...(food.brandName ? [food.brandName.toLowerCase()] : [])]
-      };
-    });
-  } catch (error) {
-    console.error('Error searching USDA:', error);
-    return [];
-  }
-}
-
+// Get FatSecret access token
 async function getFatSecretAccessToken(clientId: string, clientSecret: string): Promise<string | null> {
   try {
+    console.log('Getting FatSecret access token...');
     const tokenResponse = await fetch('https://oauth.fatsecret.com/connect/token', {
       method: 'POST',
       headers: {
@@ -137,11 +37,12 @@ async function getFatSecretAccessToken(clientId: string, clientSecret: string): 
     });
 
     if (!tokenResponse.ok) {
-      console.error('FatSecret token error:', tokenResponse.status);
+      console.error('FatSecret token error:', tokenResponse.status, await tokenResponse.text());
       return null;
     }
 
     const tokenData = await tokenResponse.json();
+    console.log('FatSecret token obtained successfully');
     return tokenData.access_token;
   } catch (error) {
     console.error('Error getting FatSecret token:', error);
@@ -149,122 +50,187 @@ async function getFatSecretAccessToken(clientId: string, clientSecret: string): 
   }
 }
 
+// Search FatSecret API
 async function searchFatSecretFoods(query: string, clientId?: string, clientSecret?: string): Promise<ProcessedFoodItem[]> {
   if (!clientId || !clientSecret) {
     console.log('FatSecret credentials not provided, skipping FatSecret search');
     return [];
   }
-  
+
   console.log(`Searching FatSecret for: ${query}`);
   
   try {
-    // Get access token
     const accessToken = await getFatSecretAccessToken(clientId, clientSecret);
     if (!accessToken) {
       console.error('Failed to get FatSecret access token');
       return [];
     }
 
-    // Search foods using v3 API
-    const response = await fetch('https://platform.fatsecret.com/rest/foods/search/v3', {
+    const searchResponse = await fetch('https://platform.fatsecret.com/rest/server.api', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${accessToken}`
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
+        method: 'foods.search',
         search_expression: query,
-        max_results: 10,
         format: 'json'
       })
     });
 
-    if (!response.ok) {
-      console.error('FatSecret search API error:', response.status, await response.text());
+    if (!searchResponse.ok) {
+      console.error('FatSecret search error:', searchResponse.status, await searchResponse.text());
       return [];
     }
 
-    const data = await response.json();
-    console.log(`FatSecret returned ${data.foods_search?.results?.food?.length || 0} results`);
+    const data = await searchResponse.json();
+    console.log(`FatSecret returned ${data.foods?.food?.length || 0} results`);
     
-    const foods = data.foods_search?.results?.food || [];
+    if (!data.foods?.food) {
+      return [];
+    }
+
+    // Handle both single food and array of foods
+    const foods = Array.isArray(data.foods.food) ? data.foods.food : [data.foods.food];
     
-    return foods.map((food: any) => ({
-      external_id: food.food_id.toString(),
-      api_source: 'fatsecret' as const,
-      name: food.food_name,
-      brand: food.brand_name || undefined,
-      calories_per_100g: 0, // Will need separate API call for detailed nutrition
-      protein_per_100g: 0,
-      carbs_per_100g: 0,
-      fats_per_100g: 0,
-      serving_size_g: 100,
-      search_terms: [food.food_name.toLowerCase(), ...(food.brand_name ? [food.brand_name.toLowerCase()] : [])]
-    }));
+    const results: ProcessedFoodItem[] = [];
+    
+    for (const food of foods) {
+      try {
+        // Get detailed nutrition info for each food
+        const nutritionResponse = await fetch('https://platform.fatsecret.com/rest/server.api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: new URLSearchParams({
+            method: 'food.get',
+            food_id: food.food_id,
+            format: 'json'
+          })
+        });
+
+        if (nutritionResponse.ok) {
+          const nutritionData = await nutritionResponse.json();
+          const serving = nutritionData.food?.servings?.serving;
+          
+          if (serving) {
+            // Use the first serving or the 100g serving if available
+            const servingData = Array.isArray(serving) ? serving[0] : serving;
+            
+            results.push({
+              external_id: food.food_id,
+              api_source: 'fatsecret',
+              name: food.food_name,
+              brand: food.brand_name || null,
+              calories_per_100g: parseFloat(servingData.calories || '0'),
+              protein_per_100g: parseFloat(servingData.protein || '0'),
+              carbs_per_100g: parseFloat(servingData.carbohydrate || '0'),
+              fats_per_100g: parseFloat(servingData.fat || '0'),
+              serving_size_g: parseFloat(servingData.metric_serving_amount || '100'),
+              serving_description: servingData.serving_description || null,
+            });
+          }
+        }
+      } catch (nutritionError) {
+        console.error('Error getting nutrition for food:', food.food_id, nutritionError);
+      }
+    }
+    
+    return results;
   } catch (error) {
-    console.error('Error searching FatSecret:', error);
+    console.error('FatSecret API error:', error);
     return [];
   }
 }
 
+// Search foods by barcode using FatSecret
 async function searchFoodsByBarcode(barcode: string, clientId?: string, clientSecret?: string): Promise<ProcessedFoodItem[]> {
   if (!clientId || !clientSecret) {
-    console.log('FatSecret credentials not provided for barcode search');
+    console.log('FatSecret credentials not provided, skipping barcode search');
     return [];
   }
-  
-  console.log(`Searching FatSecret barcode: ${barcode}`);
+
+  console.log(`Searching FatSecret by barcode: ${barcode}`);
   
   try {
     const accessToken = await getFatSecretAccessToken(clientId, clientSecret);
     if (!accessToken) {
-      console.error('Failed to get FatSecret access token');
       return [];
     }
 
-    // Search by barcode
-    const response = await fetch('https://platform.fatsecret.com/rest/food/find_id_for_barcode/v1', {
+    const searchResponse = await fetch('https://platform.fatsecret.com/rest/server.api', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${accessToken}`
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
+        method: 'food.find_id_for_barcode',
         barcode: barcode,
         format: 'json'
       })
     });
 
-    if (!response.ok) {
-      console.error('FatSecret barcode API error:', response.status);
+    if (!searchResponse.ok) {
+      console.error('FatSecret barcode search error:', searchResponse.status);
       return [];
     }
 
-    const data = await response.json();
+    const data = await searchResponse.json();
     
-    if (data.food_id) {
-      // If we found a food by barcode, we'd need to fetch its details
-      // For now, return basic info
-      return [{
-        external_id: data.food_id.toString(),
-        api_source: 'fatsecret' as const,
-        name: 'Barcode Product',
-        barcode: barcode,
-        calories_per_100g: 0, // Would need food.get API call
-        protein_per_100g: 0,
-        carbs_per_100g: 0,
-        fats_per_100g: 0,
-        serving_size_g: 100,
-        search_terms: [barcode]
-      }];
+    if (data.food_id?.value) {
+      // Get detailed nutrition info for the found food
+      const nutritionResponse = await fetch('https://platform.fatsecret.com/rest/server.api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: new URLSearchParams({
+          method: 'food.get',
+          food_id: data.food_id.value,
+          format: 'json'
+        })
+      });
+
+      if (nutritionResponse.ok) {
+        const nutritionData = await nutritionResponse.json();
+        const food = nutritionData.food;
+        const serving = food?.servings?.serving;
+        
+        if (serving) {
+          const servingData = Array.isArray(serving) ? serving[0] : serving;
+          
+          return [{
+            external_id: data.food_id.value,
+            api_source: 'fatsecret',
+            name: food.food_name,
+            brand: food.brand_name || null,
+            calories_per_100g: parseFloat(servingData.calories || '0'),
+            protein_per_100g: parseFloat(servingData.protein || '0'),
+            carbs_per_100g: parseFloat(servingData.carbohydrate || '0'),
+            fats_per_100g: parseFloat(servingData.fat || '0'),
+            serving_size_g: parseFloat(servingData.metric_serving_amount || '100'),
+            serving_description: servingData.serving_description || null,
+          }];
+        }
+      }
     }
     
     return [];
   } catch (error) {
-    console.error('Error searching barcode:', error);
+    console.error('FatSecret barcode API error:', error);
     return [];
   }
 }
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -274,14 +240,14 @@ serve(async (req) => {
 
   console.log('=== FOOD SEARCH REQUEST START ===');
   try {
-    const { query, barcode, nlp_mode = false, cache = true } = await req.json();
-    
+    const { query, barcode, nlp_mode, cache = true } = await req.json();
+
     if (!query && !barcode) {
       return new Response(
-        JSON.stringify({ error: 'Query or barcode parameter required' }),
+        JSON.stringify({ error: 'Query or barcode parameter is required' }),
         { 
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -301,118 +267,121 @@ serve(async (req) => {
       clientIdLength: fatSecretClientId?.length || 0,
       clientSecretLength: fatSecretClientSecret?.length || 0
     });
-    
-    console.log('Available environment variables:');
-    const envObject = Deno.env.toObject();
-    for (const [key, value] of Object.entries(envObject)) {
-      if (key.startsWith('FATSECRET')) {
-        console.log(`${key}: ${value ? 'SET' : 'NOT SET'}`);
-      }
-    }
 
     let results: ProcessedFoodItem[] = [];
 
     if (barcode) {
-      // Search by barcode
-      if (cache) {
-        const { data: cachedResults } = await supabase
-          .from('food_items')
-          .select('*')
-          .eq('barcode', barcode)
-          .limit(10);
-        
-        if (cachedResults && cachedResults.length > 0) {
-          console.log(`Found ${cachedResults.length} cached barcode results`);
-          return new Response(
-            JSON.stringify({ foods: cachedResults, cached: true }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
+      console.log('Processing barcode search:', barcode);
       
-      results = await searchFoodsByBarcode(barcode, fatSecretClientId, fatSecretClientSecret);
-    } else {
-      // Search by query text
-      if (cache) {
-        const { data: cachedResults } = await supabase
-          .from('food_items')
-          .select('*')
-          .textSearch('name', query, { type: 'websearch' })
-          .limit(10);
-        
-        if (cachedResults && cachedResults.length > 0) {
-          console.log(`Found ${cachedResults.length} cached text results`);
-          return new Response(
-            JSON.stringify({ foods: cachedResults, cached: true }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      // Check cache first for barcode
+      const { data: cachedData } = await supabase
+        .from('food_items')
+        .select('*')
+        .eq('barcode', barcode)
+        .limit(10);
+
+      if (cachedData && cachedData.length > 0) {
+        console.log('Found cached barcode results:', cachedData.length);
+        const processedResults = cachedData.map(item => ({
+          external_id: item.external_id,
+          api_source: item.api_source,
+          name: item.name,
+          brand: item.brand || null,
+          calories_per_100g: Number(item.calories_per_100g),
+          protein_per_100g: Number(item.protein_per_100g),
+          carbs_per_100g: Number(item.carbs_per_100g),
+          fats_per_100g: Number(item.fats_per_100g),
+          serving_size_g: Number(item.serving_size_g || 100),
+          serving_description: item.serving_description || null,
+        }));
+
+        return new Response(JSON.stringify({
+          foods: processedResults,
+          cached: true,
+          sources: { fatsecret: cachedData.length }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
-      if (nlp_mode) {
-        // NLP is only available with Premier subscription
-        console.log('NLP mode requested but requires FatSecret Premier subscription');
-        results = [];
-      } else {
-        console.log('Starting parallel API searches for query:', query);
-        console.log('Using FatSecret credentials:', { 
-          hasClientId: !!fatSecretClientId, 
-          hasClientSecret: !!fatSecretClientSecret 
+      console.log('No cached barcode results, searching FatSecret API');
+      results = await searchFoodsByBarcode(barcode, fatSecretClientId, fatSecretClientSecret);
+      console.log('FatSecret barcode results:', results.length);
+
+    } else if (query) {
+      console.log('Processing query search:', query);
+      
+      // Check cache first for query
+      const { data: cachedData } = await supabase
+        .from('food_items')
+        .select('*')
+        .or(`name.ilike.%${query}%,brand.ilike.%${query}%,search_terms.cs.{${query}}`)
+        .limit(10);
+
+      if (cachedData && cachedData.length > 0) {
+        console.log('Found cached query results:', cachedData.length);
+        const processedResults = cachedData.map(item => ({
+          external_id: item.external_id,
+          api_source: item.api_source,
+          name: item.name,
+          brand: item.brand || null,
+          calories_per_100g: Number(item.calories_per_100g),
+          protein_per_100g: Number(item.protein_per_100g),
+          carbs_per_100g: Number(item.carbs_per_100g),
+          fats_per_100g: Number(item.fats_per_100g),
+          serving_size_g: Number(item.serving_size_g || 100),
+          serving_description: item.serving_description || null,
+        }));
+
+        return new Response(JSON.stringify({
+          foods: processedResults,
+          cached: true,
+          sources: { fatsecret: cachedData.length }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
-        
-        // Search APIs in parallel
-        const [usdaResults, fatSecretResults] = await Promise.all([
-          searchUSDAFoods(query),
-          searchFatSecretFoods(query, fatSecretClientId, fatSecretClientSecret)
-        ]);
-        
-        console.log('API Results:', { 
-          usda: usdaResults.length, 
-          fatsecret: fatSecretResults.length 
-        });
-        
-        results = [...usdaResults, ...fatSecretResults];
       }
+
+      console.log('No cached results, searching FatSecret API');
+      results = await searchFatSecretFoods(query, fatSecretClientId, fatSecretClientSecret);
+      console.log('FatSecret search results:', results.length);
     }
 
-    // Cache results if enabled
+    // Cache results if enabled and we have results
     if (cache && results.length > 0) {
       console.log(`Caching ${results.length} food items`);
       
-      // Insert new food items (ignore conflicts)
       const { error: insertError } = await supabase
         .from('food_items')
         .upsert(results, { 
           onConflict: 'external_id,api_source',
           ignoreDuplicates: true 
         });
-      
+
       if (insertError) {
         console.error('Error caching food items:', insertError);
+      } else {
+        console.log('Successfully cached food items');
       }
     }
 
     console.log(`Returning ${results.length} total results`);
     
-    return new Response(
-      JSON.stringify({ 
-        foods: results,
-        cached: false,
-        sources: {
-          usda: results.filter(f => f.api_source === 'usda').length,
-          fatsecret: results.filter(f => f.api_source === 'fatsecret').length
-        }
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      foods: results,
+      cached: false,
+      sources: { fatsecret: results.length }
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
-    console.error('Food search error:', error);
+    console.error('Error in food-search function:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }
