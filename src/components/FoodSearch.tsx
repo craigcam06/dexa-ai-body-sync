@@ -73,6 +73,25 @@ export const FoodSearch = ({ onSelectFood, onAddCustom }: FoodSearchProps) => {
     }
   };
 
+  const debugFatSecret = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('debug-fatsecret');
+      if (error) throw error;
+      console.log('FatSecret debug result:', data);
+      toast({
+        title: "FatSecret Debug",
+        description: `Success: ${data.success}, Results: ${data.resultsCount || 0}`,
+      });
+    } catch (error) {
+      console.error('FatSecret debug error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to debug FatSecret API",
+        variant: "destructive",
+      });
+    }
+  };
+
   const searchFoods = async (searchQuery: string, isBarcode = false) => {
     if (!searchQuery.trim()) return;
 
@@ -211,6 +230,9 @@ export const FoodSearch = ({ onSelectFood, onAddCustom }: FoodSearchProps) => {
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={testSecrets}>
                 Test Secrets
+              </Button>
+              <Button variant="outline" size="sm" onClick={debugFatSecret}>
+                Debug API
               </Button>
               <Button variant="outline" size="sm" onClick={onAddCustom}>
                 <Plus className="h-4 w-4 mr-1" />
