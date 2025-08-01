@@ -595,6 +595,7 @@ const Index = () => {
                 <EnhancedNutritionLogger />
                 <NLPMealLogger />
               </div>
+              <DailyFoodLog />
               <PlanDashboard />
             </TabsContent>
 
