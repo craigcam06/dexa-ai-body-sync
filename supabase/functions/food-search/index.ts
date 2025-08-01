@@ -69,9 +69,15 @@ async function searchUSDAFoods(query: string): Promise<ProcessedFoodItem[]> {
   console.log(`Searching USDA for: ${query}`);
   
   try {
+    // For now, skip USDA due to rate limits with DEMO_KEY
+    console.log('Skipping USDA search - DEMO_KEY has rate limits');
+    return [];
+    
+    /* 
     const response = await fetch(
       `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(query)}&pageSize=10&api_key=DEMO_KEY`
     );
+    */
     
     if (!response.ok) {
       console.error('USDA API error:', response.status, response.statusText);
