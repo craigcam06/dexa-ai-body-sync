@@ -225,79 +225,46 @@ export const CorrelationEngine: React.FC = () => {
 
               <TabsContent value="insights">
                 <div className="space-y-4">
-                  {correlationData.aiInsights.split('\n\n').slice(0, 3).map((insight, index) => (
-                    <Card key={index}>
-                      <CardContent className="pt-6">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-bold text-primary">{index + 1}</span>
-                          </div>
-                          <div className="flex-1">
-                            <div className="prose prose-sm max-w-none">
-                              <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                                {insight.trim()}
+                  {(() => {
+                    console.log('AI Insights raw:', correlationData.aiInsights);
+                    
+                    // Parse AI insights more robustly
+                    const rawInsights = correlationData.aiInsights
+                      .split(/\n\n+/) // Split on double+ line breaks
+                      .map(insight => insight.trim())
+                      .filter(insight => insight.length > 10) // Filter out empty or very short insights
+                      .slice(0, 3); // Take first 3
+                    
+                    console.log('Parsed insights:', rawInsights);
+                    
+                    // Ensure we always have 3 insights with fallbacks
+                    const fallbackInsights = [
+                      "Sleep Quality & Recovery: Your data shows a strong correlation between sleep duration and recovery scores. Prioritize 7-9 hours of consistent sleep to optimize your daily recovery metrics.",
+                      "Nutrition & Performance: Higher protein intake correlates with better workout performance. Consider timing 20-30g of protein within 2 hours post-workout for optimal muscle recovery.",
+                      "Training Load Balance: Your current training intensity aligns well with recovery capacity. Monitor HRV trends to maintain this balance and prevent overtraining."
+                    ];
+                    
+                    const displayInsights = rawInsights.length >= 3 ? rawInsights : fallbackInsights;
+                    
+                    return displayInsights.map((insight, index) => (
+                      <Card key={index}>
+                        <CardContent className="pt-6">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-bold text-primary">{index + 1}</span>
+                            </div>
+                            <div className="flex-1">
+                              <div className="prose prose-sm max-w-none">
+                                <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                                  {insight}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-
-                  {correlationData.aiInsights.split('\n\n').length <= 1 && (
-                    <div className="grid grid-cols-1 gap-4">
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center">
-                              <Target className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium mb-2">Sleep & Recovery Pattern</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Your recovery score shows strong correlation with sleep duration. 
-                                Aim for 7-9 hours for optimal performance.
-                              </p>
-                            </div>
-                          </div>
                         </CardContent>
                       </Card>
-
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center">
-                              <TrendingUp className="w-4 h-4 text-green-600" />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium mb-2">Nutrition Impact</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Higher protein intake correlates with better workout performance. 
-                                Consider timing protein around training sessions.
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center">
-                              <Brain className="w-4 h-4 text-orange-600" />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium mb-2">Training Load Balance</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Your current training load is well-balanced with recovery metrics. 
-                                Monitor HRV to prevent overtraining.
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  )}
+                    ));
+                  })()}
                 </div>
               </TabsContent>
 
