@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -28,32 +28,34 @@ interface DailyFoodLogProps {
 }
 
 export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({ 
-  selectedDate = new Date() 
+  selectedDate 
 }) => {
   const [foodLogs, setFoodLogs] = useState<FoodLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const loadingRef = useRef(false);
+  
+  // Memoize the date to prevent infinite re-renders
+  const memoizedDate = useMemo(() => selectedDate || new Date(), [selectedDate]);
+  
+  // Use date string as dependency to avoid object reference issues
+  const dateString = useMemo(() => format(memoizedDate, 'yyyy-MM-dd'), [memoizedDate]);
 
   useEffect(() => {
     loadFoodLogs();
-  }, [selectedDate]);
+  }, [dateString]);
 
   const loadFoodLogs = async () => {
-    if (loadingRef.current) return; // Prevent duplicate requests
-    
     try {
-      loadingRef.current = true;
       setLoading(true);
-      console.log('Loading food logs for date:', format(selectedDate, 'yyyy-MM-dd'));
+      console.log('Loading food logs for date:', dateString);
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
+        setLoading(false);
         return;
       }
 
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      console.log('Fetching food logs for user:', user.id, 'date:', dateStr);
+      console.log('Fetching food logs for user:', user.id, 'date:', dateString);
       
       const { data, error } = await supabase
         .from('user_food_logs')
@@ -65,7 +67,7 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
           )
         `)
         .eq('user_id', user.id)
-        .eq('date', dateStr)
+        .eq('date', dateString)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -79,7 +81,6 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
       console.error('Error loading food logs:', error);
     } finally {
       setLoading(false);
-      loadingRef.current = false;
     }
   };
 
@@ -151,7 +152,7 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
         </CardTitle>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
-          {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+          {format(memoizedDate, 'EEEE, MMMM d, yyyy')}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
