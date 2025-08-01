@@ -40,10 +40,17 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
   const loadFoodLogs = async () => {
     try {
       setLoading(true);
+      console.log('Loading food logs for date:', format(selectedDate, 'yyyy-MM-dd'));
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No user found');
+        setLoading(false);
+        return;
+      }
 
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      console.log('Fetching food logs for user:', user.id, 'date:', dateStr);
       
       const { data, error } = await supabase
         .from('user_food_logs')
@@ -58,7 +65,12 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
         .eq('date', dateStr)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Food logs loaded:', data?.length || 0, 'items');
       setFoodLogs(data || []);
     } catch (error) {
       console.error('Error loading food logs:', error);
