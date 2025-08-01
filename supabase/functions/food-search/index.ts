@@ -287,6 +287,13 @@ serve(async (req) => {
     // Get FatSecret credentials from environment
     const fatSecretClientId = Deno.env.get('FATSECRET_CLIENT_ID');
     const fatSecretClientSecret = Deno.env.get('FATSECRET_CLIENT_SECRET');
+    
+    console.log('FatSecret credentials check:', {
+      hasClientId: !!fatSecretClientId,
+      hasClientSecret: !!fatSecretClientSecret,
+      clientIdLength: fatSecretClientId?.length || 0,
+      clientSecretLength: fatSecretClientSecret?.length || 0
+    });
 
     let results: ProcessedFoodItem[] = [];
 
