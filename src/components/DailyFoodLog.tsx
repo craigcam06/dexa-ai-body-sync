@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -32,20 +32,23 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
 }) => {
   const [foodLogs, setFoodLogs] = useState<FoodLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     loadFoodLogs();
   }, [selectedDate]);
 
   const loadFoodLogs = async () => {
+    if (loadingRef.current) return; // Prevent duplicate requests
+    
     try {
+      loadingRef.current = true;
       setLoading(true);
       console.log('Loading food logs for date:', format(selectedDate, 'yyyy-MM-dd'));
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
-        setLoading(false);
         return;
       }
 
@@ -76,6 +79,7 @@ export const DailyFoodLog: React.FC<DailyFoodLogProps> = ({
       console.error('Error loading food logs:', error);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   };
 
