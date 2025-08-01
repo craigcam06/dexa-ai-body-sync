@@ -274,9 +274,6 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              {/* Daily Food Log */}
-              <DailyFoodLog />
-
               {/* Essential Metrics Grid - Enhanced with Smart Indicators */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ gridAutoRows: '1fr' }}>
                 {/* Overall Health Score - Enhanced */}
