@@ -54,6 +54,25 @@ export const FoodSearch = ({ onSelectFood, onAddCustom }: FoodSearchProps) => {
     localStorage.setItem('recent_food_searches', JSON.stringify(updated));
   };
 
+  const testSecrets = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('test-secrets');
+      if (error) throw error;
+      console.log('Secrets test result:', data);
+      toast({
+        title: "Secrets Test",
+        description: `Client ID: ${data.secrets.FATSECRET_CLIENT_ID ? 'Available' : 'Missing'}, Client Secret: ${data.secrets.FATSECRET_CLIENT_SECRET ? 'Available' : 'Missing'}`,
+      });
+    } catch (error) {
+      console.error('Secrets test error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to test secrets",
+        variant: "destructive",
+      });
+    }
+  };
+
   const searchFoods = async (searchQuery: string, isBarcode = false) => {
     if (!searchQuery.trim()) return;
 
@@ -189,10 +208,15 @@ export const FoodSearch = ({ onSelectFood, onAddCustom }: FoodSearchProps) => {
             <div className="text-sm text-muted-foreground">
               {loading ? 'Searching...' : `${foods.length} results`}
             </div>
-            <Button variant="outline" size="sm" onClick={onAddCustom}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add Custom Food
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={testSecrets}>
+                Test Secrets
+              </Button>
+              <Button variant="outline" size="sm" onClick={onAddCustom}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Custom Food
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
