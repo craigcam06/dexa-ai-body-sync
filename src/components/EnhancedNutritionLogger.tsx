@@ -153,8 +153,10 @@ export const EnhancedNutritionLogger = () => {
     try {
       const logData = {
         user_id: (await supabase.auth.getUser()).data.user?.id,
-        food_item_id: selectedFood?.id || null,
-        custom_food_name: selectedFood ? null : customFood.name,
+        food_item_id: null, // We don't store FatSecret items in food_items table
+        custom_food_name: selectedFood 
+          ? (selectedFood.brand ? `${selectedFood.brand} ${selectedFood.name}` : selectedFood.name)
+          : customFood.name,
         date: new Date().toISOString().split('T')[0],
         meal_type: mealEntry.mealType,
         serving_amount: mealEntry.servingAmount,
