@@ -266,6 +266,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('=== FOOD SEARCH REQUEST START ===');
   try {
     const { query, barcode, nlp_mode = false, cache = true } = await req.json();
     
