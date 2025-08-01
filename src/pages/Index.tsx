@@ -33,6 +33,7 @@ import { EnhancedNutritionLogger } from '@/components/EnhancedNutritionLogger';
 import { NLPMealLogger } from '@/components/NLPMealLogger';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { DailyFoodLog } from '@/components/DailyFoodLog';
+import { UnifiedDailyTracker } from '@/components/UnifiedDailyTracker';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SmartLoading } from '@/components/ui/smart-loading';
 import { calculateOverallHealthScore, getMockEnergyData, getMockBodyCompositionData } from '@/utils/healthScore';
@@ -590,13 +591,12 @@ const Index = () => {
 
             {/* Plan Tab */}
             <TabsContent value="plan" className="space-y-6">
-              <ProgressTracker />
+              <UnifiedDailyTracker />
               <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                 <EnhancedNutritionLogger />
                 <NLPMealLogger />
               </div>
               <DailyFoodLog />
-              <PlanDashboard />
             </TabsContent>
 
             {/* AI Coach Tab */}
