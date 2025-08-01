@@ -284,7 +284,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get FatSecret credentials
+    // Get FatSecret credentials from environment
     const fatSecretClientId = Deno.env.get('FATSECRET_CLIENT_ID');
     const fatSecretClientSecret = Deno.env.get('FATSECRET_CLIENT_SECRET');
 
