@@ -118,6 +118,23 @@ export const UnifiedDailyTracker: React.FC = () => {
     return Math.min((current / target) * 100, 100);
   };
 
+  const getProgressVariant = (current: number, min?: number, max?: number, target?: number) => {
+    const compareValue = target || max || min || 0;
+    const percentage = (current / compareValue) * 100;
+    
+    if (min && max) {
+      // For ranges (like protein 230-250g), green if in range
+      if (current >= min && current <= max) return "success";
+      if (current >= min * 0.8 && current <= max * 1.2) return "warning";
+      return "danger";
+    }
+    
+    // For single targets (like calories), use percentage
+    if (percentage >= 80) return "success";
+    if (percentage >= 50) return "warning";
+    return "danger";
+  };
+
   const getStatusColor = (current: number, min?: number, max?: number, target?: number) => {
     const compareValue = target || max || min || 0;
     const percentage = (current / compareValue) * 100;
@@ -128,8 +145,8 @@ export const UnifiedDailyTracker: React.FC = () => {
       return "text-red-600";
     }
     
-    if (percentage >= 90) return "text-green-600";
-    if (percentage >= 70) return "text-yellow-600";
+    if (percentage >= 80) return "text-green-600";
+    if (percentage >= 50) return "text-yellow-600";
     return "text-red-600";
   };
 
@@ -144,6 +161,7 @@ export const UnifiedDailyTracker: React.FC = () => {
     
     const statusColor = getStatusColor(data.current, data.min, data.max, data.target);
     const progressValue = getProgressPercentage(data.current, data.target);
+    const progressVariant = getProgressVariant(data.current, data.min, data.max, data.target);
 
     return (
       <div className="space-y-2">
@@ -161,7 +179,7 @@ export const UnifiedDailyTracker: React.FC = () => {
             </div>
           </div>
         </div>
-        <Progress value={progressValue} className="h-2" />
+        <Progress value={progressValue} variant={progressVariant} className="h-2" />
       </div>
     );
   };
