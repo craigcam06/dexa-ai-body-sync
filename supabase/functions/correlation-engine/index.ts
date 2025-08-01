@@ -293,19 +293,23 @@ async function generateAIInsights(correlations: CorrelationResult[], data: Corre
       return "AI insights unavailable - OpenAI API key not configured";
     }
 
-    const prompt = `As a health data analyst, provide actionable insights based on these correlations from ${data.length} days of health data:
+    const prompt = `As a health data analyst, provide exactly 3 actionable insights based on these correlations from ${data.length} days of health data:
 
 ${correlations.map(c => 
   `• ${c.metric1} vs ${c.metric2}: ${c.correlation.toFixed(3)} (${c.strength} ${c.direction})`
 ).join('\n')}
 
-Focus on:
-1. Most important patterns for health optimization
-2. Actionable recommendations for the user
-3. Potential lifestyle changes based on these correlations
-4. Warning signs or red flags if any
+Format your response as exactly 3 separate insights, each separated by double line breaks. Each insight should:
+1. Focus on one key pattern for health optimization
+2. Provide one specific, actionable recommendation
+3. Be concise but practical (2-3 sentences max)
 
-Keep response concise but insightful, focusing on practical applications.`;
+Example format:
+Insight 1: [Pattern description]. [Actionable recommendation].
+
+Insight 2: [Pattern description]. [Actionable recommendation].
+
+Insight 3: [Pattern description]. [Actionable recommendation].`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
