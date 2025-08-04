@@ -25,13 +25,14 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Generate AI response
-  const generateAIResponse = async (question: string, healthData?: ParsedWhoopData, planInfo?: any): Promise<string> => {
+  const generateAIResponse = async (question: string, healthData?: ParsedWhoopData, planInfo?: any, includeBodySpec?: boolean): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('ai-health-coach', {
         body: {
           message: question,
           healthData: healthData,
-          planData: planInfo
+          planData: planInfo,
+          includeBodySpec: includeBodySpec
         }
       });
 
@@ -149,14 +150,42 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
           description: "Performance nutrition strategies"
         }
       ]
+    },
+    {
+      title: "📊 Body Composition (BodySpec)",
+      actions: [
+        {
+          question: "Analyze my latest DEXA scan results and body composition progress",
+          icon: BarChart3,
+          color: "text-purple-600",
+          description: "Deep dive into lean mass, body fat, and regional analysis",
+          includeBodySpec: true
+        },
+        {
+          question: planData ? 
+            "How is my body recomposition aligning with my Craig Campbell protocol?" :
+            "What does my DEXA data tell me about my training effectiveness?",
+          icon: TrendingUp,
+          color: "text-blue-600",
+          description: planData ? "Protocol-specific body comp analysis" : "Training impact on body composition",
+          includeBodySpec: true
+        },
+        {
+          question: "Based on my DEXA scan, what should I focus on in my training and nutrition?",
+          icon: Target,
+          color: "text-green-600",
+          description: "Personalized recommendations from scan data",
+          includeBodySpec: true
+        }
+      ]
     }
   ];
 
-  const handleQuickAction = async (question: string) => {
-    await handleSendMessage(question);
+  const handleQuickAction = async (question: string, includeBodySpec?: boolean) => {
+    await handleSendMessage(question, includeBodySpec);
   };
 
-  const handleSendMessage = async (customMessage?: string) => {
+  const handleSendMessage = async (customMessage?: string, includeBodySpec?: boolean) => {
     const messageToSend = customMessage || userInput;
     if (!messageToSend.trim()) return;
 
@@ -172,7 +201,7 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
     setIsAnalyzing(true);
 
     try {
-      const response = await generateAIResponse(messageToSend, whoopData, planData);
+      const response = await generateAIResponse(messageToSend, whoopData, planData, includeBodySpec);
       
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -261,7 +290,7 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
                         key={action.question}
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleQuickAction(action.question)}
+                        onClick={() => handleQuickAction(action.question, (action as any).includeBodySpec)}
                         className="text-left justify-start h-auto p-3 hover:bg-muted/50 transition-colors"
                         disabled={isAnalyzing}
                       >

@@ -25,8 +25,33 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured. Please check Supabase secrets.');
     }
 
-    const { message, healthData, planData } = await req.json();
-    console.log('Request received:', { message, hasHealthData: !!healthData, hasPlanData: !!planData });
+    const { message, healthData, planData, includeBodySpec } = await req.json();
+    console.log('Request received:', { message, hasHealthData: !!healthData, hasPlanData: !!planData, includeBodySpec: !!includeBodySpec });
+
+    // Fetch BodySpec data if requested
+    let bodyspecData = null;
+    if (includeBodySpec) {
+      console.log('Fetching BodySpec data via MCP...');
+      try {
+        const bodyspecResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/bodyspec-mcp-connector`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          },
+          body: JSON.stringify({ action: 'fetch_scan_data' })
+        });
+        
+        if (bodyspecResponse.ok) {
+          bodyspecData = await bodyspecResponse.json();
+          console.log('BodySpec data fetched successfully');
+        } else {
+          console.warn('Failed to fetch BodySpec data:', bodyspecResponse.status);
+        }
+      } catch (error) {
+        console.error('Error fetching BodySpec data:', error);
+      }
+    }
 
     // Build comprehensive health analysis context with Craig Campbell plan integration
     let systemContext = `You are an advanced AI Health Coach with expertise in exercise science, nutrition, sleep optimization, and recovery strategies, specifically trained on Craig Campbell's coaching methodologies. 
@@ -164,6 +189,31 @@ ACTIVE PLAN CONTEXT:
 
 `;
       }
+    }
+
+    // BodySpec DEXA Scan Analysis
+    if (bodyspecData && bodyspecData.latest_scan) {
+      const { latest_scan, progress_metrics } = bodyspecData;
+      
+      healthInsights += `BODYSPEC DEXA SCAN ANALYSIS:
+- Latest scan: ${new Date(latest_scan.date).toLocaleDateString()}
+- Body composition: ${latest_scan.body_fat_percentage.toFixed(1)}% fat, ${latest_scan.lean_mass_kg.toFixed(1)}kg lean mass
+- Total weight: ${latest_scan.total_weight_kg.toFixed(1)}kg
+- Muscle mass: ${latest_scan.muscle_mass_kg.toFixed(1)}kg`;
+
+      if (latest_scan.visceral_fat_rating) {
+        healthInsights += `\n- Visceral fat: ${latest_scan.visceral_fat_rating}/10 rating`;
+      }
+
+      if (progress_metrics) {
+        healthInsights += `\n- Progress since last scan: ${progress_metrics.body_fat_change > 0 ? '+' : ''}${progress_metrics.body_fat_change.toFixed(1)}% fat, ${progress_metrics.lean_mass_change > 0 ? '+' : ''}${progress_metrics.lean_mass_change.toFixed(1)}kg lean mass`;
+      }
+
+      if (latest_scan.regional_data) {
+        healthInsights += `\n- Regional distribution: Arms ${latest_scan.regional_data.arms?.fat_percentage.toFixed(1)}%, Legs ${latest_scan.regional_data.legs?.fat_percentage.toFixed(1)}%, Trunk ${latest_scan.regional_data.trunk?.fat_percentage.toFixed(1)}%`;
+      }
+
+      healthInsights += `\n\n`;
     }
 
     systemContext += healthInsights;
