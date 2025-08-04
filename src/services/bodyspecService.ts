@@ -28,35 +28,35 @@ export interface BodyspecData {
 }
 
 class BodyspecService {
-  async connectWithMCP(): Promise<BodyspecData | null> {
+  async connectWithAPI(): Promise<BodyspecData | null> {
     try {
-      console.log('Attempting to connect to BodySpec via MCP...');
+      console.log('Attempting to connect to BodySpec via REST API...');
       
-      // Call our edge function that will handle MCP communication
-      const { data, error } = await supabase.functions.invoke('bodyspec-mcp-connector', {
+      // Call our edge function that will handle REST API communication
+      const { data, error } = await supabase.functions.invoke('bodyspec-api-connector', {
         body: { action: 'fetch_scan_data' }
       });
 
       if (error) {
-        console.error('Error connecting to BodySpec MCP:', error);
+        console.error('Error connecting to BodySpec API:', error);
         return null;
       }
 
-      console.log('BodySpec MCP data received:', data);
+      console.log('BodySpec API data received:', data);
       return data;
     } catch (error) {
-      console.error('Failed to connect to BodySpec MCP:', error);
+      console.error('Failed to connect to BodySpec API:', error);
       return null;
     }
   }
 
   async getLatestScan(): Promise<DexaScanResult | null> {
-    const bodyspecData = await this.connectWithMCP();
+    const bodyspecData = await this.connectWithAPI();
     return bodyspecData?.latest_scan || null;
   }
 
   async getAllScans(): Promise<DexaScanResult[]> {
-    const bodyspecData = await this.connectWithMCP();
+    const bodyspecData = await this.connectWithAPI();
     return bodyspecData?.results || [];
   }
 
