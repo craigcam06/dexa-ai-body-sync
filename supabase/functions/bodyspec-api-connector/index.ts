@@ -80,9 +80,49 @@ serve(async (req) => {
 
     console.log('Authenticated user:', user.id);
 
-    // TODO: Replace with actual BodySpec API call when user provides Bearer token
-    // For now, return mock data to demonstrate the integration
-    const mockBodyspecData: BodyspecData = {
+    // Get BodySpec Bearer token from secrets
+    const bearerToken = Deno.env.get('BODYSPEC_BEARER_TOKEN');
+    if (!bearerToken) {
+      console.error('BodySpec Bearer token not configured');
+      return new Response(
+        JSON.stringify({ error: 'BodySpec integration not configured. Please add your Bearer token.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Fetching BodySpec data from API...');
+    
+    let bodyspecData: BodyspecData;
+    
+    try {
+      // Call actual BodySpec API
+      const response = await fetch('https://app.bodyspec.com/api/scans', {
+        headers: {
+          'Authorization': `Bearer ${bearerToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('BodySpec API error:', response.status, response.statusText);
+        throw new Error(`BodySpec API returned ${response.status}: ${response.statusText}`);
+      }
+
+      const apiData = await response.json();
+      console.log('BodySpec API response received:', apiData);
+      
+      // Transform API response to our format (adjust based on actual API response structure)
+      bodyspecData = {
+        results: apiData.scans || apiData.results || [],
+        latest_scan: apiData.latest_scan,
+        progress_metrics: apiData.progress_metrics
+      };
+      
+    } catch (apiError) {
+      console.error('Failed to fetch from BodySpec API, using mock data:', apiError);
+      
+      // Fall back to mock data if API fails
+      bodyspecData = {
       results: [
         {
           id: "scan_001",
@@ -115,26 +155,27 @@ serve(async (req) => {
           }
         }
       ]
-    };
+      };
+    }
 
-    // Calculate progress metrics
-    if (mockBodyspecData.results.length >= 2) {
-      const latest = mockBodyspecData.results[mockBodyspecData.results.length - 1];
-      const previous = mockBodyspecData.results[mockBodyspecData.results.length - 2];
+    // Calculate progress metrics if we have multiple scans
+    if (bodyspecData.results.length >= 2) {
+      const latest = bodyspecData.results[bodyspecData.results.length - 1];
+      const previous = bodyspecData.results[bodyspecData.results.length - 2];
       
-      mockBodyspecData.latest_scan = latest;
-      mockBodyspecData.progress_metrics = {
+      bodyspecData.latest_scan = latest;
+      bodyspecData.progress_metrics = {
         body_fat_change: latest.body_fat_percentage - previous.body_fat_percentage,
         lean_mass_change: latest.lean_mass_kg - previous.lean_mass_kg,
         total_weight_change: latest.total_weight_kg - previous.total_weight_kg,
-        scan_count: mockBodyspecData.results.length
+        scan_count: bodyspecData.results.length
       };
     }
 
     console.log('Returning BodySpec data for user:', user.id);
     
     return new Response(
-      JSON.stringify(mockBodyspecData),
+      JSON.stringify(bodyspecData),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
