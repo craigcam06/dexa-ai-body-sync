@@ -31,9 +31,9 @@ serve(async (req) => {
     // Fetch BodySpec data if requested
     let bodyspecData = null;
     if (includeBodySpec) {
-      console.log('Fetching BodySpec data via MCP...');
+      console.log('Fetching BodySpec data via REST API...');
       try {
-        const bodyspecResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/bodyspec-mcp-connector`, {
+        const bodyspecResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/bodyspec-api-connector`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
