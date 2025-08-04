@@ -189,6 +189,14 @@ export function AICoachPanel({ whoopData, planData }: AICoachPanelProps) {
     const messageToSend = customMessage || userInput;
     if (!messageToSend.trim()) return;
 
+    // Auto-detect BodySpec related questions if not explicitly set
+    if (includeBodySpec === undefined) {
+      const bodySpecKeywords = ['bodyspec', 'body spec', 'dexa', 'dxa', 'body composition', 'body fat', 'lean mass', 'muscle mass', 'visceral fat', 'bone density'];
+      includeBodySpec = bodySpecKeywords.some(keyword => 
+        messageToSend.toLowerCase().includes(keyword.toLowerCase())
+      );
+    }
+
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
