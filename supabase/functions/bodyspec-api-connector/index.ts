@@ -52,33 +52,40 @@ serve(async (req) => {
       );
     }
 
-    // Get the authorization header to extract the user's token
+    // Check if this is a server-to-server call from AI health coach
     const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const isServerCall = authHeader && authHeader.includes(Deno.env.get('SUPABASE_ANON_KEY'));
+    
+    if (!isServerCall) {
+      // For direct user calls, require authentication
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: 'No authorization header' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Create Supabase client to get user info
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.log('User authentication failed:', userError);
+        return new Response(
+          JSON.stringify({ error: 'User not authenticated' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('Authenticated user:', user.id);
+    } else {
+      console.log('Server-to-server call from AI health coach');
     }
-
-    // Create Supabase client to get user info
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      console.log('User authentication failed:', userError);
-      return new Response(
-        JSON.stringify({ error: 'User not authenticated' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('Authenticated user:', user.id);
 
     // Get BodySpec Bearer token from secrets
     const bearerToken = Deno.env.get('BODYSPEC_BEARER_TOKEN');
@@ -172,7 +179,7 @@ serve(async (req) => {
       };
     }
 
-    console.log('Returning BodySpec data for user:', user.id);
+    console.log('Returning BodySpec data');
     
     return new Response(
       JSON.stringify(bodyspecData),
