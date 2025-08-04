@@ -344,8 +344,15 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
             </div>
             <div className="flex gap-2">
               {!csvData && (
-                <Button variant="outline" size="sm" onClick={fetchWhoopData} disabled={isLoading}>
-                  {isLoading ? 'Syncing...' : 'Refresh'}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchWhoopData} 
+                  disabled={isLoading}
+                  className="flex items-center gap-1"
+                >
+                  <Activity className="h-3 w-3" />
+                  {isLoading ? 'Syncing...' : 'Refresh Data'}
                 </Button>
               )}
               <Button 
