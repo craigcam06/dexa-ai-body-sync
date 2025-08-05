@@ -456,7 +456,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                   new Date(b.date).getTime() - new Date(a.date).getTime()
                 );
                 const latestRecovery = sortedRecovery[0];
-                console.log('🔍 Latest recovery after sorting:', latestRecovery);
+                console.log('🔍 Latest recovery after sorting:', JSON.stringify(latestRecovery, null, 2));
                 
                 return (
                 <div className="space-y-4">
@@ -538,7 +538,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                   const sortedSleep = [...csvData.sleep].sort((a, b) => 
                     new Date(b.date).getTime() - new Date(a.date).getTime()
                   );
-                  console.log('🔍 Latest sleep after sorting:', sortedSleep[0]);
+                  console.log('🔍 Latest sleep after sorting:', JSON.stringify(sortedSleep[0], null, 2));
                   
                   return (
                   <div className="space-y-3">
