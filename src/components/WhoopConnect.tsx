@@ -125,6 +125,12 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
 
         console.log('✅ Loaded CSV data from database:', loadedData);
         console.log('🔍 First recovery entry details:', recovery[0]);
+        console.log('🔍 First sleep entry details:', sleep[0]);
+        console.log('🔍 Data counts after load:', {
+          recovery: recovery.length,
+          sleep: sleep.length,
+          workouts: workouts.length
+        });
         setCsvData(loadedData);
         onDataUpdate?.(loadedData);
       }
@@ -160,24 +166,31 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   };
 
   useEffect(() => {
-    console.log('WhoopConnect mounted, checking auth status...');
+    console.log('🔄 WhoopConnect useEffect triggered');
+    console.log('📊 Current csvData state:', csvData);
+    
     const isAuth = whoopService.isAuthenticated();
-    console.log('Is authenticated:', isAuth);
     setIsAuthenticated(isAuth);
     
-    // Load any saved CSV data from database
-    loadCSVDataFromDatabase();
+    // Only load from database if we don't already have csvData
+    if (!csvData) {
+      console.log('📥 Loading CSV data from database...');
+      loadCSVDataFromDatabase();
+    } else {
+      console.log('📊 CSV data already loaded, skipping database load');
+    }
     
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    console.log('OAuth code from URL:', code);
     
     if (code && !isAuth) {
+      console.log('🔗 Processing OAuth callback...');
       handleOAuthCallback(code);
-    } else if (isAuth) {
+    } else if (isAuth && !csvData) {
+      console.log('🔗 Fetching live Whoop data...');
       fetchWhoopData();
     }
-  }, []);
+  }, []); // Empty dependency array to run only once
 
   const handleOAuthCallback = async (code: string) => {
     try {
