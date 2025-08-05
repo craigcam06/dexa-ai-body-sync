@@ -42,6 +42,53 @@ const DAILY_HEADERS: HeaderMapping = {
 };
 
 export class CSVParser {
+  // Store learned header mappings in localStorage
+  private static readonly LEARNED_MAPPINGS_KEY = 'whoop_learned_header_mappings';
+  
+  static getLearnedMappings(): { [dataType: string]: { [field: string]: string[] } } {
+    try {
+      const stored = localStorage.getItem(this.LEARNED_MAPPINGS_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  }
+  
+  static saveLearnedMapping(dataType: string, field: string, header: string) {
+    try {
+      const learned = this.getLearnedMappings();
+      if (!learned[dataType]) learned[dataType] = {};
+      if (!learned[dataType][field]) learned[dataType][field] = [];
+      
+      // Add the new header if it's not already in the list
+      if (!learned[dataType][field].includes(header.toLowerCase())) {
+        learned[dataType][field].push(header.toLowerCase());
+        localStorage.setItem(this.LEARNED_MAPPINGS_KEY, JSON.stringify(learned));
+        console.log(`💾 Learned new header mapping: ${dataType}.${field} = "${header}"`);
+      }
+    } catch (error) {
+      console.warn('Failed to save learned mapping:', error);
+    }
+  }
+  
+  static getEnhancedHeaderConfig(dataType: string, baseConfig: HeaderMapping): HeaderMapping {
+    const learned = this.getLearnedMappings();
+    const enhanced = { ...baseConfig };
+    
+    // Add learned mappings to the base configuration
+    if (learned[dataType]) {
+      for (const [field, aliases] of Object.entries(learned[dataType])) {
+        if (enhanced[field]) {
+          // Merge learned aliases with existing ones
+          enhanced[field] = [...new Set([...enhanced[field], ...aliases])];
+        }
+      }
+    }
+    
+    console.log(`🧠 Enhanced ${dataType} headers with learned mappings:`, enhanced);
+    return enhanced;
+  }
+
   // Fuzzy string matching using Levenshtein distance
   static levenshteinDistance(str1: string, str2: string): number {
     const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
@@ -101,20 +148,27 @@ export class CSVParser {
     return bestMatch.confidence > 0.6 ? bestMatch : null;
   }
 
-  // Create header mapping for a data type
-  static createHeaderMapping(headers: string[], headerConfig: HeaderMapping): { [key: string]: string } {
+  // Create header mapping for a data type with learning capability
+  static createHeaderMapping(headers: string[], headerConfig: HeaderMapping, dataType: string): { [key: string]: string } {
+    // Get enhanced configuration with learned mappings
+    const enhancedConfig = this.getEnhancedHeaderConfig(dataType, headerConfig);
+    
     const mapping: { [key: string]: string } = {};
     const unmappedHeaders: string[] = [];
     
-    console.log('📊 Creating header mapping');
+    console.log('📊 Creating header mapping for', dataType);
     console.log('Available headers:', headers);
+    console.log('Enhanced config:', enhancedConfig);
     
-    for (const [targetField, aliases] of Object.entries(headerConfig)) {
+    for (const [targetField, aliases] of Object.entries(enhancedConfig)) {
       const match = this.findBestHeaderMatch(targetField, headers, aliases);
       
       if (match) {
         mapping[targetField] = match.header;
         console.log(`✅ Mapped "${targetField}" to "${match.header}" (confidence: ${match.confidence.toFixed(2)})`);
+        
+        // Learn this successful mapping for future use
+        this.saveLearnedMapping(dataType, targetField, match.header);
       } else {
         console.log(`❌ Could not map "${targetField}"`);
         unmappedHeaders.push(targetField);
@@ -209,8 +263,7 @@ export class CSVParser {
 
   static parseRecoveryData(rows: string[][], headers: string[]): WhoopRecoveryData[] {
     const data: WhoopRecoveryData[] = [];
-    
-    console.log('🔍 Parsing recovery data with headers:', headers);
+    const mapping = this.createHeaderMapping(headers, RECOVERY_HEADERS, 'recovery');
     
     // Match exact Whoop CSV headers (case-insensitive)
     const dateIndex = headers.findIndex(h => {
@@ -289,8 +342,7 @@ export class CSVParser {
 
   static parseSleepData(rows: string[][], headers: string[]): WhoopSleepData[] {
     const data: WhoopSleepData[] = [];
-    
-    console.log('🔍 Parsing sleep data with headers:', headers);
+    const mapping = this.createHeaderMapping(headers, SLEEP_HEADERS, 'sleep');
     
     // Match exact Whoop CSV headers (case-insensitive)
     const dateIndex = headers.findIndex(h => {
@@ -393,8 +445,7 @@ export class CSVParser {
 
   static parseWorkoutData(rows: string[][], headers: string[]): WhoopWorkoutData[] {
     const data: WhoopWorkoutData[] = [];
-    
-    console.log('🔍 Parsing workout data with headers:', headers);
+    const mapping = this.createHeaderMapping(headers, WORKOUT_HEADERS, 'workout');
     
     // Match exact Whoop CSV headers (case-insensitive)
     const dateIndex = headers.findIndex(h => {
@@ -479,6 +530,7 @@ export class CSVParser {
 
   static parseDailyData(rows: string[][], headers: string[]): WhoopDailyData[] {
     const data: WhoopDailyData[] = [];
+    const mapping = this.createHeaderMapping(headers, DAILY_HEADERS, 'daily');
     
     const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('day'));
     const stepsIndex = headers.findIndex(h => h.toLowerCase().includes('steps'));
