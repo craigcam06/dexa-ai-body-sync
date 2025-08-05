@@ -436,42 +436,54 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                 </div>
               </div>
             ) : csvData && csvData.recovery.length > 0 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      {csvData.recovery[0].recovery_score ? `${csvData.recovery[0].recovery_score}%` : 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Recovery</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-red-500">
-                      {csvData.recovery[0].hrv_rmssd_milli ? `${csvData.recovery[0].hrv_rmssd_milli}ms` : 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">HRV</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-blue-500">
-                      {csvData.recovery[0].resting_heart_rate || 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">RHR</div>
-                  </div>
-                </div>
+              (() => {
+                // Sort recovery data by date (most recent first) and get latest entry
+                const sortedRecovery = [...csvData.recovery].sort((a, b) => 
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+                );
+                const latestRecovery = sortedRecovery[0];
+                console.log('🔍 Latest recovery after sorting:', latestRecovery);
                 
-                {/* Detailed Debug Section */}
-                <details className="mt-2 border rounded p-2">
-                  <summary className="text-xs text-muted-foreground cursor-pointer font-mono">🔍 Debug Recovery Data</summary>
-                  <div className="mt-2 space-y-2 text-xs">
-                    <div><strong>Total recovery entries:</strong> {csvData.recovery.length}</div>
-                    <div><strong>First entry date:</strong> {csvData.recovery[0]?.date}</div>
-                    <div><strong>Latest entry date:</strong> {csvData.recovery[csvData.recovery.length - 1]?.date}</div>
-                    <div className="mt-2"><strong>First 3 entries:</strong></div>
-                    <pre className="bg-background p-2 rounded overflow-auto text-xs">
-                      {JSON.stringify(csvData.recovery.slice(0, 3), null, 2)}
-                    </pre>
+                return (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-primary">
+                        {latestRecovery.recovery_score ? `${latestRecovery.recovery_score}%` : 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Recovery</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-red-500">
+                        {latestRecovery.hrv_rmssd_milli ? `${latestRecovery.hrv_rmssd_milli}ms` : 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">HRV</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-blue-500">
+                        {latestRecovery.resting_heart_rate || 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">RHR</div>
+                    </div>
                   </div>
-                </details>
-              </div>
+                  
+                  {/* Detailed Debug Section */}
+                  <details className="mt-2 border rounded p-2">
+                    <summary className="text-xs text-muted-foreground cursor-pointer font-mono">🔍 Debug Recovery Data</summary>
+                    <div className="mt-2 space-y-2 text-xs">
+                      <div><strong>Total recovery entries:</strong> {csvData.recovery.length}</div>
+                      <div><strong>First entry date:</strong> {csvData.recovery[0]?.date}</div>
+                      <div><strong>Latest entry date:</strong> {latestRecovery?.date}</div>
+                      <div><strong>Latest entry score:</strong> {latestRecovery?.recovery_score}</div>
+                      <div className="mt-2"><strong>Latest entry full data:</strong></div>
+                      <pre className="bg-background p-2 rounded overflow-auto text-xs">
+                        {JSON.stringify(latestRecovery, null, 2)}
+                      </pre>
+                    </div>
+                  </details>
+                </div>
+                );
+              })()
             )}
           </CardContent>
         </Card>
@@ -507,9 +519,17 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                   </div>
                 ))
               ) : csvData && csvData.sleep.length > 0 && (
-                <div className="space-y-3">
-                  {csvData.sleep.slice(0, 3).map((sleep, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
+                (() => {
+                  // Sort sleep data by date (most recent first) and get latest entries
+                  const sortedSleep = [...csvData.sleep].sort((a, b) => 
+                    new Date(b.date).getTime() - new Date(a.date).getTime()
+                  );
+                  console.log('🔍 Latest sleep after sorting:', sortedSleep[0]);
+                  
+                  return (
+                  <div className="space-y-3">
+                    {sortedSleep.slice(0, 3).map((sleep, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
                       <div>
                         <div className="font-medium">
                           {sleep.date}
@@ -526,21 +546,24 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                       </div>
                     </div>
                   ))}
-                  
-                  {/* Detailed Debug Section */}
-                  <details className="mt-2 border rounded p-2">
-                    <summary className="text-xs text-muted-foreground cursor-pointer font-mono">🔍 Debug Sleep Data</summary>
-                    <div className="mt-2 space-y-2 text-xs">
-                      <div><strong>Total sleep entries:</strong> {csvData.sleep.length}</div>
-                      <div><strong>First entry date:</strong> {csvData.sleep[0]?.date}</div>
-                      <div><strong>Latest entry date:</strong> {csvData.sleep[csvData.sleep.length - 1]?.date}</div>
-                      <div className="mt-2"><strong>First 3 entries:</strong></div>
-                      <pre className="bg-background p-2 rounded overflow-auto text-xs">
-                        {JSON.stringify(csvData.sleep.slice(0, 3), null, 2)}
-                      </pre>
-                    </div>
-                  </details>
-                </div>
+                    
+                    {/* Detailed Debug Section */}
+                    <details className="mt-2 border rounded p-2">
+                      <summary className="text-xs text-muted-foreground cursor-pointer font-mono">🔍 Debug Sleep Data</summary>
+                      <div className="mt-2 space-y-2 text-xs">
+                        <div><strong>Total sleep entries:</strong> {csvData.sleep.length}</div>
+                        <div><strong>First entry date:</strong> {csvData.sleep[0]?.date}</div>
+                        <div><strong>Latest entry date:</strong> {sortedSleep[0]?.date}</div>
+                        <div><strong>Latest entry score:</strong> {sortedSleep[0]?.sleep_score}</div>
+                        <div className="mt-2"><strong>Latest entry full data:</strong></div>
+                        <pre className="bg-background p-2 rounded overflow-auto text-xs">
+                          {JSON.stringify(sortedSleep[0], null, 2)}
+                        </pre>
+                      </div>
+                    </details>
+                  </div>
+                  );
+                })()
               )}
             </div>
           </CardContent>
