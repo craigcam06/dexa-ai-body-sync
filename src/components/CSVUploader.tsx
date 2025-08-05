@@ -175,7 +175,15 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
       stronglifts: consolidated.stronglifts.length
     });
 
-    console.log('Calling onDataUpdate with:', consolidated);
+    console.log('🚀 CSVUploader calling onDataUpdate with consolidated data:', consolidated);
+    console.log('📊 Consolidated data details:', {
+      recovery: `Array(${consolidated.recovery.length})`,
+      recoveryFirst: consolidated.recovery[0],
+      sleep: `Array(${consolidated.sleep.length})`,
+      sleepFirst: consolidated.sleep[0],
+      workouts: `Array(${consolidated.workouts.length})`,
+      daily: `Array(${consolidated.daily.length})`
+    });
     onDataUpdate(consolidated);
     
     toast({

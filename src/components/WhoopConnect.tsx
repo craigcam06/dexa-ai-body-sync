@@ -140,8 +140,8 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   };
 
   const handleCSVDataUpdate = async (data: ParsedWhoopData) => {
-    console.log('🔄 CSV data update received:', data);
-    console.log('📊 Data summary:', {
+    console.log('🔄 WhoopConnect.handleCSVDataUpdate called with data:', data);
+    console.log('📊 Data summary in handleCSVDataUpdate:', {
       recovery: data.recovery?.length || 0,
       sleep: data.sleep?.length || 0,
       workouts: data.workouts?.length || 0,
@@ -152,22 +152,32 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
     
     // Log sample data for debugging
     if (data.recovery?.length > 0) {
-      console.log('📊 Sample recovery data:', data.recovery[0]);
+      console.log('📊 Sample recovery data in handleCSVDataUpdate:', data.recovery[0]);
     }
     if (data.sleep?.length > 0) {
-      console.log('📊 Sample sleep data:', data.sleep[0]);
+      console.log('📊 Sample sleep data in handleCSVDataUpdate:', data.sleep[0]);
     }
     
+    console.log('🔄 Setting csvData state...');
     setCsvData(data);
+    
+    console.log('💾 Saving to database...');
     await saveCSVDataToDatabase(data);
+    
+    console.log('📤 Calling parent onDataUpdate...');
     if (onDataUpdate) {
       onDataUpdate(data);
     }
+    
+    console.log('✅ handleCSVDataUpdate completed');
   };
 
   useEffect(() => {
     console.log('🔄 WhoopConnect useEffect triggered');
-    console.log('📊 Current csvData state:', csvData);
+    console.log('📊 Current csvData state in useEffect:', csvData);
+    console.log('📊 csvData type:', typeof csvData);
+    console.log('📊 csvData is null?', csvData === null);
+    console.log('📊 csvData recovery length:', csvData?.recovery?.length || 'N/A');
     
     const isAuth = whoopService.isAuthenticated();
     setIsAuthenticated(isAuth);
@@ -178,6 +188,10 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
       loadCSVDataFromDatabase();
     } else {
       console.log('📊 CSV data already loaded, skipping database load');
+      console.log('📊 Existing csvData details:', {
+        recovery: csvData.recovery?.length || 0,
+        sleep: csvData.sleep?.length || 0
+      });
     }
     
     const urlParams = new URLSearchParams(window.location.search);
