@@ -1,6 +1,134 @@
 import { ParsedWhoopData, CSVParseResult, WhoopRecoveryData, WhoopSleepData, WhoopWorkoutData, WhoopDailyData, WhoopJournalData, StrongLiftsData } from '@/types/whoopData';
 
+// Header mapping configuration with fuzzy matching
+interface HeaderMapping {
+  [key: string]: string[];
+}
+
+const RECOVERY_HEADERS: HeaderMapping = {
+  'date': ['date', 'day', 'created_at', 'timestamp'],
+  'recovery_score': ['recovery score', 'recovery %', 'recovery percentage', 'recovery', 'recovery_score'],
+  'hrv_rmssd_milli': ['hrv rmssd', 'hrv', 'heart rate variability', 'rmssd', 'hrv_rmssd_milli'],
+  'resting_heart_rate': ['resting heart rate', 'rhr', 'rest hr', 'resting_heart_rate'],
+  'skin_temp_celsius': ['skin temp', 'skin temperature', 'temp', 'skin_temp_celsius']
+};
+
+const SLEEP_HEADERS: HeaderMapping = {
+  'date': ['date', 'day', 'created_at', 'timestamp'],
+  'total_sleep_time_milli': ['total sleep', 'sleep time', 'sleep duration', 'total_sleep_time_milli'],
+  'sleep_efficiency_percentage': ['sleep efficiency', 'efficiency', 'sleep_efficiency_percentage'],
+  'slow_wave_sleep_time_milli': ['slow wave sleep', 'deep sleep', 'sws', 'slow_wave_sleep_time_milli'],
+  'rem_sleep_time_milli': ['rem sleep', 'rem', 'rem_sleep_time_milli'],
+  'light_sleep_time_milli': ['light sleep', 'light', 'light_sleep_time_milli'],
+  'wake_time_milli': ['wake time', 'awake time', 'wake', 'wake_time_milli'],
+  'sleep_score': ['sleep score', 'sleep performance', 'sleep %', 'sleep percentage', 'sleep_score', 'sleep_performance_percentage']
+};
+
+const WORKOUT_HEADERS: HeaderMapping = {
+  'date': ['date', 'day', 'created_at', 'timestamp'],
+  'strain_score': ['strain score', 'strain', 'strain_score'],
+  'kilojoule': ['kilojoule', 'energy', 'kj', 'calories'],
+  'average_heart_rate': ['average heart rate', 'avg hr', 'avg heart rate', 'average_heart_rate'],
+  'max_heart_rate': ['max heart rate', 'max hr', 'peak hr', 'max_heart_rate'],
+  'duration_milli': ['duration', 'workout duration', 'time', 'duration_milli'],
+  'workout_type': ['workout type', 'activity', 'sport', 'workout_type']
+};
+
+const DAILY_HEADERS: HeaderMapping = {
+  'date': ['date', 'day', 'created_at', 'timestamp'],
+  'steps': ['steps', 'step count'],
+  'calories_burned': ['calories burned', 'calories', 'energy burned', 'calories_burned'],
+  'ambient_temperature_celsius': ['ambient temperature', 'temperature', 'temp', 'ambient_temperature_celsius']
+};
+
 export class CSVParser {
+  // Fuzzy string matching using Levenshtein distance
+  static levenshteinDistance(str1: string, str2: string): number {
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+    
+    for (let j = 1; j <= str2.length; j++) {
+      for (let i = 1; i <= str1.length; i++) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + indicator
+        );
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
+  }
+
+  // Find best matching header using fuzzy matching
+  static findBestHeaderMatch(targetField: string, availableHeaders: string[], aliases: string[]): { header: string; confidence: number } | null {
+    let bestMatch = { header: '', confidence: 0 };
+    
+    for (const header of availableHeaders) {
+      const headerLower = header.toLowerCase().trim();
+      
+      // Check each alias
+      for (const alias of aliases) {
+        const aliasLower = alias.toLowerCase().trim();
+        
+        // Exact match gets highest confidence
+        if (headerLower === aliasLower) {
+          return { header, confidence: 1.0 };
+        }
+        
+        // Substring match gets high confidence
+        if (headerLower.includes(aliasLower) || aliasLower.includes(headerLower)) {
+          const confidence = Math.max(aliasLower.length / headerLower.length, headerLower.length / aliasLower.length) * 0.9;
+          if (confidence > bestMatch.confidence) {
+            bestMatch = { header, confidence };
+          }
+        }
+        
+        // Fuzzy match for typos/variations
+        const distance = this.levenshteinDistance(headerLower, aliasLower);
+        const maxLength = Math.max(headerLower.length, aliasLower.length);
+        const similarity = 1 - (distance / maxLength);
+        
+        if (similarity > 0.7 && similarity > bestMatch.confidence) {
+          bestMatch = { header, confidence: similarity };
+        }
+      }
+    }
+    
+    return bestMatch.confidence > 0.6 ? bestMatch : null;
+  }
+
+  // Create header mapping for a data type
+  static createHeaderMapping(headers: string[], headerConfig: HeaderMapping): { [key: string]: string } {
+    const mapping: { [key: string]: string } = {};
+    const unmappedHeaders: string[] = [];
+    
+    console.log('📊 Creating header mapping');
+    console.log('Available headers:', headers);
+    
+    for (const [targetField, aliases] of Object.entries(headerConfig)) {
+      const match = this.findBestHeaderMatch(targetField, headers, aliases);
+      
+      if (match) {
+        mapping[targetField] = match.header;
+        console.log(`✅ Mapped "${targetField}" to "${match.header}" (confidence: ${match.confidence.toFixed(2)})`);
+      } else {
+        console.log(`❌ Could not map "${targetField}"`);
+        unmappedHeaders.push(targetField);
+      }
+    }
+    
+    if (unmappedHeaders.length > 0) {
+      console.log('⚠️ Unmapped fields:', unmappedHeaders);
+      console.log('💡 Available headers for manual review:', headers);
+    }
+    
+    return mapping;
+  }
+
   static parseCSV(csvText: string): string[][] {
     const lines = csvText.trim().split('\n');
     return lines.map(line => {

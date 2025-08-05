@@ -121,17 +121,29 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
   };
 
   const handleCSVDataUpdate = async (data: ParsedWhoopData) => {
-    console.log('🔍 WhoopConnect CSV data received:', {
-      recovery: data.recovery.map(r => ({ date: r.date, score: r.recovery_score })),
-      sleep: data.sleep.map(s => ({ date: s.date, score: s.sleep_score })),
-      workouts: data.workouts.length,
-      daily: data.daily.length
+    console.log('🔄 CSV data update received:', data);
+    console.log('📊 Data summary:', {
+      recovery: data.recovery?.length || 0,
+      sleep: data.sleep?.length || 0,
+      workouts: data.workouts?.length || 0,
+      daily: data.daily?.length || 0,
+      journal: data.journal?.length || 0,
+      stronglifts: data.stronglifts?.length || 0
     });
-    setCsvData(data);
-    onDataUpdate?.(data);
     
-    // Save to database for persistence
+    // Log sample data for debugging
+    if (data.recovery?.length > 0) {
+      console.log('📊 Sample recovery data:', data.recovery[0]);
+    }
+    if (data.sleep?.length > 0) {
+      console.log('📊 Sample sleep data:', data.sleep[0]);
+    }
+    
+    setCsvData(data);
     await saveCSVDataToDatabase(data);
+    if (onDataUpdate) {
+      onDataUpdate(data);
+    }
   };
 
   useEffect(() => {
@@ -398,25 +410,32 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                 </div>
               </div>
             ) : csvData && csvData.recovery.length > 0 && (
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {csvData.recovery[0].recovery_score}%
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-primary">
+                      {csvData.recovery[0].recovery_score ? `${csvData.recovery[0].recovery_score}%` : 'N/A'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Recovery</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Recovery</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-500">
-                    {csvData.recovery[0].hrv_rmssd_milli}ms
+                  <div>
+                    <div className="text-2xl font-bold text-red-500">
+                      {csvData.recovery[0].hrv_rmssd_milli ? `${csvData.recovery[0].hrv_rmssd_milli}ms` : 'N/A'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">HRV</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">HRV</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-500">
-                    {csvData.recovery[0].resting_heart_rate}
+                  <div>
+                    <div className="text-2xl font-bold text-blue-500">
+                      {csvData.recovery[0].resting_heart_rate || 'N/A'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">RHR</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">RHR</div>
                 </div>
+                {/* Debug info */}
+                <details className="mt-2">
+                  <summary className="text-xs text-muted-foreground cursor-pointer">Debug Recovery Data</summary>
+                  <pre className="text-xs mt-1 p-2 bg-background rounded overflow-auto">{JSON.stringify(csvData.recovery[0], null, 2)}</pre>
+                </details>
               </div>
             )}
           </CardContent>
@@ -453,24 +472,31 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                   </div>
                 ))
               ) : csvData && csvData.sleep.length > 0 && (
-                csvData.sleep.slice(0, 3).map((sleep, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
-                    <div>
-                      <div className="font-medium">
-                        {sleep.date}
+                <div className="space-y-3">
+                  {csvData.sleep.slice(0, 3).map((sleep, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg border">
+                      <div>
+                        <div className="font-medium">
+                          {sleep.date}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {formatDuration(sleep.total_sleep_time_milli)}
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatDuration(sleep.total_sleep_time_milli)}
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-primary">
+                          {sleep.sleep_score ? `${sleep.sleep_score}%` : 'N/A'}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Score</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary">
-                        {sleep.sleep_score}%
-                      </div>
-                      <div className="text-xs text-muted-foreground">Score</div>
-                    </div>
-                  </div>
-                ))
+                  ))}
+                  {/* Debug info for first sleep entry */}
+                  <details className="mt-2">
+                    <summary className="text-xs text-muted-foreground cursor-pointer">Debug Sleep Data</summary>
+                    <pre className="text-xs mt-1 p-2 bg-background rounded overflow-auto">{JSON.stringify(csvData.sleep[0], null, 2)}</pre>
+                  </details>
+                </div>
               )}
             </div>
           </CardContent>
