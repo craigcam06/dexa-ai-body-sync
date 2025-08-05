@@ -6,32 +6,32 @@ interface HeaderMapping {
 }
 
 const RECOVERY_HEADERS: HeaderMapping = {
-  'date': ['date', 'day', 'created_at', 'timestamp'],
-  'recovery_score': ['recovery score', 'recovery %', 'recovery percentage', 'recovery', 'recovery_score'],
-  'hrv_rmssd_milli': ['hrv rmssd', 'hrv', 'heart rate variability', 'rmssd', 'hrv_rmssd_milli'],
-  'resting_heart_rate': ['resting heart rate', 'rhr', 'rest hr', 'resting_heart_rate'],
-  'skin_temp_celsius': ['skin temp', 'skin temperature', 'temp', 'skin_temp_celsius']
+  'date': ['date', 'day', 'created_at', 'timestamp', 'cycle start time'],
+  'recovery_score': ['recovery score %', 'recovery score', 'recovery %', 'recovery percentage', 'recovery', 'recovery_score'],
+  'hrv_rmssd_milli': ['heart rate variability (ms)', 'hrv rmssd', 'hrv', 'heart rate variability', 'rmssd', 'hrv_rmssd_milli'],
+  'resting_heart_rate': ['resting heart rate (bpm)', 'resting heart rate', 'rhr', 'rest hr', 'resting_heart_rate'],
+  'skin_temp_celsius': ['skin temp (celsius)', 'skin temp', 'skin temperature', 'temp', 'skin_temp_celsius']
 };
 
 const SLEEP_HEADERS: HeaderMapping = {
-  'date': ['date', 'day', 'created_at', 'timestamp'],
-  'total_sleep_time_milli': ['total sleep', 'sleep time', 'sleep duration', 'total_sleep_time_milli'],
-  'sleep_efficiency_percentage': ['sleep efficiency', 'efficiency', 'sleep_efficiency_percentage'],
-  'slow_wave_sleep_time_milli': ['slow wave sleep', 'deep sleep', 'sws', 'slow_wave_sleep_time_milli'],
-  'rem_sleep_time_milli': ['rem sleep', 'rem', 'rem_sleep_time_milli'],
-  'light_sleep_time_milli': ['light sleep', 'light', 'light_sleep_time_milli'],
-  'wake_time_milli': ['wake time', 'awake time', 'wake', 'wake_time_milli'],
-  'sleep_score': ['sleep score', 'sleep performance', 'sleep %', 'sleep percentage', 'sleep_score', 'sleep_performance_percentage']
+  'date': ['date', 'day', 'created_at', 'timestamp', 'cycle start time', 'sleep onset'],
+  'total_sleep_time_milli': ['asleep duration (min)', 'total sleep', 'sleep time', 'sleep duration', 'total_sleep_time_milli'],
+  'sleep_efficiency_percentage': ['sleep efficiency %', 'sleep efficiency', 'efficiency', 'sleep_efficiency_percentage'],
+  'slow_wave_sleep_time_milli': ['deep (sws) duration (min)', 'slow wave sleep', 'deep sleep', 'sws', 'slow_wave_sleep_time_milli'],
+  'rem_sleep_time_milli': ['rem duration (min)', 'rem sleep', 'rem', 'rem_sleep_time_milli'],
+  'light_sleep_time_milli': ['light sleep duration (min)', 'light sleep', 'light', 'light_sleep_time_milli'],
+  'wake_time_milli': ['awake duration (min)', 'wake time', 'awake time', 'wake', 'wake_time_milli'],
+  'sleep_score': ['sleep performance %', 'sleep score', 'sleep performance', 'sleep %', 'sleep percentage', 'sleep_score', 'sleep_performance_percentage']
 };
 
 const WORKOUT_HEADERS: HeaderMapping = {
-  'date': ['date', 'day', 'created_at', 'timestamp'],
-  'strain_score': ['strain score', 'strain', 'strain_score'],
-  'kilojoule': ['kilojoule', 'energy', 'kj', 'calories'],
-  'average_heart_rate': ['average heart rate', 'avg hr', 'avg heart rate', 'average_heart_rate'],
-  'max_heart_rate': ['max heart rate', 'max hr', 'peak hr', 'max_heart_rate'],
-  'duration_milli': ['duration', 'workout duration', 'time', 'duration_milli'],
-  'workout_type': ['workout type', 'activity', 'sport', 'workout_type']
+  'date': ['date', 'day', 'created_at', 'timestamp', 'cycle start time', 'workout start time'],
+  'strain_score': ['activity strain', 'strain score', 'strain', 'strain_score'],
+  'kilojoule': ['energy burned (cal)', 'kilojoule', 'energy', 'kj', 'calories'],
+  'average_heart_rate': ['average hr (bpm)', 'average heart rate', 'avg hr', 'avg heart rate', 'average_heart_rate'],
+  'max_heart_rate': ['max hr (bpm)', 'max heart rate', 'max hr', 'peak hr', 'max_heart_rate'],
+  'duration_milli': ['duration (min)', 'duration', 'workout duration', 'time', 'duration_milli'],
+  'workout_type': ['activity name', 'workout type', 'activity', 'sport', 'workout_type']
 };
 
 const DAILY_HEADERS: HeaderMapping = {
