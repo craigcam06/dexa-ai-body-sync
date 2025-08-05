@@ -444,10 +444,19 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                     <div className="text-xs text-muted-foreground">RHR</div>
                   </div>
                 </div>
-                {/* Debug info */}
-                <details className="mt-2">
-                  <summary className="text-xs text-muted-foreground cursor-pointer">Debug Recovery Data</summary>
-                  <pre className="text-xs mt-1 p-2 bg-background rounded overflow-auto">{JSON.stringify(csvData.recovery[0], null, 2)}</pre>
+                
+                {/* Detailed Debug Section */}
+                <details className="mt-2 border rounded p-2">
+                  <summary className="text-xs text-muted-foreground cursor-pointer font-mono">🔍 Debug Recovery Data</summary>
+                  <div className="mt-2 space-y-2 text-xs">
+                    <div><strong>Total recovery entries:</strong> {csvData.recovery.length}</div>
+                    <div><strong>First entry date:</strong> {csvData.recovery[0]?.date}</div>
+                    <div><strong>Latest entry date:</strong> {csvData.recovery[csvData.recovery.length - 1]?.date}</div>
+                    <div className="mt-2"><strong>First 3 entries:</strong></div>
+                    <pre className="bg-background p-2 rounded overflow-auto text-xs">
+                      {JSON.stringify(csvData.recovery.slice(0, 3), null, 2)}
+                    </pre>
+                  </div>
                 </details>
               </div>
             )}
@@ -504,10 +513,19 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
                       </div>
                     </div>
                   ))}
-                  {/* Debug info for first sleep entry */}
-                  <details className="mt-2">
-                    <summary className="text-xs text-muted-foreground cursor-pointer">Debug Sleep Data</summary>
-                    <pre className="text-xs mt-1 p-2 bg-background rounded overflow-auto">{JSON.stringify(csvData.sleep[0], null, 2)}</pre>
+                  
+                  {/* Detailed Debug Section */}
+                  <details className="mt-2 border rounded p-2">
+                    <summary className="text-xs text-muted-foreground cursor-pointer font-mono">🔍 Debug Sleep Data</summary>
+                    <div className="mt-2 space-y-2 text-xs">
+                      <div><strong>Total sleep entries:</strong> {csvData.sleep.length}</div>
+                      <div><strong>First entry date:</strong> {csvData.sleep[0]?.date}</div>
+                      <div><strong>Latest entry date:</strong> {csvData.sleep[csvData.sleep.length - 1]?.date}</div>
+                      <div className="mt-2"><strong>First 3 entries:</strong></div>
+                      <pre className="bg-background p-2 rounded overflow-auto text-xs">
+                        {JSON.stringify(csvData.sleep.slice(0, 3), null, 2)}
+                      </pre>
+                    </div>
                   </details>
                 </div>
               )}
