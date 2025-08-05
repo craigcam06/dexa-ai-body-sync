@@ -89,7 +89,7 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
           newFile.data = result.data;
           
           // Update dashboard with all data types
-          console.log(`📤 CSVUploader calling onDataUpdate for ${dataType} data:`, result.data);
+          console.log(`📤 CSVUploader processed ${dataType} data:`, result.data);
           console.log('Data summary:', {
             recovery: result.data.recovery?.length || 0,
             sleep: result.data.sleep?.length || 0,
@@ -98,11 +98,8 @@ export const CSVUploader = ({ onDataUpdate }: CSVUploaderProps) => {
             stronglifts: result.data.stronglifts?.length || 0
           });
           
-          // Call onDataUpdate for all data types, not just StrongLifts
-          setTimeout(() => {
-            console.log('🚀 Calling onDataUpdate...');
-            onDataUpdate(result.data);
-          }, 100);
+          // Don't call onDataUpdate here - wait for manual consolidation
+          // This prevents individual files from overwriting each other
           
           toast({
             title: "File processed successfully",
