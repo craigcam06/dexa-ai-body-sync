@@ -43,12 +43,18 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
 
       // Save recovery data
       for (const recovery of data.recovery) {
-        await supabase.from('whoop_data').upsert({
+        console.log('💾 Saving recovery to database:', recovery);
+        const { data: saved, error } = await supabase.from('whoop_data').upsert({
           user_id: user.id,
           data_type: 'recovery',
           date: recovery.date,
           data: recovery as any
         });
+        if (error) {
+          console.error('❌ Error saving recovery:', error);
+        } else {
+          console.log('✅ Successfully saved recovery:', saved);
+        }
       }
 
       // Save sleep data
@@ -96,8 +102,14 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
 
       if (whoopRecords && whoopRecords.length > 0) {
         // Group data by type with proper type casting
-        const recovery = whoopRecords.filter(r => r.data_type === 'recovery').map(r => r.data as any);
-        const sleep = whoopRecords.filter(r => r.data_type === 'sleep').map(r => r.data as any);
+        const recovery = whoopRecords.filter(r => r.data_type === 'recovery').map(r => {
+          console.log('📊 Raw recovery record from DB:', r);
+          return r.data as any;
+        });
+        const sleep = whoopRecords.filter(r => r.data_type === 'sleep').map(r => {
+          console.log('📊 Raw sleep record from DB:', r);
+          return r.data as any;
+        });
         const workouts = whoopRecords.filter(r => r.data_type === 'workout').map(r => r.data as any);
         const daily = whoopRecords.filter(r => r.data_type === 'daily').map(r => r.data as any);
         const journal = whoopRecords.filter(r => r.data_type === 'journal').map(r => r.data as any);
@@ -112,6 +124,7 @@ export const WhoopConnect = ({ onDataUpdate }: WhoopConnectProps) => {
         };
 
         console.log('✅ Loaded CSV data from database:', loadedData);
+        console.log('🔍 First recovery entry details:', recovery[0]);
         setCsvData(loadedData);
         onDataUpdate?.(loadedData);
       }
